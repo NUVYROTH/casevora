@@ -36,6 +36,12 @@ button:disabled{opacity:.5;cursor:default}
 .steps span.done::before{content:"✓ "}
 .steps span.now{color:var(--acx);background:var(--ac);border-radius:10px;padding:1px 8px;font-weight:600}
 .steps i{font-style:normal;color:var(--gold)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.split .lcol,.split .rcol{min-width:0}
+.rcol:has(.sec:not([hidden])) .aiwait{display:none}
+.aikeep{font-size:12.5px;color:var(--warnt);background:var(--warn);border-radius:6px;padding:6px 10px;margin:0 0 10px}
+.wrap:has(#formView:not([hidden])),.wrap:has(#vformView:not([hidden])){max-width:1320px}
+@media(max-width:960px){.split{grid-template-columns:1fr}}
 .ainote{font-size:12.5px;line-height:1.6;color:var(--warnt);background:var(--warn);border-left:3px solid var(--gold);border-radius:6px;padding:8px 12px;margin:10px 0 0}
 .trbar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;margin:4px 0}
 .trall,.trrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -114,6 +120,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <div id="formView" hidden>
 <div class="row" style="margin:0 0 12px"><button id="fback0">← 返回案件列表</button><span class="status" id="ftitle"></span></div>
 <div class="note" id="leaveC" hidden><b>尚未儲存，確定要離開嗎？</b><div class="row"><button class="pri" id="leaveCyes">確定離開</button><button id="leaveCno">繼續編輯</button></div></div>
+<div class="split"><div class="lcol">
 <div class="card">
 <h2>① 輸入客訴資料</h2>
 <div class="tip"><b>異物／異常品調查前，請先保留證據</b><ul>
@@ -156,8 +163,11 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <p class="ainote">AI 分析需在 claude.ai 開啟本工具，每位使用者須使用<b>自己的 Claude 帳號登入</b>，用量計入各自的帳號。<br>請勿在描述中填寫消費者或員工的<b>姓名、電話、地址、身分證字號</b>等個人資料，請改用「消費者 A」「品管人員」等代稱。</p>
 </div>
 
+</div><div class="rcol">
+<div class="card aiwait"><h2>② AI 分析建議</h2><p class="sub">填好左側資料後，按「產生分析」，AI 建議會顯示在這裡。</p><p class="sub"><b>AI 建議不會儲存到案件裡</b>，案件只保存左側由品管人員填寫的內容。</p></div>
 <div class="card sec" id="out" hidden>
-<h2>② 分析結果與客訴分析紀錄（可直接修改）</h2>
+<h2>② AI 分析建議（可修改，不會儲存）</h2>
+<p class="aikeep">AI 建議不會存進案件。需要保留時，請按「複製全文」或下方「匯出此案件 Word」。</p>
 <p class="sub">每個欄位都能自由編輯。原因分析分為【已確認事實】【可能原因】【尚待確認事項】三段；資料不足時請保留「資料不足，需進一步確認」，不要把推測寫成確定原因。</p>
 <label>一、客訴基本資料</label><textarea id="s1"></textarea>
 <label>二、異常情況說明</label><div class="hint">記錄客訴人所述（尚未查證）、照片外觀描述與已採取處理；已查證的內容請寫在第三項「已確認事實」</div><textarea id="s2" style="min-height:180px"></textarea>
@@ -171,6 +181,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <span class="status" id="st2"></span>
 </div>
 </div>
+</div></div>
 <div class="card"><div class="row" style="margin:0">
 <button class="pri" id="fsave">儲存案件並返回列表</button><button id="fword">匯出此案件 Word</button><span class="status" id="fmsg"></span></div>
 <p class="sub" style="margin:8px 0 0">「匯出此案件 Word」只匯出目前這一件（含尚未儲存的內容）。儲存後案件會出現在列表並納入統計；照片不會存入列表（照片也不在備份裡，需要保留請另外存檔）。</p></div>
@@ -200,6 +211,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <div id="vformView" hidden>
 <div class="row" style="margin:0 0 12px"><button id="vfback0">← 返回案件列表</button><span class="status" id="vftitle"></span></div>
 <div class="note" id="leaveV" hidden><b>尚未儲存，確定要離開嗎？</b><div class="row"><button class="pri" id="leaveVyes">確定離開</button><button id="leaveVno">繼續編輯</button></div></div>
+<div class="split"><div class="lcol">
 <div class="card">
 <h2>供應商客訴：輸入資料</h2>
 <p class="sub">適用於原料／包材在進料或使用時發現異常，需向供應商提出客訴並請其調查回覆。分析不預設供應商或本廠有責任，需待雙方查證。</p>
@@ -235,8 +247,11 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <p class="ainote">AI 分析需在 claude.ai 開啟本工具，每位使用者須使用<b>自己的 Claude 帳號登入</b>，用量計入各自的帳號。<br>請勿在描述中填寫消費者或員工的<b>姓名、電話、地址、身分證字號</b>等個人資料，請改用「消費者 A」「品管人員」等代稱。</p>
 </div>
 
+</div><div class="rcol">
+<div class="card aiwait"><h2>AI 分析建議</h2><p class="sub">填好左側資料後，按「產生供應商客訴紀錄」，AI 建議與通知函草稿會顯示在這裡。</p><p class="sub"><b>AI 建議不會儲存到案件裡</b>，案件只保存左側由品管人員填寫的內容。</p></div>
 <div class="card sec" id="vout" hidden>
-<h2>供應商客訴紀錄（可直接修改）</h2>
+<h2>AI 分析建議（可修改，不會儲存）</h2>
+<p class="aikeep">AI 建議不會存進案件。需要保留時，請按「複製全文」或下方「匯出此案件 Word」。</p>
 <p class="sub">【事實】【可能原因・未證實】【待確認】的標示請依查證結果調整。通知函為草稿，寄出前請務必檢查。</p>
 <label>一、供應商客訴基本資料</label><textarea id="v1"></textarea>
 <label>二、異常情況說明</label><textarea id="v2" style="min-height:160px"></textarea>
@@ -251,6 +266,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <span class="status" id="vst2"></span>
 </div>
 </div>
+</div></div>
 <div class="card"><div class="row" style="margin:0">
 <button class="pri" id="vfsave">儲存案件並返回列表</button><button id="vfword">匯出此案件 Word</button><span class="status" id="vfmsg"></span></div>
 <p class="sub" style="margin:8px 0 0">儲存後案件會出現在列表並納入統計。</p></div>
@@ -724,8 +740,8 @@ function updNo(){if(editId)return;$('no').value=calcNo($('date').value,'客訴',
 $('date').addEventListener('change',updNo);$('date').addEventListener('input',updNo);
 function showView(v){$('trashView').hidden=v!=='trash';$('listView').hidden=v!=='list';$('formView').hidden=v!=='form';window.scrollTo({top:0})}
 let snapC='',snapV='';
-const stateC=()=>JSON.stringify([FK.map(k=>$(k).value),$('fcat').value,$('fst').value,photos.map(p=>p.name+'|'+p.blob.size),$('out').hidden,[1,2,3,4,5,6].map(i=>$('s'+i).value)]);
-const stateV=()=>JSON.stringify([VK.map(k=>$('v'+k).value),$('vcat').value,$('vstat').value,$('vout').hidden,[1,2,3,4,5,6,7].map(i=>$('v'+i).value)]);
+const stateC=()=>JSON.stringify([FK.map(k=>$(k).value),$('fcat').value,$('fst').value,photos.map(p=>p.name+'|'+p.blob.size)]);
+const stateV=()=>JSON.stringify([VK.map(k=>$('v'+k).value),$('vcat').value,$('vstat').value]);
 function openForm(c,toResult){
 pendingSt=null;keepC.clear();$('photoMsg').textContent='';
   editId=c?c.id:null;
@@ -801,7 +817,8 @@ if($('fcat').value==='其它'&&!d.catother){$('fmsg').textContent='請填寫異�
   if(!DBc){$('fmsg').textContent='資料庫無法使用，無法儲存';return}
 if(!editId&&CASES.some(c=>c.kind==='客訴'&&c.no===d.no)){d.no=calcNo(d.date,'客訴','CC');$('no').value=d.no}
   const sec={};[1,2,3,4,5,6].forEach(i=>sec['s'+i]=$('s'+i).value);
-  const r={date:d.date,kind:'客訴',no:d.no,item:d.prod,lot:d.lot,sup:'',cat:$('fcat').value,status:$('fst').value,form:{inputs:d,sections:sec,shown:!$('out').hidden}};
+  const pf=(editId&&(CASES.find(c=>c.id===editId)||{}).form)||{};
+  const r={date:d.date,kind:'客訴',no:d.no,item:d.prod,lot:d.lot,sup:'',cat:$('fcat').value,status:$('fst').value,form:{inputs:d,...(pf.sections?{sections:pf.sections,shown:pf.shown}:{})}};
   try{editId?await DBc.doc(editId).update(r):await DBc.add(r);editId=null;showView('list')}
   catch(err){$('fmsg').textContent='儲存失敗：'+(err.message||err.code)}
 };
@@ -874,7 +891,8 @@ if($('vcat').value==='其它'&&!d.catother){$('vfmsg').textContent='請填寫異
   if(!DBc){$('vfmsg').textContent='資料庫無法使用，無法儲存';return}
 if(!editVId&&CASES.some(c=>c.kind==='供應商客訴'&&c.no===d.no)){d.no=calcNo(d.date,'供應商客訴','QC');$('vno').value=d.no}
   const sec={};[1,2,3,4,5,6,7].forEach(i=>sec['s'+i]=$('v'+i).value);
-  const r={date:d.date,kind:'供應商客訴',no:d.no,item:d.mat,lot:d.lot,sup:d.sup,cat:$('vcat').value,status:$('vstat').value,form:{inputs:d,sections:sec,shown:!$('vout').hidden}};
+  const pf=(editVId&&(CASES.find(c=>c.id===editVId)||{}).form)||{};
+  const r={date:d.date,kind:'供應商客訴',no:d.no,item:d.mat,lot:d.lot,sup:d.sup,cat:$('vcat').value,status:$('vstat').value,form:{inputs:d,...(pf.sections?{sections:pf.sections,shown:pf.shown}:{})}};
   try{editVId?await DBc.doc(editVId).update(r):await DBc.add(r);editVId=null;showVView('list')}
   catch(err){$('vfmsg').textContent='儲存失敗：'+(err.message||err.code)}
 };
