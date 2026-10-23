@@ -139,10 +139,12 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <input id="photo" type="file" accept="image/*" multiple>
 <div class="thumbs" id="thumbs"></div>
 <div class="status" id="photoMsg" role="status"></div>
-<label>相關單位／相關製程／檢查紀錄／調查結果</label>
+<label>相關單位（相關製程／檢查紀錄／調查結果）</label>
 <textarea id="proc" placeholder="例：外包裝及封口檢查結果、異物所在位置、該批生產日期、產線、金屬檢知器紀錄、原料批號、留樣檢驗、設備檢查結果…（請寫有紀錄或樣品支持的內容）"></textarea>
-<label>單位改善措施（已採取的處理方式）</label>
+<label>單位改善措施</label>
 <textarea id="done" placeholder="例：異常品是否保留原狀、同批庫存是否隔離／追溯、是否已回覆客戶；權責單位已調整的作業或檢查方式…"></textarea>
+<label>改善確效</label>
+<textarea id="eff" placeholder="例：改善後以哪個檢查點、哪幾批抽檢或紀錄確認，結果是否仍有同類異常，確認日期…"></textarea>
 <label>負責人確認／改善確認人</label>
 <input id="conf" maxlength="60" placeholder="確認改善已完成的人員">
 <div class="row">
@@ -314,13 +316,14 @@ function drawThumbs(){
 const RX=['生產單位','其他'];
 const respTxt=i=>i&&i.resp?i.resp+(i.respx?'（'+i.respx+'）':''):'';
 function syncResp(){const v=$('resp').value,x=$('respx');x.hidden=!RX.includes(v);x.placeholder=v==='其他'?'請填寫單位名稱':'哪一條產線或單位，例如：包裝線 A';}
-function inputs(){return{no:$('no').value.trim(),date:$('date').value,src:$('src').value.trim(),rec:$('rec').value.trim(),qcp:$('qcp').value.trim(),resp:$('resp').value,respx:RX.includes($('resp').value)?$('respx').value.trim():'',prod:$('prod').value.trim(),lot:$('lot').value.trim(),desc:$('desc').value.trim(),proc:$('proc').value.trim(),done:$('done').value.trim(),conf:$('conf').value.trim(),catother:$('fcat').value==='其它'?$('catother').value.trim():''}}
+function inputs(){return{no:$('no').value.trim(),date:$('date').value,src:$('src').value.trim(),rec:$('rec').value.trim(),qcp:$('qcp').value.trim(),resp:$('resp').value,respx:RX.includes($('resp').value)?$('respx').value.trim():'',prod:$('prod').value.trim(),lot:$('lot').value.trim(),desc:$('desc').value.trim(),proc:$('proc').value.trim(),done:$('done').value.trim(),conf:$('conf').value.trim(),eff:$('eff').value.trim(),catother:$('fcat').value==='其它'?$('catother').value.trim():''}}
 const v=x=>x||'（未提供）';
 function basicText(d){
-  return `客訴編號：${v(d.no)}\n客訴日期：${v(d.date)}\n客訴來源：${v(d.src)}\n產品名稱：${v(d.prod)}\n批號／有效日期：${v(d.lot)}\n業務人員：${v(d.rec)}\n品管人員（負責人）：${v(d.qcp)}\n權責單位（負責改善）：${v(respTxt(d))}\n負責人確認／改善確認人：${v(d.conf)}\n附件照片：${photos.length?photos.length+' 張（'+photos.map(p=>p.name).join('、')+'）':'無'}`;
+  return `客訴編號：${v(d.no)}\n客訴日期：${v(d.date)}\n客訴來源：${v(d.src)}\n產品名稱：${v(d.prod)}\n批號／有效日期：${v(d.lot)}\n業務人員：${v(d.rec)}\n品管人員（負責人）：${v(d.qcp)}\n權責單位（負責改善）：${v(respTxt(d))}\n附件照片：${photos.length?photos.length+' 張（'+photos.map(p=>p.name).join('、')+'）':'無'}`;
 }
 const followDefault='項目｜負責人｜預定完成日｜確認結果／證據｜結案判定\n1.｜｜｜｜\n2.｜｜｜｜\n3.｜｜｜｜\n\n有效性確認（改善後追蹤，例如連續 3 批無同類異常）：\n結案日期／簽核：';
 
+const followFill=d=>followA+(d&&d.eff?'\n\n【改善確效】\n'+d.eff:'')+(d&&d.conf?'\n負責人確認／改善確認人：'+d.conf:'');
 const followA='改善項目｜負責人（職務）｜預定完成日｜確認方式（紀錄／樣品／現場結果）｜確認結果｜結案判定\n1.｜｜｜｜｜\n2.｜｜｜｜｜\n3.｜｜｜｜｜\n\n效果確認（改善後追蹤，例如以同一檢查點的紀錄或連續數批抽檢確認無同類異常，並寫明確認日期）：\n結案日期／簽核：';
 
 function fill(a){ // a: {s2,s3,s4,s5,s6}
@@ -343,18 +346,18 @@ $('blank').onclick=()=>{
   if(d.proc)facts.push(`檢查／調查紀錄所載：\n   ${d.proc.replace(/\n/g,'\n   ')}\n   依據：使用者填寫之檢查紀錄（請確認有紀錄或樣品佐證）`);
   if(photos.length)facts.push(`已附照片 ${photos.length} 張（僅作外觀記錄，不據以判定異物種類或來源）`);
   fill({
-    s2:`【客訴人所述】（單方描述，尚未查證）\n- ${d.desc.replace(/\n/g,'\n  ')}\n\n【單位改善措施（已採取的處理方式）】\n${d.done?d.done:'（未提供）'}`,
+    s2:`【客訴人所述】（單方描述，尚未查證）\n- ${d.desc.replace(/\n/g,'\n  ')}\n\n【單位改善措施】\n${d.done?d.done:'（未提供）'}`,
     s3:`【已確認事實】（僅列有樣品、照片或紀錄支持者，並註明依據）\n${facts.length?facts.map((f,k)=>`${k+1}. ${f}`).join('\n'):'資料不足，需進一步確認'}\n\n【可能原因】（依目前證據提出的調查方向，非確定原因；外觀相似不等於同一來源，需以樣品比對、材質鑑定或相關紀錄佐證）\n1. 調查方向：　依據：　尚缺證據：\n（若目前依據不足，請寫「資料不足，需進一步確認」，不要把推測寫成原因）\n\n【尚待確認事項】（詳細查證方式請寫在第四項）\n1. \n2. `,
     s4:'【尚待確認事項】\n1. 確認項目：　原因（為何重要）：　查證方式（比對樣品／調閱紀錄／調查）：\n2. ',
     s5:'【即時處置】（本次異常如何處理）\n- 處理做法：　（負責：　）\n\n【矯正措施】（須待原因查證後採用）\n- 對應的查證結果：　調整做法：　（負責：　）\n\n【預防再發】（要調整哪一項作業或檢查方式）\n- 調整的作業／檢查點：　調整後做法（頻率／判定標準）：　（負責：　）　確認方式：',
-    s6:followA});
+    s6:followFill(d)});
 };
 
 // ---- AI 分析 ----
 const SYS=`你是食品工廠品管/品保的客訴分析輔助。以繁體中文（台灣用語）回答。
 嚴格規則：
 1. 區分三類內容：
- (a)「已確認事實」：僅限有樣品、照片或紀錄支持的內容，只能來自使用者在「相關單位／相關製程／檢查紀錄／調查結果」或「單位改善措施（已採取的處理方式）」中明確提供的文字，並註明出處。客訴人單方所述（客訴異常描述）屬待查證，不可列為已確認事實。
+ (a)「已確認事實」：僅限有樣品、照片或紀錄支持的內容，只能來自使用者在「相關單位（相關製程／檢查紀錄／調查結果）」或「單位改善措施」中明確提供的文字，並註明出處。客訴人單方所述（客訴異常描述）屬待查證，不可列為已確認事實。
  (b)「可能原因」：依目前證據提出的調查方向，不是結論；每項必須附支持依據與尚缺的證據。
  (c)「尚待確認事項」：需進一步比對、調閱紀錄或調查的內容。
  照片觀察只描述可見外觀，不可據此斷定異物種類或來源。
@@ -375,7 +378,7 @@ $('go').onclick=async()=>{
   try{
     const lim=await sample.limits?.();
     const useImg=photos.length&&lim&&lim.images;
-    const txt=`【產品名稱】${v(d.prod)}\n【批號／有效日期】${v(d.lot)}\n【客訴異常描述】${v(d.desc)}\n【相關單位／相關製程／檢查紀錄／調查結果】${v(d.proc)}\n【單位改善措施（已採取的處理方式）】${v(d.done)}\n【照片】${photos.length?photos.length+' 張'+(useImg?'（已附圖）':'（系統無法傳送圖片，請勿描述照片）'):'無'}`;
+    const txt=`【產品名稱】${v(d.prod)}\n【批號／有效日期】${v(d.lot)}\n【客訴異常描述】${v(d.desc)}\n【相關單位（相關製程／檢查紀錄／調查結果）】${v(d.proc)}\n【單位改善措施】${v(d.done)}\n【改善確效】${v(d.eff)}\n【照片】${photos.length?photos.length+' 張'+(useImg?'（已附圖）':'（系統無法傳送圖片，請勿描述照片）'):'無'}`;
     const r=await sample(SYS+'\n\n'+txt,useImg?{images:photos.map(p=>p.blob),cache:false}:{cache:false});
     const j=JSON.parse(r.text.replace(/```json|```/g,'').trim().replace(/^[^{]*/,'').replace(/[^}]*$/,''));
     render(d,j,useImg);
@@ -388,12 +391,12 @@ $('go').onclick=async()=>{
 const L=(a,p='- ')=>(a&&a.length)?a.map(x=>p+x).join('\n'):'（無）';
 function render(d,j,usedImg){
   const NA='資料不足，需進一步確認';
-  const s2=`【客訴人所述】（單方描述，尚未查證）\n- ${d.desc.replace(/\n/g,'\n  ')}\n\n【照片觀察】（僅描述可見外觀，不代表異物種類或來源）\n${photos.length?(usedImg?L(j.photo):'（已附照片，但本次未能進行影像判讀，請人工描述）'):'（未附照片）'}\n\n【單位改善措施（已採取的處理方式）】\n${d.done||'（未提供）'}`;
+  const s2=`【客訴人所述】（單方描述，尚未查證）\n- ${d.desc.replace(/\n/g,'\n  ')}\n\n【照片觀察】（僅描述可見外觀，不代表異物種類或來源）\n${photos.length?(usedImg?L(j.photo):'（已附照片，但本次未能進行影像判讀，請人工描述）'):'（未附照片）'}\n\n【單位改善措施】\n${d.done||'（未提供）'}`;
   const causes=j.causes||[],pend=j.pending||[];
   const s3=`【已確認事實】（有樣品、照片或紀錄支持者）\n${(j.facts&&j.facts.length)?L(j.facts):NA}\n\n【可能原因】（依目前證據提出的調查方向，非確定原因；外觀相似不等於同一來源）\n${causes.length?causes.map((c,i)=>`${i+1}. ${c.cause}\n   依據：${c.basis}\n   尚缺證據：${c.missing}`).join('\n'):NA}\n\n【尚待確認事項】（詳細查證方式見第四項）\n${pend.length?pend.map((p,i)=>`${i+1}. ${p.item}`).join('\n'):NA}\n\n（結論：現有資料尚不足以認定真因，亦不涉及責任歸屬判定。）`;
   const s4='【尚待確認事項】\n'+(pend.length?pend.map((p,i)=>`${i+1}. ${p.item}\n   原因：${p.why}\n   建議查證方式：${p.how}`).join('\n'):NA);
   const s5=`【即時處置（建議）：本次異常如何處理】\n${L(j.immediate)}\n\n【矯正措施（建議，須待原因查證後採用）】\n${L(j.corrective)}\n\n【預防再發（建議）：調整哪一項作業或檢查方式】\n${L(j.preventive)}`;
-  const s6=followA+(j.followup&&j.followup.length?'\n\n建議追蹤重點：\n'+L(j.followup):'');
+  const s6=followFill(d)+(j.followup&&j.followup.length?'\n\n建議追蹤重點：\n'+L(j.followup):'');
   fill({s2,s3,s4,s5,s6});
 }
 
@@ -422,7 +425,7 @@ async function restore(text){
   try{
     const o=JSON.parse(text);
     if(!o||o.app!=='food-complaint-assistant'||!o.inputs)throw 0;
-    for(const k of ['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','conf'])$(k).value=o.inputs[k]||'';syncResp();
+    for(const k of ['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','eff','conf'])$(k).value=o.inputs[k]||'';syncResp();
     photos.forEach(p=>URL.revokeObjectURL(p.url));photos=[];
     for(const p of (o.photos||[]).slice(0,4)){const blob=d2b(p.data);photos.push({blob,url:URL.createObjectURL(blob),name:p.name||'photo.jpg'})}
     drawThumbs();
@@ -704,7 +707,7 @@ $('lst').innerHTML='<option value="">全部狀態</option><option>原因查證</
 $('fcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
 function syncOther(){$('catotherW').hidden=$('fcat').value!=='其它'}
 $('fcat').addEventListener('change',syncOther);$('resp').addEventListener('change',syncResp);
-const FK=['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','conf','catother'];
+const FK=['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','eff','conf','catother'];
 let editId=null;
 const todayLocal=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
 function calcNo(date,kind,tag){
@@ -898,7 +901,7 @@ function wp(t,o={}){
 function buildDocx(list,single){
   list=list||CASES;
   const body=[wp(single?'食品客訴案件紀錄':'食品客訴案件備份',{b:1,sz:36}),wp('匯出時間：'+new Date().toLocaleString('zh-TW')+(single?'':'　案件數：'+list.filter(c=>isLive(c)).length),{sz:20})];
-  const groups=[['客訴案件','客訴',TITLES,['no','date','src','rec','qcp','respT','prod','lot','desc','proc','done','conf','catother'],['客訴編號','客訴日期','客訴來源','業務人員','品管人員（負責人）','權責單位（負責改善）','產品名稱','批號／有效日期','客訴內容','相關單位／製程／檢查紀錄／調查結果','單位改善措施（已採取的處理方式）','負責人確認／改善確認人','其它異常說明']],
+  const groups=[['客訴案件','客訴',TITLES,['no','date','src','rec','qcp','respT','prod','lot','desc','proc','done','eff','conf','catother'],['客訴編號','客訴日期','客訴來源','業務人員','品管人員（負責人）','權責單位（負責改善）','產品名稱','批號／有效日期','客訴內容','相關單位（相關製程／檢查紀錄／調查結果）','單位改善措施','改善確效','負責人確認／改善確認人','其它異常說明']],
     ['供應商客訴案件','供應商客訴',VT,VK,['內部編號','發現日期','供應商名稱','供應商聯絡人','原料／包材名稱','原料批號／有效日期','進貨日期／數量','採購單／COA','異常說明','驗收／檢查情形','已採取處理','要求供應商回覆','其它異常說明']]];
   let any=false;
   groups.forEach(([gt,kind,ttl,keys,labels],gi)=>{
