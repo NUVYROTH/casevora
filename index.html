@@ -711,7 +711,7 @@ function renderCases(){
   $('lbody').innerHTML=rows.length?rows.map(r=>{
     const i=(r.form&&r.form.inputs)||{},isA=r.kind==='客訴';
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
-    return`<div class="case"><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}<span class="tag${r.status==='已結案'?'':' wip'}">${esc(r.status)}</span></div>${stepper(r.status)}
+    return`<div class="case"><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status)}
 <div class="ti">${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}</div></div>
 <div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${isA&&r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?'沒有符合條件的案件。':'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
@@ -780,7 +780,7 @@ function renderVCases(){
   $('vlbody').innerHTML=rows.length?rows.map(r=>{
     const i=(r.form&&r.form.inputs)||{};
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
-    return`<div class="case"><div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}<span class="tag${r.status==='已結案'?'':' wip'}">${esc(r.status)}</span></div>${stepper(r.status)}
+    return`<div class="case"><div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status)}
 <div class="ti">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}</div></div>
 <div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?'沒有符合條件的案件。':'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
