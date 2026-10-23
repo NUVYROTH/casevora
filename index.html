@@ -64,8 +64,9 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .tip b{display:block;margin-bottom:2px}
 .tip ul{margin:2px 0 0 18px;padding:0}
 .lhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.lfilter{display:grid;grid-template-columns:1fr 210px 130px;gap:8px;margin:12px 0 6px}
-@media(max-width:600px){.lfilter{grid-template-columns:1fr 1fr}.lfilter input,.lfilter select:first-of-type{grid-column:1/-1}}
+.lfilter{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 6px}.lfilter input{grid-column:1/-1}
+.pager{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin:12px 0 4px;font-size:14px;color:var(--mu)}.pager:empty{display:none}
+@media(max-width:600px){.lfilter{grid-template-columns:1fr 1fr}}
 .case{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-top:10px;background:var(--card)}
 .case .tg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px}
 .tag{font-size:12px;background:var(--bg);border:1px solid var(--bd);color:var(--mu);border-radius:999px;padding:0 9px}
@@ -96,9 +97,12 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <input id="lq" placeholder="搜尋 產品名稱／批號／廠商／編號／說明">
 <select id="lcat"></select>
 <select id="lst"></select>
+<select id="lyr" aria-label="年份"></select>
+<select id="lmo" aria-label="月份"></select>
 </div>
 <div class="status" id="lcount"></div>
 <div id="lbody"></div>
+<div id="lpager" class="pager"></div>
 <div id="ctrash"></div>
 </div>
 </div>
@@ -172,9 +176,12 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <input id="vlq" placeholder="搜尋 供應商／原料名稱／批號／編號／說明">
 <select id="vlcat"></select>
 <select id="vlst"></select>
+<select id="vlyr" aria-label="年份"></select>
+<select id="vlmo" aria-label="月份"></select>
 </div>
 <div class="status" id="vlcount"></div>
 <div id="vlbody"></div>
+<div id="vlpager" class="pager"></div>
 <div id="vtrash"></div>
 </div>
 </div>
@@ -507,6 +514,18 @@ const softDel=id=>DBc.doc(id).update({deleted:true,deletedAt:new Date().toISOStr
 const restoreCase=id=>DBc.doc(id).update({deleted:false,deletedAt:null});
 const purgeCase=id=>DBc.doc(id).update({purged:true,deleted:false,deletedAt:null,date:null,item:'',lot:'',sup:'',cat:'',status:'',form:null});
 const keepC=new Set(),keepV=new Set();
+const PG=20,pgS={c:1,v:1};
+const ymOf=c=>String(c.date||'');
+function fillYM(yid,mid,all){
+  const cur=String(new Date().getFullYear()),sel=$(yid);
+  const ys=[...new Set(all.map(c=>ymOf(c).slice(0,4)).filter(y=>/^\d{4}$/.test(y)).concat(cur))].sort().reverse();
+  const v=sel.dataset.init?sel.value:cur;
+  sel.innerHTML='<option value="">全部年份</option>'+ys.map(y=>`<option value="${y}">${y} 年</option>`).join('');
+  sel.value=(v===''||ys.includes(v))?v:cur;sel.dataset.init='1';
+  if(!$(mid).options.length)$(mid).innerHTML='<option value="">全部月份</option>'+[...Array(12)].map((_,i)=>`<option value="${String(i+1).padStart(2,'0')}">${i+1} 月</option>`).join('');
+}
+function pager(pages,cur,k){return pages<2?'':`<button data-pg="${cur-1}" data-k="${k}"${cur<=1?' disabled':''}>‹ 上一頁</button><span>第 ${cur} / ${pages} 頁</span><button data-pg="${cur+1}" data-k="${k}"${cur>=pages?' disabled':''}>下一頁 ›</button>`}
+function ymEmpty(fy,fm){return fy||fm?`${fy?fy+' 年':''}${fm?(+fm)+' 月':''}沒有符合條件的案件，可把年份改成「全部年份」或月份改成「全部月份」查看。`:'沒有符合條件的案件。'}
 const CATS=['異物','標示/包裝/數量有誤','口感不佳','酸敗/風味','血筋/肌紅素','其它'];
 const MN={Y:'年度分析',Q:'每季分析',M:'每月分析'};
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -723,21 +742,25 @@ renderCases();renderVCases();
 }
 function renderCases(){
   const q=$('lq').value.trim().toLowerCase(),fc=$('lcat').value,fs=$('lst').value;
-  const all=CASES.filter(c=>isLive(c)&&c.kind==='客訴');
+  const all=CASES.filter(c=>isLive(c)&&c.kind==='客訴');fillYM('lyr','lmo',all);const fy=$('lyr').value,fm=$('lmo').value;
   const rows=all.filter(c=>{
     const i=(c.form&&c.form.inputs)||{};
-    return keepC.has(c.id)||((!fc||c.cat===fc)&&(!fs||c.status===fs)&&(!q||[c.no,c.item,c.lot,c.sup,c.cat,c.kind,i.desc,i.src,i.catother].join(' ').toLowerCase().includes(q)));
+    return keepC.has(c.id)||((!fy||ymOf(c).slice(0,4)===fy)&&(!fm||ymOf(c).slice(5,7)===fm)&&(!fc||c.cat===fc)&&(!fs||c.status===fs)&&(!q||[c.no,c.item,c.lot,c.sup,c.cat,c.kind,i.desc,i.src,i.catother].join(' ').toLowerCase().includes(q)));
   }).sort((a,b)=>b.date.localeCompare(a.date));
-  $('lcount').textContent=`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'');
-  $('lbody').innerHTML=rows.length?rows.map(r=>{
+  const pages=Math.max(1,Math.ceil(rows.length/PG));pgS.c=Math.min(Math.max(1,pgS.c),pages);const shown=rows.slice((pgS.c-1)*PG,pgS.c*PG);
+  const pg=pgS.c;
+  $('lcount').textContent=`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'')+(rows.length>PG?`，顯示第 ${(pg-1)*PG+1}–${Math.min(pg*PG,rows.length)} 件`:'');
+  $('lpager').innerHTML=pager(pages,pgS.c,'c');
+  $('lbody').innerHTML=rows.length?shown.map(r=>{
     const i=(r.form&&r.form.inputs)||{},isA=r.kind==='客訴';
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
     return`<div class="case"><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status)}
 <div class="ti">${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}</div></div>
 <div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${isA&&r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
-  :`<p class="sub" style="margin-top:12px">${all.length?'沒有符合條件的案件。':'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
+  :`<p class="sub" style="margin-top:12px">${all.length?ymEmpty(fy,fm):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
 }
-['lq','lcat','lst'].forEach(id=>{$(id).oninput=()=>{keepC.clear();renderCases()};$(id).onchange=()=>{keepC.clear();renderCases()}});
+['lq','lcat','lst','lyr','lmo'].forEach(id=>{$(id).oninput=()=>{keepC.clear();pgS.c=1;renderCases()};$(id).onchange=()=>{keepC.clear();pgS.c=1;renderCases()}});
+$('lpager').onclick=e=>{const b=e.target.closest('button[data-pg]');if(!b)return;pgS.c=+b.dataset.pg;renderCases();$('lcount').scrollIntoView({block:'nearest'})};
 $('lnew').onclick=()=>openForm(null);
 $('fback0').onclick=()=>{if(stateC()===snapC)showView('list');else $('leaveC').hidden=false};
 $('leaveCyes').onclick=()=>{$('leaveC').hidden=true;showView('list')};
@@ -792,21 +815,25 @@ pendingSt=null;keepV.clear();
 }
 function renderVCases(){
   const q=$('vlq').value.trim().toLowerCase(),fc=$('vlcat').value,fs=$('vlst').value;
-  const all=CASES.filter(c=>isLive(c)&&c.kind==='供應商客訴');
+  const all=CASES.filter(c=>isLive(c)&&c.kind==='供應商客訴');fillYM('vlyr','vlmo',all);const fy=$('vlyr').value,fm=$('vlmo').value;
   const rows=all.filter(c=>{
     const i=(c.form&&c.form.inputs)||{};
-    return keepV.has(c.id)||((!fc||c.cat===fc)&&(!fs||c.status===fs)&&(!q||[c.no,c.item,c.lot,c.sup,c.cat,i.desc,i.con,i.po,i.catother].join(' ').toLowerCase().includes(q)));
+    return keepV.has(c.id)||((!fy||ymOf(c).slice(0,4)===fy)&&(!fm||ymOf(c).slice(5,7)===fm)&&(!fc||c.cat===fc)&&(!fs||c.status===fs)&&(!q||[c.no,c.item,c.lot,c.sup,c.cat,i.desc,i.con,i.po,i.catother].join(' ').toLowerCase().includes(q)));
   }).sort((a,b)=>b.date.localeCompare(a.date));
-  $('vlcount').textContent=`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'');
-  $('vlbody').innerHTML=rows.length?rows.map(r=>{
+  const pages=Math.max(1,Math.ceil(rows.length/PG));pgS.v=Math.min(Math.max(1,pgS.v),pages);const shown=rows.slice((pgS.v-1)*PG,pgS.v*PG);
+  const pg=pgS.v;
+  $('vlcount').textContent=`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'')+(rows.length>PG?`，顯示第 ${(pg-1)*PG+1}–${Math.min(pg*PG,rows.length)} 件`:'');
+  $('vlpager').innerHTML=pager(pages,pgS.v,'v');
+  $('vlbody').innerHTML=rows.length?shown.map(r=>{
     const i=(r.form&&r.form.inputs)||{};
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
     return`<div class="case"><div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status)}
 <div class="ti">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}</div></div>
 <div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
-  :`<p class="sub" style="margin-top:12px">${all.length?'沒有符合條件的案件。':'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
+  :`<p class="sub" style="margin-top:12px">${all.length?ymEmpty(fy,fm):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
 }
-['vlq','vlcat','vlst'].forEach(id=>{$(id).oninput=()=>{keepV.clear();renderVCases()};$(id).onchange=()=>{keepV.clear();renderVCases()}});
+['vlq','vlcat','vlst','vlyr','vlmo'].forEach(id=>{$(id).oninput=()=>{keepV.clear();pgS.v=1;renderVCases()};$(id).onchange=()=>{keepV.clear();pgS.v=1;renderVCases()}});
+$('vlpager').onclick=e=>{const b=e.target.closest('button[data-pg]');if(!b)return;pgS.v=+b.dataset.pg;renderVCases();$('vlcount').scrollIntoView({block:'nearest'})};
 $('vnew').onclick=()=>openVForm(null);
 $('vfback0').onclick=()=>{if(stateV()===snapV)showVView('list');else $('leaveV').hidden=false};
 $('leaveVyes').onclick=()=>{$('leaveV').hidden=true;showVView('list')};
