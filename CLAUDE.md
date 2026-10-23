@@ -8,6 +8,7 @@
 | claude.ai 版 | https://claude.ai/artifact/CcVVJNTc9SaktSAPAj6nqb | 私人（擁有者分享才看得到），有 AI 分析 |
 
 - 原始檔只有一份：`index.html`。
+- `about.html` 是給 IG 的介紹頁（https://nuvyroth.github.io/casevora/about.html），**只放在網址版**，不需要同步到 claude.ai 版。介紹頁不放真實操作畫面，只用示意圖；不寫價格、不寫「購買」，不承諾雲端同步或法規保證。
 - **每次修改都要兩邊一起更新。claude.ai 版一律用上面同一個網址更新（Artifact 工具帶 `url`），不要建立新的 artifact。**
 - 更新 claude.ai 版的步驟：
   1. `python3 tools/build_claude_html.py <暫存資料夾>/casevora-claude.html`
