@@ -552,11 +552,8 @@ const cmsg=t=>$('cmsg').textContent=t;
 const now=new Date();
 (async()=>{
   await 0; // 等整份程式載入完再初始化，避免「定義前使用」錯誤
-  let db=null;try{db=(typeof claude!=='undefined'&&claude&&typeof claude.use==='function')?await claude.use('db'):null}catch(_){db=null}
-  if(!db){DBc=localShim();$('sdb').textContent='本機儲存 · 僅在此裝置此瀏覽器有效 · 可匯出備份';renderS();return}
-  DBc=db.collection('cases');
-  $('sdb').textContent='共用連結 · 有連結的人都能看，請勿轉外傳 · 資料請定期匯出備份';$('sdbTop').textContent='共用連結 · 有連結的人都能看，請勿轉外傳 · 資料請定期匯出備份';
-  DBc.onSnapshot(s=>{CASES=s.docs.map(d=>({id:d.id,...d.data()}));renderS()},e=>{$('sdb').textContent='資料庫讀取失敗：'+(e.message||e.code)});
+  // 不使用共用資料庫：每個人的案件只存在自己的瀏覽器
+  DBc=localShim();$('sdb').textContent='本機儲存 · 僅在此裝置此瀏覽器有效 · 可匯出備份';renderS();
 })();
 function cnt(list,fn){const m={};list.forEach(c=>{const k=fn(c);if(k)m[k]=(m[k]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
 function bars(rows){const mx=Math.max(1,...rows.map(r=>r[1]));return rows.length?rows.map(([k,n])=>`<div class="bar"><i title="${esc(k)}">${esc(k)}</i><u style="width:${n/mx*55}%"></u><em>${n}</em></div>`).join(''):'<p class="sub">無資料</p>'}
