@@ -207,21 +207,24 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <div><label>供應商名稱 <b>*</b></label><input id="vsup"></div>
 <div><label>供應商聯絡人</label><input id="vcon"></div>
 <div><label>原料／包材名稱 <b>*</b></label><input id="vmat"></div>
+<div><label>原物料規格</label><input id="vspec" placeholder="例：水分 ≤ 12%、包材厚度 0.05 mm"></div>
 <div><label>原料批號／有效日期 <b>*</b></label><input id="vlot"></div>
 <div><label>進貨日期／數量／受影響數量</label><input id="vqty"></div>
-<div><label>採購單／COA 編號</label><input id="vpo"></div>
+<div><label>負責人</label><input id="vowner"></div>
 <div><label>異常類別</label><select id="vcat"></select></div>
-<div><label>處理狀態</label><select id="vstat"><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option></select></div>
+<div><label>處理狀態</label><select id="vstat"><option>原因查證</option><option>通知供應商改善</option><option>改善執行</option><option>效果確認</option><option>已結案</option></select></div>
 </div>
 <div id="vcatotherW" hidden><label>其它異常說明 <b>*</b>（請寫清楚是什麼異常）</label><input id="vcatother" maxlength="200"></div>
 <label>異常情況描述 <b>*</b>（何時、何處發現、什麼異常、數量）</label>
 <textarea id="vdesc"></textarea>
-<label>進料驗收、檢驗及使用端紀錄</label>
-<textarea id="vinsp" placeholder="例：驗收溫度、COA 與實測比對、感官檢查、運輸狀況、倉儲條件、已使用於哪些批次…"></textarea>
 <label>已採取處置</label>
 <textarea id="vdone" placeholder="例：已隔離、暫停使用、退貨／換貨、通知供應商…"></textarea>
 <label>希望供應商回覆的事項與期限</label>
 <textarea id="vreq" style="min-height:60px" placeholder="例：原因調查報告、矯正預防措施，於 14 天內回覆"></textarea>
+<div class="grid">
+<div><label>採購人員</label><input id="vbuyer"></div>
+<div><label>品管人員</label><input id="vqcp"></div>
+</div>
 <div class="row">
 <button class="pri" id="vgo">產生供應商客訴紀錄</button>
 <button id="vblank">僅整理資料（不做 AI 分析）</button>
@@ -444,17 +447,18 @@ document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
 });
 
 // ---- 供應商客訴 ----
-const VK=['no','date','sup','con','mat','lot','qty','po','desc','insp','done','req','catother'];
+const VK=['no','date','sup','con','mat','spec','lot','qty','owner','desc','done','req','buyer','qcp','catother'];
+let vHidden={};const keepHidden=i=>{vHidden={};['po','insp'].forEach(k=>{if(i&&i[k])vHidden[k]=i[k]})};
 const VT=['一、供應商客訴基本資料','二、異常情況說明','三、原因分析（供應商端、運輸、本廠端）','四、尚待確認事項及需供應商提供之資料','五、處置、改善及預防再發','六、後續確認及追蹤紀錄','七、供應商通知函草稿'];
-const vin=()=>{const o={};VK.forEach(k=>o[k]=$('v'+k).value.trim());if($('vcat').value!=='其它')o.catother='';return o};
+const vin=()=>{const o={...vHidden};VK.forEach(k=>o[k]=$('v'+k).value.trim());if($('vcat').value!=='其它')o.catother='';return o};
 const vhas=()=>VK.some(k=>$('v'+k).value.trim())||!$('vout').hidden;
 function vsnap(){const s={};[1,2,3,4,5,6,7].forEach(i=>s['s'+i]=$('v'+i).value);return{inputs:vin(),shown:!$('vout').hidden,sections:s}}
 function vrestore(s){
-  VK.forEach(k=>$('v'+k).value=(s&&s.inputs&&s.inputs[k])||'');
+  VK.forEach(k=>$('v'+k).value=(s&&s.inputs&&s.inputs[k])||'');keepHidden(s&&s.inputs);
   if(s&&s.shown&&s.sections){[1,2,3,4,5,6,7].forEach(i=>$('v'+i).value=s.sections['s'+i]||'');$('vout').hidden=false}
   else $('vout').hidden=true;
 }
-function vbasic(d){return `內部編號：${v(d.no)}\n發現日期：${v(d.date)}\n供應商：${v(d.sup)}\n供應商聯絡人：${v(d.con)}\n原料／包材名稱：${v(d.mat)}\n原料批號／有效日期：${v(d.lot)}\n進貨日期／數量／受影響數量：${v(d.qty)}\n採購單／COA 編號：${v(d.po)}`}
+function vbasic(d){return `內部編號：${v(d.no)}\n發現日期：${v(d.date)}\n供應商：${v(d.sup)}\n供應商聯絡人：${v(d.con)}\n原料／包材名稱：${v(d.mat)}\n原料批號／有效日期：${v(d.lot)}\n原物料規格：${v(d.spec)}\n進貨日期／數量／受影響數量：${v(d.qty)}\n負責人：${v(d.owner)}\n採購人員：${v(d.buyer)}\n品管人員：${v(d.qcp)}`}
 function vNotice(d){
   return `主旨：【${d.mat||'原料名稱'}】批號【${d.lot||'批號'}】異常通知及請求調查回覆\n\n${d.sup||'【供應商名稱】'} ${d.con||'【聯絡人】'} 您好：\n\n本廠於${d.date||'【日期】'}發現貴公司供應之上述原料有以下情形：\n${d.desc||'【異常事實描述】'}\n\n目前原因尚未確認，亦不預設責任歸屬。為釐清原因，敬請協助：\n1. 提供該批號之生產、品管及出貨檢驗紀錄（含 COA、留樣檢驗結果）。\n2. 調查可能原因，並回覆暫行措施。\n3. ${d.req||'於【期限】前提供原因調查及矯正預防措施報告'}。\n\n本廠已採取之處置：${d.done||'【處置內容】'}\n如需照片、樣品或本廠驗收紀錄，請與我們聯繫。\n\n此致\n【公司／部門／聯絡方式】`;
 }
@@ -471,7 +475,7 @@ function vneed(){
 $('vblank').onclick=()=>{
   const d=vneed();if(!d)return;
   vfill({
-    s2:`【事實】（依您提供之資料）\n- ${d.desc}\n\n【進料驗收／檢驗／使用端紀錄】\n${d.insp||'（未提供）'}\n\n【已採取處置】\n${d.done||'（未提供）'}`,
+    s2:`【事實】（依您提供之資料）\n- ${d.desc}\n\n【已採取處置】\n${d.done||'（未提供）'}`,
     s3:'【可能原因・未證實】\n1.［供應商端］\n2.［運輸］\n3.［本廠端］\n\n（請填寫依據與尚缺證據；責任歸屬待查證）',
     s4:'【需供應商提供之資料】\n- \n\n【本廠端待確認】\n- ',
     s5:'【即時處置】\n- \n【矯正措施】\n- \n【預防再發】\n- ',
@@ -494,7 +498,7 @@ $('vgo').onclick=async()=>{
   if(!sample){$('vst').textContent=typeof claude==='undefined'?'AI 分析目前僅限 claude.ai 使用；此版本請按「僅整理資料」，依引導欄位手動填寫。':'目前無法使用 AI 分析（尚未授權或離線）。可改按「僅整理資料」。';return}
   vbusy=true;$('vgo').disabled=true;$('vst').textContent='分析中，請稍候…';
   try{
-    const txt=`【供應商】${v(d.sup)}（聯絡人：${v(d.con)}）\n【原料／包材】${v(d.mat)}\n【批號／有效日期】${v(d.lot)}\n【進貨日期／數量／受影響數量】${v(d.qty)}\n【採購單／COA】${v(d.po)}\n【發現日期】${v(d.date)}\n【異常描述】${v(d.desc)}\n【進料驗收／檢驗／使用端紀錄】${v(d.insp)}\n【已採取處置】${v(d.done)}\n【希望供應商回覆事項與期限】${v(d.req)}`;
+    const txt=`【供應商】${v(d.sup)}（聯絡人：${v(d.con)}）\n【原料／包材】${v(d.mat)}\n【批號／有效日期】${v(d.lot)}\n【進貨日期／數量／受影響數量】${v(d.qty)}\n【原物料規格】${v(d.spec)}\n【發現日期】${v(d.date)}\n【異常描述】${v(d.desc)}\n【已採取處置】${v(d.done)}\n【希望供應商回覆事項與期限】${v(d.req)}`;
     const r=await sample(VSYS+'\n\n'+txt,{cache:false});
     const j=JSON.parse(r.text.replace(/```json|```/g,'').trim().replace(/^[^{]*/,'').replace(/[^}]*$/,''));
     vrender(d,j);$('vst').textContent='';
@@ -689,9 +693,9 @@ try{if(typeof claude!=='undefined'&&claude&&typeof claude.use==='function'){cons
 try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.append(a);a.click();a.remove();cmsg('已匯出 CSV 檔：'+name)}catch(_){cmsg('匯出失敗，請改用 Chrome 直接開啟檔案')}
 };
 // ---- 案件列表（先查詢，按「新增案件」才進入客訴分析頁）----
-const STS=['原因查證','改善執行','效果確認','已結案'];
+const STS=['原因查證','改善執行','效果確認','已結案'],VSTS=['原因查證','通知供應商改善','改善執行','效果確認','已結案'];
 const normSt=x=>x&&x.status==='調查中'?{...x,status:'原因查證'}:x;
-function stepper(st){const k=STS.indexOf(st);if(k<0)return'';return`<div class="steps" aria-label="處理進度：${esc(st)}">${STS.map((x,i)=>`<span class="${i<k?'done':i===k?'now':''}">${x}</span>`).join('<i>›</i>')}</div>`}
+function stepper(st,L=STS){const k=L.indexOf(st);if(k<0)return'';return`<div class="steps" aria-label="處理進度：${esc(st)}">${L.map((x,i)=>`<span class="${i<k?'done':i===k?'now':''}">${x}</span>`).join('<i>›</i>')}</div>`}
 function localShim(){
   const K='fca_cases_v1';let arr=[];
   try{arr=JSON.parse(localStorage.getItem(K)||'[]').map(normSt)}catch(_){}
@@ -804,7 +808,7 @@ if(!editId&&CASES.some(c=>c.kind==='客訴'&&c.no===d.no)){d.no=calcNo(d.date,'�
 
 // ---- 供應商客訴列表 ----
 $('vlcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`<option>${c}</option>`).join('');
-$('vlst').innerHTML='<option value="">全部狀態</option><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';
+$('vlst').innerHTML='<option value="">全部狀態</option><option>原因查證</option><option>通知供應商改善</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';
 $('vcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
 function syncVOther(){$('vcatotherW').hidden=$('vcat').value!=='其它'}
 $('vcat').addEventListener('change',syncVOther);
@@ -816,7 +820,7 @@ function openVForm(c,toResult){
 pendingSt=null;keepV.clear();
   editVId=c?c.id:null;
   const f=(c&&c.form)||{},inp=f.inputs||{};
-  VK.forEach(k=>{let x=inp[k];if(x==null&&c)x=({no:c.no,date:c.date,sup:c.sup,mat:c.item,lot:c.lot})[k];$('v'+k).value=x||''});
+  VK.forEach(k=>{let x=inp[k];if(x==null&&c)x=({no:c.no,date:c.date,sup:c.sup,mat:c.item,lot:c.lot})[k];$('v'+k).value=x||''});keepHidden(c?inp:null);
   if(!c){$('vdate').value=todayLocal();updVNo()}
   const sec=f.sections;
   [1,2,3,4,5,6,7].forEach(i=>$('v'+i).value=sec?(sec['s'+i]||''):'');
@@ -832,7 +836,7 @@ function renderVCases(){
   const all=CASES.filter(c=>isLive(c)&&c.kind==='供應商客訴');fillYM('vlyr','vlmo',all);const qq=$('vlq').value.trim(),fy=qq?'':$('vlyr').value,fm=qq?'':$('vlmo').value;$('vlyr').disabled=$('vlmo').disabled=!!qq;
   const rows=all.filter(c=>{
     const i=(c.form&&c.form.inputs)||{};
-    return keepV.has(c.id)||((!fy||ymOf(c).slice(0,4)===fy)&&(!fm||ymOf(c).slice(5,7)===fm)&&(!fc||c.cat===fc)&&(!fs||c.status===fs)&&(!q||[c.no,c.item,c.lot,c.sup,c.cat,i.desc,i.con,i.po,i.catother].join(' ').toLowerCase().includes(q)));
+    return keepV.has(c.id)||((!fy||ymOf(c).slice(0,4)===fy)&&(!fm||ymOf(c).slice(5,7)===fm)&&(!fc||c.cat===fc)&&(!fs||c.status===fs)&&(!q||[c.no,c.item,c.lot,c.sup,c.cat,i.desc,i.con,i.spec,i.owner,i.buyer,i.qcp,i.catother].join(' ').toLowerCase().includes(q)));
   }).sort((a,b)=>b.date.localeCompare(a.date));
   const pages=Math.max(1,Math.ceil(rows.length/PG));pgS.v=Math.min(Math.max(1,pgS.v),pages);const shown=rows.slice((pgS.v-1)*PG,pgS.v*PG);
   const pg=pgS.v;
@@ -841,9 +845,9 @@ function renderVCases(){
   $('vlbody').innerHTML=rows.length?shown.map(r=>{
     const i=(r.form&&r.form.inputs)||{};
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
-    return`<div class="case"><div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status)}
+    return`<div class="case"><div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status,VSTS)}
 <div class="ti">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div>
-<div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
+<div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${VSTS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?ymEmpty(fy,fm):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
 }
 ['vlq','vlcat','vlst','vlyr','vlmo'].forEach(id=>{$(id).oninput=()=>{keepV.clear();pgS.v=1;renderVCases()};$(id).onchange=()=>{keepV.clear();pgS.v=1;renderVCases()}});
@@ -902,7 +906,7 @@ function buildDocx(list,single){
   list=list||CASES;
   const body=[wp(single?'食品客訴案件紀錄':'食品客訴案件備份',{b:1,sz:36}),wp('匯出時間：'+new Date().toLocaleString('zh-TW')+(single?'':'　案件數：'+list.filter(c=>isLive(c)).length),{sz:20})];
   const groups=[['客訴案件','客訴',TITLES,['no','date','src','rec','qcp','respT','prod','lot','desc','proc','done','eff','conf','catother'],['客訴編號','客訴日期','客訴來源','業務人員','品管人員（負責人）','權責單位（負責改善）','產品名稱','批號／有效日期','客訴內容','相關單位（相關製程／檢查紀錄／調查結果）','單位改善措施','改善確效','負責人確認／改善確認人','其它異常說明']],
-    ['供應商客訴案件','供應商客訴',VT,VK,['內部編號','發現日期','供應商名稱','供應商聯絡人','原料／包材名稱','原料批號／有效日期','進貨日期／數量','採購單／COA','異常說明','驗收／檢查情形','已採取處理','要求供應商回覆','其它異常說明']]];
+    ['供應商客訴案件','供應商客訴',VT,VK,['內部編號','發現日期','供應商名稱','供應商聯絡人','原料／包材名稱','原物料規格','原料批號／有效日期','進貨日期／數量','負責人','異常說明','已採取處置','要求供應商回覆','採購人員','品管人員','其它異常說明']]];
   let any=false;
   groups.forEach(([gt,kind,ttl,keys,labels],gi)=>{
     const rows=list.filter(c=>isLive(c)&&c.kind===kind).sort((a,b)=>b.date.localeCompare(a.date));
