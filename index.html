@@ -31,6 +31,11 @@ button:disabled{opacity:.5;cursor:default}
 .thumbs img{width:84px;height:84px;object-fit:cover;border-radius:6px;border:1px solid var(--bd)}
 .thumbs button{position:absolute;top:-6px;right:-6px;padding:0 6px;border-radius:50%;line-height:20px;font-size:12px}
 .status{font-size:13px;color:var(--mu)}
+.steps{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;font-size:12px;color:var(--mu);margin:4px 0 2px}
+.steps span.done{color:var(--tx)}
+.steps span.done::before{content:"✓ "}
+.steps span.now{color:var(--acx);background:var(--ac);border-radius:10px;padding:1px 8px;font-weight:600}
+.steps i{font-style:normal;color:var(--gold)}
 .stc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px}
 .sec textarea{min-height:130px}
 .hint{font-size:12px;color:var(--mu);margin:-2px 0 4px}
@@ -114,7 +119,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <div><label>產品名稱 <b>*</b></label><input id="prod"></div>
 <div><label>批號／有效日期 <b>*</b></label><input id="lot"></div>
 <div><label>異常類別</label><select id="fcat"></select></div>
-<div><label>處理狀態</label><select id="fst"><option>調查中</option><option>已結案</option></select></div>
+<div><label>處理狀態</label><select id="fst"><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option></select></div>
 </div>
 <div id="catotherW" hidden><label>其它異常說明 <b>*</b>（請寫清楚是什麼異常）</label><input id="catother" maxlength="200"></div>
 <label>客訴異常情況描述 <b>*</b>（誰、何時、何處發現、什麼異常、數量）</label>
@@ -188,7 +193,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <div><label>進貨日期／數量／受影響數量</label><input id="vqty"></div>
 <div><label>採購單／COA 編號</label><input id="vpo"></div>
 <div><label>異常類別</label><select id="vcat"></select></div>
-<div><label>處理狀態</label><select id="vstat"><option>調查中</option><option>已結案</option></select></div>
+<div><label>處理狀態</label><select id="vstat"><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option></select></div>
 </div>
 <div id="vcatotherW" hidden><label>其它異常說明 <b>*</b>（請寫清楚是什麼異常）</label><input id="vcatother" maxlength="200"></div>
 <label>異常情況描述 <b>*</b>（何時、何處發現、什麼異常、數量）</label>
@@ -633,18 +638,21 @@ try{if(typeof claude!=='undefined'&&claude&&typeof claude.use==='function'){cons
 try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.append(a);a.click();a.remove();cmsg('已匯出 CSV 檔：'+name)}catch(_){cmsg('匯出失敗，請改用 Chrome 直接開啟檔案')}
 };
 // ---- 案件列表（先查詢，按「新增案件」才進入客訴分析頁）----
+const STS=['原因查證','改善執行','效果確認','已結案'];
+const normSt=x=>x&&x.status==='調查中'?{...x,status:'原因查證'}:x;
+function stepper(st){const k=STS.indexOf(st);if(k<0)return'';return`<div class="steps" aria-label="處理進度：${esc(st)}">${STS.map((x,i)=>`<span class="${i<k?'done':i===k?'now':''}">${x}</span>`).join('<i>›</i>')}</div>`}
 function localShim(){
   const K='fca_cases_v1';let arr=[];
-  try{arr=JSON.parse(localStorage.getItem(K)||'[]')}catch(_){}
+  try{arr=JSON.parse(localStorage.getItem(K)||'[]').map(normSt)}catch(_){}
   const sync=()=>{CASES=arr.map(x=>({...x}));renderS()};
   const save=()=>{try{localStorage.setItem(K,JSON.stringify(arr))}catch(_){const e=document.getElementById('sdb');if(e)e.textContent='此環境無法使用瀏覽器儲存，案件只會暫存到關閉頁面為止。請改用 Chrome 直接開啟檔案，並先匯出備份。'}sync()};
   CASES=arr.map(x=>({...x}));
-  return{replaceAll:async list=>{arr=list.map(x=>({...x}));save()},add:async r=>{arr.push({...r,id:'L'+Date.now()+Math.random().toString(36).slice(2,6)});save()},
+  return{replaceAll:async list=>{arr=list.map(x=>({...normSt(x)}));save()},add:async r=>{arr.push({...r,id:'L'+Date.now()+Math.random().toString(36).slice(2,6)});save()},
     doc:id=>({update:async p=>{const i=arr.findIndex(x=>x.id===id);if(i>=0)Object.assign(arr[i],p);save()},
       delete:async()=>{arr=arr.filter(x=>x.id!==id);save()}})};
 }
 $('lcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`<option>${c}</option>`).join('');
-$('lst').innerHTML='<option value="">全部狀態</option><option>調查中</option><option>已結案</option>';
+$('lst').innerHTML='<option value="">全部狀態</option><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';
 $('fcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
 function syncOther(){$('catotherW').hidden=$('fcat').value!=='其它'}
 $('fcat').addEventListener('change',syncOther);
@@ -670,7 +678,7 @@ pendingSt=null;keepC.clear();$('photoMsg').textContent='';
   FK.forEach(k=>{let x=inp[k];if(x==null&&c)x=({no:c.no,date:c.date,prod:c.item,lot:c.lot})[k];$(k).value=x||''});
   if(!c){$('date').value=todayLocal();updNo()}
   photos.forEach(p=>URL.revokeObjectURL(p.url));photos=[];drawThumbs();
-  $('fcat').value=(c&&c.cat)||CATS[0];$('fst').value=(c&&c.status)||'調查中';syncOther();
+  $('fcat').value=(c&&c.cat)||CATS[0];$('fst').value=(c&&c.status)||'原因查證';syncOther();
   const sec=f.sections;
   [1,2,3,4,5,6].forEach(i=>$('s'+i).value=sec?(sec['s'+i]||''):'');
   $('out').hidden=!(sec&&f.shown);
@@ -703,9 +711,9 @@ function renderCases(){
   $('lbody').innerHTML=rows.length?rows.map(r=>{
     const i=(r.form&&r.form.inputs)||{},isA=r.kind==='客訴';
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
-    return`<div class="case"><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}<span class="tag${r.status==='已結案'?'':' wip'}">${esc(r.status)}</span></div>
+    return`<div class="case"><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}<span class="tag${r.status==='已結案'?'':' wip'}">${esc(r.status)}</span></div>${stepper(r.status)}
 <div class="ti">${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}</div></div>
-<div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態"><option${r.status==='調查中'?' selected':''}>調查中</option><option${r.status==='已結案'?' selected':''}>已結案</option></select>`}${isA&&r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
+<div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${isA&&r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?'沒有符合條件的案件。':'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
 }
 ['lq','lcat','lst'].forEach(id=>{$(id).oninput=()=>{keepC.clear();renderCases()};$(id).onchange=()=>{keepC.clear();renderCases()}});
@@ -738,7 +746,7 @@ if(!editId&&CASES.some(c=>c.kind==='客訴'&&c.no===d.no)){d.no=calcNo(d.date,'�
 
 // ---- 供應商客訴列表 ----
 $('vlcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`<option>${c}</option>`).join('');
-$('vlst').innerHTML='<option value="">全部狀態</option><option>調查中</option><option>已結案</option>';
+$('vlst').innerHTML='<option value="">全部狀態</option><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';
 $('vcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
 function syncVOther(){$('vcatotherW').hidden=$('vcat').value!=='其它'}
 $('vcat').addEventListener('change',syncVOther);
@@ -755,7 +763,7 @@ pendingSt=null;keepV.clear();
   const sec=f.sections;
   [1,2,3,4,5,6,7].forEach(i=>$('v'+i).value=sec?(sec['s'+i]||''):'');
   $('vout').hidden=!(sec&&f.shown);
-  $('vcat').value=(c&&c.cat)||CATS[0];$('vstat').value=(c&&c.status)||'調查中';syncVOther();
+  $('vcat').value=(c&&c.cat)||CATS[0];$('vstat').value=(c&&c.status)||'原因查證';syncVOther();
   $('vst').textContent='';$('vst2').textContent='';$('vfmsg').textContent='';
   $('vftitle').textContent=c?'編輯案件：'+(c.sup||'')+' '+(c.item||''):'新增案件';
   showVView('form');$('leaveV').hidden=true;snapV=stateV();
@@ -772,9 +780,9 @@ function renderVCases(){
   $('vlbody').innerHTML=rows.length?rows.map(r=>{
     const i=(r.form&&r.form.inputs)||{};
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
-    return`<div class="case"><div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}<span class="tag${r.status==='已結案'?'':' wip'}">${esc(r.status)}</span></div>
+    return`<div class="case"><div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}<span class="tag${r.status==='已結案'?'':' wip'}">${esc(r.status)}</span></div>${stepper(r.status)}
 <div class="ti">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}</div></div>
-<div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態"><option${r.status==='調查中'?' selected':''}>調查中</option><option${r.status==='已結案'?' selected':''}>已結案</option></select>`}${r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
+<div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?'沒有符合條件的案件。':'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
 }
 ['vlq','vlcat','vlst'].forEach(id=>{$(id).oninput=()=>{keepV.clear();renderVCases()};$(id).onchange=()=>{keepV.clear();renderVCases()}});
