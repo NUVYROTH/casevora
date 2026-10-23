@@ -36,6 +36,10 @@ button:disabled{opacity:.5;cursor:default}
 .steps span.done::before{content:"✓ "}
 .steps span.now{color:var(--acx);background:var(--ac);border-radius:10px;padding:1px 8px;font-weight:600}
 .steps i{font-style:normal;color:var(--gold)}
+.trbar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;margin:4px 0}
+.trall,.trrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.trall{font-size:14px;color:var(--tx);cursor:pointer}
+input[type=checkbox]{width:18px;height:18px;margin:0;flex:none;accent-color:var(--ac);cursor:pointer}
 .stc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px}
 .sec textarea{min-height:130px}
 .hint{font-size:12px;color:var(--mu);margin:-2px 0 4px}
@@ -496,7 +500,7 @@ $('vpr').onclick=()=>{$('printView').textContent=vFull();window.print()};
 let DBc=null,CASES=[],mode='Y',lastSum='',trashOpen={},stK='客訴',stN=5,stYear=new Date().getFullYear(),stMon=4,stChart='line',stMY=new Date().getFullYear(),stM=new Date().getMonth()+1;
 const LC=['#16213a','#c0392b','#2980b9','#d68910','#8e44ad','#7f8c8d'];
 function resetSt(){const d=new Date();stK='客訴';stN=5;stYear=d.getFullYear();stMon=4;stChart='line';stMY=d.getFullYear();stM=d.getMonth()+1}
-let pendingSt=null,pendingDel=null,pendingPurge=null;
+let pendingSt=null,pendingDel=null,pendingPurge=null,pendingBulk=null;const trSel={'客訴':new Set(),'供應商客訴':new Set()},trMsg={};
 const inR=(c,s,e)=>c.date>=s&&c.date<=e;
 const isLive=c=>typeof c.date==='string'&&!c.deleted&&!c.purged;
 const softDel=id=>DBc.doc(id).update({deleted:true,deletedAt:new Date().toISOString()});
@@ -612,7 +616,11 @@ function noteSpan(r){const t=((r.form&&r.form.inputs)||{}).catother;return t&&St
 function renderTrash(kind,elId){
   const el=$(elId),rows=CASES.filter(c=>c.deleted&&!c.purged&&c.kind===kind).sort((a,b)=>String(b.deletedAt||'').localeCompare(String(a.deletedAt||'')));
     el.innerHTML=`<button class="trbtn" style="margin-top:14px;background:transparent" data-a="opentrash">最近刪除（${rows.length}）</button>`;
-  $(elId+'Body').innerHTML=`<div class="status">共 ${rows.length} 件</div>${rows.length?'':'<div class="mt" style="padding:8px 0">目前沒有已刪除的案件</div>'}`+rows.map(r=>`<div class="mt" style="padding:8px 0;border-bottom:1px solid #ddd">${esc(r.no||'（無編號）')}｜${esc(r.item)}　批號：${esc(r.lot||'—')}　`+(pendingPurge===r.id?`<span class="stc">永久刪除後無法救回，確定嗎？<button class="pri" data-a="purgeok" data-id="${esc(r.id)}">確定</button><button data-a="purgeno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="rest" data-id="${esc(r.id)}">還原</button> <button data-a="purge" data-id="${esc(r.id)}">永久刪除</button>`)+`</div>`).join('');
+  const sel=trSel[kind],ids=new Set(rows.map(r=>r.id));[...sel].forEach(x=>{if(!ids.has(x))sel.delete(x)});
+  const n=sel.size,allOn=rows.length>0&&n===rows.length,k=esc(kind);
+  const bar=rows.length?`<div class="trbar"><span class="status">共 ${rows.length} 件${n?`，已選 ${n} 件`:''}</span><label class="trall"><input type="checkbox" data-a="selall" data-k="${k}"${allOn?' checked':''}> 全選</label></div>
+<div class="row" style="margin:4px 0 8px">${pendingBulk===kind&&n?`<span class="stc">確定要永久刪除 ${n} 件嗎？刪除後無法救回。<button class="pri" data-a="bulkok" data-k="${k}">確定</button><button data-a="bulkno" data-k="${k}">取消</button></span>`:`<button data-a="bulkrest" data-k="${k}"${n?'':' disabled'}>還原勾選（${n}）</button><button data-a="bulkpurge" data-k="${k}"${n?'':' disabled'}>永久刪除勾選（${n}）</button>`}</div>`:'<div class="status">共 0 件</div>';
+  $(elId+'Body').innerHTML=bar+(trMsg[kind]?`<div class="status" role="status" style="color:var(--tx);font-weight:600">${esc(trMsg[kind])}</div>`:'')+(rows.length?'':'<div class="mt" style="padding:8px 0">目前沒有已刪除的案件</div>')+rows.map(r=>`<div class="mt trrow" style="padding:8px 0;border-bottom:1px solid var(--bd)"><input type="checkbox" data-a="sel" data-k="${k}" data-id="${esc(r.id)}"${sel.has(r.id)?' checked':''} aria-label="勾選 ${esc(r.no||r.item)}">${esc(r.no||'（無編號）')}｜${esc(r.item)}　批號：${esc(r.lot||'—')}　`+(pendingPurge===r.id?`<span class="stc">永久刪除後無法救回，確定嗎？<button class="pri" data-a="purgeok" data-id="${esc(r.id)}">確定</button><button data-a="purgeno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="rest" data-id="${esc(r.id)}">還原</button> <button data-a="purge" data-id="${esc(r.id)}">永久刪除</button>`)+`</div>`).join('');
 }
 ['ctrash','vtrash','ctrashBody','vtrashBody'].forEach(id=>$(id).onclick=async e=>{
   const b=e.target.closest('button');if(!b||!DBc)return;const i=b.dataset.id,a=b.dataset.a;
@@ -622,8 +630,21 @@ function renderTrash(kind,elId){
     if(a==='purge'){pendingPurge=i;renderS()}
     if(a==='purgeno'){pendingPurge=null;renderS()}
     if(a==='purgeok'){pendingPurge=null;await purgeCase(i)}
+    const k=b.dataset.k;
+    if(a==='bulkpurge'){pendingBulk=k;trMsg[k]='';renderS()}
+    if(a==='bulkno'){pendingBulk=null;renderS()}
+    if(a==='bulkrest'||a==='bulkok'){const list=[...trSel[k]],n=list.length;pendingBulk=null;trSel[k].clear();
+      for(const x of list)await (a==='bulkrest'?restoreCase(x):purgeCase(x));
+      trMsg[k]=a==='bulkrest'?`已還原 ${n} 件，案件已回到列表。`:`已永久刪除 ${n} 件。`;renderS()}
   }catch(err){cmsg('操作失敗：'+(err.message||err.code))}
 });
+['ctrashBody','vtrashBody'].forEach(id=>$(id).addEventListener('change',e=>{
+  const t=e.target,a=t.dataset&&t.dataset.a,k=t.dataset&&t.dataset.k;if(!k||(a!=='sel'&&a!=='selall'))return;
+  const set=trSel[k];
+  if(a==='sel'){t.checked?set.add(t.dataset.id):set.delete(t.dataset.id)}
+  else{set.clear();if(t.checked)CASES.filter(c=>c.deleted&&!c.purged&&c.kind===k).forEach(c=>set.add(c.id))}
+  pendingBulk=null;trMsg[k]='';renderS();
+}));
 $('trBack').onclick=()=>showView('list');$('vtrBack').onclick=()=>showVView('list');
 function renderS(){renderCases();renderVCases();renderTrash('客訴','ctrash');renderTrash('供應商客訴','vtrash');
   renderStats();
@@ -925,7 +946,7 @@ let pendingImp=null;
 async function applyImport(o){
   if(!DBc||!DBc.replaceAll){m3('此環境無法匯入（匯入只支援本機儲存模式），目前的資料沒有任何變動');return}
   await DBc.replaceAll(o.cases);
-  pendingSt=null;pendingDel=null;pendingPurge=null;keepC.clear();keepV.clear();cmsg('');
+  pendingSt=null;pendingDel=null;pendingPurge=null;pendingBulk=null;trSel['客訴'].clear();trSel['供應商客訴'].clear();keepC.clear();keepV.clear();cmsg('');
   showView('list');showVView('list');
   const live=o.cases.filter(c=>!c.purged&&!c.deleted).length,tr=o.cases.filter(c=>!c.purged&&c.deleted).length;
   m3(`已匯入：案件 ${live} 件、最近刪除 ${tr} 件。照片不在備份裡，不會回來。請檢查內容。`);
