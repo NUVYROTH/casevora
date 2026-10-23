@@ -36,6 +36,7 @@ button:disabled{opacity:.5;cursor:default}
 .steps span.done::before{content:"✓ "}
 .steps span.now{color:var(--acx);background:var(--ac);border-radius:10px;padding:1px 8px;font-weight:600}
 .steps i{font-style:normal;color:var(--gold)}
+.ainote{font-size:12.5px;line-height:1.6;color:var(--warnt);background:var(--warn);border-left:3px solid var(--gold);border-radius:6px;padding:8px 12px;margin:10px 0 0}
 .trbar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;margin:4px 0}
 .trall,.trrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .trall{font-size:14px;color:var(--tx);cursor:pointer}
@@ -152,6 +153,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <button id="blank">僅整理資料（不做 AI 分析）</button>
 <span class="status" id="st"></span>
 </div>
+<p class="ainote">AI 分析需在 claude.ai 開啟本工具，每位使用者須使用<b>自己的 Claude 帳號登入</b>，用量計入各自的帳號。<br>請勿在描述中填寫消費者或員工的<b>姓名、電話、地址、身分證字號</b>等個人資料，請改用「消費者 A」「品管人員」等代稱。</p>
 </div>
 
 <div class="card sec" id="out" hidden>
@@ -230,6 +232,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <button id="vblank">僅整理資料（不做 AI 分析）</button>
 <span class="status" id="vst"></span>
 </div>
+<p class="ainote">AI 分析需在 claude.ai 開啟本工具，每位使用者須使用<b>自己的 Claude 帳號登入</b>，用量計入各自的帳號。<br>請勿在描述中填寫消費者或員工的<b>姓名、電話、地址、身分證字號</b>等個人資料，請改用「消費者 A」「品管人員」等代稱。</p>
 </div>
 
 <div class="card sec" id="vout" hidden>
