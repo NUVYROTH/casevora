@@ -742,14 +742,14 @@ renderCases();renderVCases();
 }
 function renderCases(){
   const q=$('lq').value.trim().toLowerCase(),fc=$('lcat').value,fs=$('lst').value;
-  const all=CASES.filter(c=>isLive(c)&&c.kind==='客訴');fillYM('lyr','lmo',all);const fy=$('lyr').value,fm=$('lmo').value;
+  const all=CASES.filter(c=>isLive(c)&&c.kind==='客訴');fillYM('lyr','lmo',all);const qq=$('lq').value.trim(),fy=qq?'':$('lyr').value,fm=qq?'':$('lmo').value;$('lyr').disabled=$('lmo').disabled=!!qq;
   const rows=all.filter(c=>{
     const i=(c.form&&c.form.inputs)||{};
     return keepC.has(c.id)||((!fy||ymOf(c).slice(0,4)===fy)&&(!fm||ymOf(c).slice(5,7)===fm)&&(!fc||c.cat===fc)&&(!fs||c.status===fs)&&(!q||[c.no,c.item,c.lot,c.sup,c.cat,c.kind,i.desc,i.src,i.catother].join(' ').toLowerCase().includes(q)));
   }).sort((a,b)=>b.date.localeCompare(a.date));
   const pages=Math.max(1,Math.ceil(rows.length/PG));pgS.c=Math.min(Math.max(1,pgS.c),pages);const shown=rows.slice((pgS.c-1)*PG,pgS.c*PG);
   const pg=pgS.c;
-  $('lcount').textContent=`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'')+(rows.length>PG?`，顯示第 ${(pg-1)*PG+1}–${Math.min(pg*PG,rows.length)} 件`:'');
+  $('lcount').textContent=(qq?'搜尋所有年份：':'')+`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'')+(rows.length>PG?`，顯示第 ${(pg-1)*PG+1}–${Math.min(pg*PG,rows.length)} 件`:'');
   $('lpager').innerHTML=pager(pages,pgS.c,'c');
   $('lbody').innerHTML=rows.length?shown.map(r=>{
     const i=(r.form&&r.form.inputs)||{},isA=r.kind==='客訴';
@@ -815,14 +815,14 @@ pendingSt=null;keepV.clear();
 }
 function renderVCases(){
   const q=$('vlq').value.trim().toLowerCase(),fc=$('vlcat').value,fs=$('vlst').value;
-  const all=CASES.filter(c=>isLive(c)&&c.kind==='供應商客訴');fillYM('vlyr','vlmo',all);const fy=$('vlyr').value,fm=$('vlmo').value;
+  const all=CASES.filter(c=>isLive(c)&&c.kind==='供應商客訴');fillYM('vlyr','vlmo',all);const qq=$('vlq').value.trim(),fy=qq?'':$('vlyr').value,fm=qq?'':$('vlmo').value;$('vlyr').disabled=$('vlmo').disabled=!!qq;
   const rows=all.filter(c=>{
     const i=(c.form&&c.form.inputs)||{};
     return keepV.has(c.id)||((!fy||ymOf(c).slice(0,4)===fy)&&(!fm||ymOf(c).slice(5,7)===fm)&&(!fc||c.cat===fc)&&(!fs||c.status===fs)&&(!q||[c.no,c.item,c.lot,c.sup,c.cat,i.desc,i.con,i.po,i.catother].join(' ').toLowerCase().includes(q)));
   }).sort((a,b)=>b.date.localeCompare(a.date));
   const pages=Math.max(1,Math.ceil(rows.length/PG));pgS.v=Math.min(Math.max(1,pgS.v),pages);const shown=rows.slice((pgS.v-1)*PG,pgS.v*PG);
   const pg=pgS.v;
-  $('vlcount').textContent=`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'')+(rows.length>PG?`，顯示第 ${(pg-1)*PG+1}–${Math.min(pg*PG,rows.length)} 件`:'');
+  $('vlcount').textContent=(qq?'搜尋所有年份：':'')+`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'')+(rows.length>PG?`，顯示第 ${(pg-1)*PG+1}–${Math.min(pg*PG,rows.length)} 件`:'');
   $('vlpager').innerHTML=pager(pages,pgS.v,'v');
   $('vlbody').innerHTML=rows.length?shown.map(r=>{
     const i=(r.form&&r.form.inputs)||{};
