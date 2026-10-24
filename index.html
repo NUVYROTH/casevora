@@ -130,7 +130,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <div class="tbmeta">品質管理部｜客訴與供應商客訴紀錄<span class="ver">v16</span></div>
 </div></header>
 <div class="wrap">
-<div class="alert" role="note"><span class="atag">重要</span><div><b>案件資料存在這台電腦的瀏覽器裡。</b>清除瀏覽資料時，若勾選「<b>Cookie 和其他網站資料</b>」，<b>所有案件會被刪除，且無法復原</b>。請不要使用無痕視窗，並每兩週至一個月按一次「<b>匯出 Word 備份</b>」。<br>⚠️ 注意：使用無痕視窗，關閉後資料會遺失。</div></div>
+<div class="alert" role="note"><span class="atag">重要</span><div><b>案件資料存在這台電腦的瀏覽器裡。</b>清除瀏覽資料時，若勾選「<b>Cookie 和其他網站資料</b>」，<b>所有案件與照片會被刪除，且無法復原</b>。請不要使用無痕視窗，並每兩週至一個月按一次「<b>匯出 Word 備份</b>」。<br>⚠️ 注意：使用無痕視窗，關閉後資料會遺失。</div></div>
 <div class="status" id="sdbTop" style="margin:0 0 10px;font-weight:700;font-size:17px;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-left:4px solid var(--gold);border-radius:8px;padding:8px 12px;display:block">本機儲存 · 僅在此裝置此瀏覽器有效 · 可匯出備份</div>
 <p class="sub">輸入客訴資料 → 取得原因分析與改善建議 → 修改內容 → 匯出客訴分析紀錄</p>
 <div class="note">分析結果為輔助整理與建議，僅依您提供的資料推論；<b>可能原因不等於真因，也不判定責任歸屬</b>。請由品管/品保人員查證、修改後再定稿。</div>
@@ -225,7 +225,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 </div></div>
 <div class="card"><div class="row" style="margin:0">
 <button class="pri" id="fsave">儲存案件並返回列表</button><button id="fword">匯出此案件 Word</button><span class="status" id="fmsg"></span></div>
-<p class="sub" style="margin:8px 0 0">「匯出此案件 Word」只匯出目前這一件（含尚未儲存的內容）。儲存後案件會出現在列表並納入統計；照片不會存入列表（照片也不在備份裡，需要保留請另外存檔）。</p></div>
+<p class="sub" style="margin:8px 0 0">「匯出此案件 Word」只匯出目前這一件（含尚未儲存的內容）。儲存後案件會出現在列表並納入統計；照片會跟著案件存在這台電腦的瀏覽器裡（每件最多 4 張），單件 Word 與 Word 備份都會附上照片。</p></div>
 </div>
 </div>
 
@@ -336,7 +336,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 
 <div class="card">
 <h2>③ 資料備份（換裝置或避免資料遺失）</h2>
-<p class="sub">本工具不會自動儲存，資料只存在這個裝置這個瀏覽器。Word 備份（.docx）會把所有客訴與供應商客訴案件整理成一份文件，並附上「最近刪除」的案件與已占用的編號，換裝置時用「匯入 Word 備份」還原。只能匯入本工具匯出的新版 Word 備份；匯入會取代目前所有案件；照片不在備份裡，匯入後不會回來。備份檔含客訴機敏資料，請妥善保管。</p>
+<p class="sub">本工具不會自動儲存，資料只存在這個裝置這個瀏覽器。Word 備份（.docx）會把所有客訴與供應商客訴案件整理成一份文件，並附上「最近刪除」的案件與已占用的編號，換裝置時用「匯入 Word 備份」還原。只能匯入本工具匯出的新版 Word 備份；匯入會取代目前所有案件與照片；照片也會一起備份與還原，所以備份檔可能比較大。備份檔含客訴機敏資料，請妥善保管。</p>
 <div class="row" style="margin-top:0">
 <button class="pri" id="bkw">匯出 Word 備份（所有案件）</button>
 <button id="bki">匯入 Word 備份（會取代目前案件）</button>
@@ -351,6 +351,15 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 <script>
 const $=id=>document.getElementById(id);
 let photos=[]; // {blob,url,name}
+// ---- 照片保存：IndexedDB（只在這台電腦的這個瀏覽器）----
+const PDB=(()=>{let dbp=null;
+  const open=()=>dbp||(dbp=new Promise((ok,no)=>{try{const q=indexedDB.open('casevoras_photos',1);q.onupgradeneeded=()=>q.result.createObjectStore('photos');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)}catch(e){no(e)}}));
+  const tx=async(mode,fn)=>{const db=await open();return new Promise((ok,no)=>{const t=db.transaction('photos',mode),q=fn(t.objectStore('photos'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error);t.onabort=()=>no(t.error||new Error('儲存空間不足'))})};
+  return{get:id=>tx('readonly',st=>st.get(id)).then(v=>v||[]).catch(()=>[]),
+    put:(id,arr)=>tx('readwrite',st=>arr&&arr.length?st.put(arr,id):st.delete(id)),
+    del:id=>tx('readwrite',st=>st.delete(id)).catch(()=>{}),
+    clear:()=>tx('readwrite',st=>st.clear())};
+})();
 
 // ---- 照片：縮圖壓縮 ----
 $('photo').addEventListener('change',async e=>{
@@ -360,10 +369,10 @@ if(!(f.type||'').startsWith('image/')){msgs.add('請上傳圖檔');continue}
 if(photos.length>=4){msgs.add('最多 4 張');continue}
 try{
 const bmp=await createImageBitmap(f);
-const r=Math.min(1,1024/Math.max(bmp.width,bmp.height));
+const r=Math.min(1,1600/Math.max(bmp.width,bmp.height));
 const c=document.createElement('canvas');c.width=bmp.width*r;c.height=bmp.height*r;
 c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
-const blob=await new Promise(res=>c.toBlob(res,'image/jpeg',.8));
+const blob=await new Promise(res=>c.toBlob(res,'image/jpeg',.82));
 photos.push({blob,url:URL.createObjectURL(blob),name:f.name});
 }catch(_){msgs.add('這張圖片無法讀取，請改傳 JPG 或 PNG')}
 }
@@ -596,7 +605,7 @@ const inR=(c,s,e)=>c.date>=s&&c.date<=e;
 const isLive=c=>typeof c.date==='string'&&!c.deleted&&!c.purged;
 const softDel=id=>DBc.doc(id).update({deleted:true,deletedAt:new Date().toISOString()});
 const restoreCase=id=>DBc.doc(id).update({deleted:false,deletedAt:null});
-const purgeCase=id=>DBc.doc(id).update({purged:true,deleted:false,deletedAt:null,date:null,item:'',lot:'',sup:'',cat:'',status:'',form:null});
+const purgeCase=id=>(PDB.del(id),DBc.doc(id)).update({purged:true,deleted:false,deletedAt:null,date:null,item:'',lot:'',sup:'',cat:'',status:'',form:null});
 const keepC=new Set(),keepV=new Set();
 const PG=20,pgS={c:1,v:1};
 const ymOf=c=>String(c.date||'');
@@ -769,7 +778,7 @@ function localShim(){
   const sync=()=>{CASES=arr.map(x=>({...x}));renderS()};
   const save=()=>{try{localStorage.setItem(K,JSON.stringify(arr))}catch(_){const e=document.getElementById('sdb');if(e)e.textContent='此環境無法使用瀏覽器儲存，案件只會暫存到關閉頁面為止。請改用 Chrome 直接開啟檔案，並先匯出備份。'}sync()};
   CASES=arr.map(x=>({...x}));
-  return{replaceAll:async list=>{arr=list.map(x=>({...normSt(x)}));save()},add:async r=>{arr.push({...r,id:'L'+Date.now()+Math.random().toString(36).slice(2,6)});save()},
+  return{replaceAll:async list=>{arr=list.map(x=>({...normSt(x)}));save()},add:async r=>{const id='L'+Date.now()+Math.random().toString(36).slice(2,6);arr.push({...r,id});save();return id},
     doc:id=>({update:async p=>{const i=arr.findIndex(x=>x.id===id);if(i>=0)Object.assign(arr[i],p);save()},
       delete:async()=>{arr=arr.filter(x=>x.id!==id);save()}})};
 }
@@ -808,6 +817,7 @@ pendingSt=null;keepC.clear();$('photoMsg').textContent='';
   $('st').textContent='';$('st2').textContent='';$('fmsg').textContent='';
   $('ftitle').textContent=c?'編輯案件：'+(c.item||''):'新增案件';
   showView('form');$('leaveC').hidden=true;snapC=stateC();
+  if(c){const cid=c.id;PDB.get(cid).then(arr=>{if(editId!==cid||!arr.length)return;const same=stateC()===snapC;photos=arr.map(x=>({blob:x.blob,url:URL.createObjectURL(x.blob),name:x.name}));drawThumbs();if(same)snapC=stateC()})}
   if(toResult&&!$('out').hidden)$('out').scrollIntoView();
 }
 function openSupplier(c){
@@ -871,7 +881,10 @@ if(!editId&&CASES.some(c=>c.kind==='客訴'&&c.no===d.no)){d.no=calcNo(d.date,'�
   const sec={};[1,2,3,4,5,6,7].forEach(i=>sec['s'+i]=$('s'+i).value);
   const pf=(editId&&(CASES.find(c=>c.id===editId)||{}).form)||{};
   const r={date:d.date,kind:'客訴',no:d.no,item:d.prod,lot:d.lot,sup:'',cat:$('fcat').value,status:$('fst').value,form:{inputs:d,...(pf.sections?{sections:pf.sections,shown:pf.shown}:{})}};
-  try{editId?await DBc.doc(editId).update(r):await DBc.add(r);editId=null;showView('list')}
+  try{let id=editId;if(id)await DBc.doc(id).update(r);else id=await DBc.add(r);
+    try{await PDB.put(id,photos.map(p=>({name:p.name,blob:p.blob})));if(photos.length&&navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}
+    catch(pe){editId=id;snapC=stateC();$('fmsg').textContent='案件已儲存，但照片儲存失敗（可能是瀏覽器空間不足）。請先下載照片另外保存。';return}
+    editId=null;showView('list')}
   catch(err){$('fmsg').textContent='儲存失敗：'+(err.message||err.code)}
 };
 
@@ -972,8 +985,11 @@ function wp(t,o={}){
   const runs=String(t==null?'':t).split('\n').map((ln,i)=>`<w:r>${rp}${i?'<w:br/>':''}<w:t xml:space="preserve">${xe(ln)}</w:t></w:r>`).join('');
   return`<w:p><w:pPr><w:spacing w:after="${o.after==null?80:o.after}"/>${o.pb?'<w:pageBreakBefore/>':''}${o.bd?'<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="2F6F4F"/></w:pBdr>':''}</w:pPr>${runs}</w:p>`;
 }
-function buildDocx(list,single){
-  list=list||CASES;
+async function buildDocx(list,single,phMap){
+  list=list||CASES;phMap=phMap||{};
+  const phInfo={};for(const [id,arr] of Object.entries(phMap)){phInfo[id]=[];for(const x of arr.slice(0,4)){try{const bm=await createImageBitmap(x.blob);phInfo[id].push({bytes:new Uint8Array(await x.blob.arrayBuffer()),w:bm.width,h:bm.height,name:x.name||'photo.jpg'})}catch(_){}}}
+  const media=[],phIdx={};let pn=0;
+  const addMedia=id=>{if(phIdx[id])return phIdx[id];phIdx[id]=(phInfo[id]||[]).map(x=>{pn++;media.push(['word/media/ph'+pn+'.jpg',x.bytes]);return{n:pn,...x}});return phIdx[id]};
   const body=[wp(single?'食品客訴案件紀錄':'食品客訴案件備份',{b:1,sz:36}),wp('匯出時間：'+new Date().toLocaleString('zh-TW')+(single?'':'　案件數：'+list.filter(c=>isLive(c)).length),{sz:20})];
   const groups=[['客訴案件','客訴',TITLES,['no','date','src','rec','qcp','respT','prod','lot','desc','proc','done','eff','conf','catother'],['客訴編號','客訴日期','客訴來源','業務人員','品管人員（負責人）','權責單位（負責改善）','產品名稱','批號／有效日期','客訴內容','相關單位（相關製程／檢查紀錄／調查結果）','單位改善措施','改善確效','負責人確認／改善確認人','其它異常說明']],
     ['供應商客訴案件','供應商客訴',VT,VK,['內部編號','發現日期','供應商名稱','供應商聯絡人','原料／包材名稱','原物料規格','原料批號／有效日期','進貨日期／數量','負責人','採購人員','品管人員','異常情況描述','尚待確認事項及需供應商提供之資料','處置、改善及預防再發','後續確認及追蹤紀錄','其它異常說明']]];
@@ -988,19 +1004,28 @@ function buildDocx(list,single){
       body.push(wp(`編號：${r.no||'—'}　日期：${r.date}　批號：${r.lot||'—'}`,{sz:20}));
       const info=keys.map((k,i)=>inp[k]?`${labels[i]}：${inp[k]}`:'').filter(Boolean);
       if(info.length)body.push(wp(info.join('\n'),{after:120}));
+      const phs=kind==='客訴'?addMedia(r.id||'__cur'):[];
+      if(phs.length){body.push(wp(`異常產品／異物照片（${phs.length} 張）`,{b:1,sz:22,after:40}));phs.forEach(x=>body.push(wpic(x.n,x.w,x.h)))}
       if(f.shown&&f.sections){ttl.forEach((t,i)=>{const x=(f.sections['s'+(i+1)]||'').trim();if(x){body.push(wp(t,{b:1,sz:24,after:40}));body.push(wp(x,{after:120}))}})}
       else body.push(wp('（尚未產生分析紀錄）',{sz:20}));
     });
     if(!rows.length)body.push(wp('（無）',{sz:20}));
   });
-  body.push(wp('※ 可能原因未經查證不代表真因，亦不涉及責任歸屬；含 AI 輔助整理內容者，請經品管/品保人員審核。照片未包含於本檔。',{sz:18}));
+  body.push(wp('※ 可能原因未經查證不代表真因，亦不涉及責任歸屬；含 AI 輔助整理內容者，請經品管/品保人員審核。'+(media.length?'':'照片未包含於本檔。'),{sz:18}));
   if(!single){const nd=CASES.filter(c=>c.deleted&&!c.purged).length;body.push(wp(`※ 本檔另含最近刪除 ${nd} 件案件資料與已占用的編號，僅供「匯入 Word 備份」還原使用。`,{sz:18}))}
-  const W='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+  if(!single)Object.keys(phInfo).forEach(id=>addMedia(id));
+  const phMapOut={};Object.entries(phIdx).forEach(([id,a])=>{if(a.length&&id!=='__cur')phMapOut[id]=a.map(x=>({name:x.name,file:'word/media/ph'+x.n+'.jpg'}))});
+  const W='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
   return zipStore([
-    ['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'],
+    ['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'],
+    ['word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+media.map((m,i)=>`<Relationship Id="rPh${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/ph${i+1}.jpg"/>`).join('')+'</Relationships>'],
     ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>'+(single?'':'<Relationship Id="rId2" Type="urn:fca:backup" Target="customXml/fcabackup.xml"/>')+'</Relationships>'],
     ['word/document.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${W}><w:body>${body.join('')}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`]
-  ].concat(single?[]:[['customXml/fcabackup.xml',backupXml()]]));
+  ].concat(single?[]:[['customXml/fcabackup.xml',backupXml(phMapOut)]]).concat(media));
+}
+function wpic(n,w,h){
+  const cx=2926080,cy=Math.round(cx*h/w);
+  return `<w:p><w:pPr><w:spacing w:after="80"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${1000+n}" name="Photo ${n}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="${1000+n}" name="ph${n}.jpg"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rPh${n}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
 }
 async function saveDocx(blob,name,say,kind){
   try{
@@ -1095,13 +1120,14 @@ $('srep').onclick=async()=>{
 };
 
 // ---- Word 備份：隱藏資料區（匯出）與驗證（匯入）----
-function backupXml(){
+function backupXml(phMap){
   const cases=CASES.map(c=>c.purged?{id:c.id,kind:c.kind,no:c.no,purged:true}:{...c});
-  const bytes=new TextEncoder().encode(JSON.stringify({cases}));let bin='';
+  const bytes=new TextEncoder().encode(JSON.stringify({cases,photos:phMap||{}}));let bin='';
   for(let i=0;i<bytes.length;i+=8192)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+8192));
   return`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><fcaBackup app="food-complaint-assistant" version="2" exportedAt="${new Date().toISOString()}">${btoa(bin)}</fcaBackup>`;
 }
-function readZipEntry(buf,want){
+function readZipEntry(buf,want){return new TextDecoder().decode(readZipBytes(buf,want))}
+function readZipBytes(buf,want){
   const v=new DataView(buf),u8=new Uint8Array(buf),dec=new TextDecoder();let e=-1;
   for(let i=buf.byteLength-22;i>=Math.max(0,buf.byteLength-70000);i--){if(v.getUint32(i,true)===0x06054b50){e=i;break}}
   if(e<0)throw 0;
@@ -1115,7 +1141,7 @@ function readZipEntry(buf,want){
       const ds=lo+30+v.getUint16(lo+26,true)+v.getUint16(lo+28,true);
       if(ds+cs>buf.byteLength)throw 0;
       const d=u8.subarray(ds,ds+cs);if(crc32(d)!==crc)throw 0;
-      return dec.decode(d);
+      return d;
     }
     p+=46+nl+el+cl;
   }
@@ -1128,6 +1154,7 @@ function parseBackup(buf){
   const bin=atob(m[1]),b=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);
   const o=JSON.parse(new TextDecoder().decode(b));
   if(!o||!Array.isArray(o.cases)||o.cases.length>5000)throw 0;
+  if(o.photos!=null&&(typeof o.photos!=='object'||Array.isArray(o.photos)))throw 0;
   const ids=new Set();
   for(const c of o.cases){
     if(!c||typeof c!=='object'||Array.isArray(c))throw 0;
@@ -1143,43 +1170,50 @@ let pendingImp=null;
 async function applyImport(o){
   if(!DBc||!DBc.replaceAll){m3('此環境無法匯入（匯入只支援本機儲存模式），目前的資料沒有任何變動');return}
   await DBc.replaceAll(o.cases);
+  let pc=0,pf=0;try{await PDB.clear()}catch(_){}
+  for(const [id,arr] of Object.entries(o.photos||{})){if(!Array.isArray(arr))continue;const items=[];
+    for(const x of arr.slice(0,4)){try{if(!/^word\/media\/ph\d+\.jpg$/.test(x.file))throw 0;items.push({name:String(x.name||'photo.jpg').slice(0,120),blob:new Blob([readZipBytes(o.__buf,x.file)],{type:'image/jpeg'})})}catch(_){pf++}}
+    if(items.length){try{await PDB.put(id,items);pc+=items.length}catch(_){pf+=items.length}}}
   pendingSt=null;pendingDel=null;pendingPurge=null;pendingBulk=null;trSel['客訴'].clear();trSel['供應商客訴'].clear();keepC.clear();keepV.clear();cmsg('');
   showView('list');showVView('list');
   const live=o.cases.filter(c=>!c.purged&&!c.deleted).length,tr=o.cases.filter(c=>!c.purged&&c.deleted).length;
-  m3(`已匯入：案件 ${live} 件、最近刪除 ${tr} 件。照片不在備份裡，不會回來。請檢查內容。`);
+  m3(`已匯入：案件 ${live} 件、最近刪除 ${tr} 件、照片 ${pc} 張${pf?`（有 ${pf} 張照片無法還原）`:''}。請檢查內容。`);
 }
 $('bki').onclick=()=>$('bkf').click();
 $('bkf').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';$('impAsk').hidden=true;pendingImp=null;
   if(!f)return;
   let o;
-  try{o=parseBackup(await f.arrayBuffer())}catch(_){m3('匯入失敗：這不是本工具匯出的新版 Word 備份，目前的資料沒有任何變動');return}
+  try{const buf=await f.arrayBuffer();o=parseBackup(buf);o.__buf=buf}catch(_){m3('匯入失敗：這不是本工具匯出的新版 Word 備份，目前的資料沒有任何變動');return}
   if(CASES.length){pendingImp=o;m3('');const lv=CASES.filter(isLive).length,tr=CASES.filter(c=>c.deleted&&!c.purged).length,pg=CASES.filter(c=>c.purged).length;$('impTxt').textContent=`目前有案件 ${lv} 件、最近刪除 ${tr} 件、已占用編號 ${pg} 筆（客訴與供應商客訴合計），會全部被取代，確定要覆蓋嗎？`;$('impAsk').hidden=false}else await applyImport(o);
 };
 $('impYes').onclick=async()=>{const o=pendingImp;pendingImp=null;$('impAsk').hidden=true;if(o)await applyImport(o)};
 $('impNo').onclick=()=>{pendingImp=null;$('impAsk').hidden=true;m3('已取消，目前的資料沒有任何變動')};
 const fnm=s=>String(s||'未命名').replace(/[\\/:*?"<>|\s]+/g,'_');
-$('bkw').onclick=()=>{
+$('bkw').onclick=async()=>{
   if(!CASES.length){m3('列表中尚無案件可匯出，請先新增並儲存案件');return}
-  saveDocx(buildDocx(),`客訴案件備份_${new Date().toISOString().slice(0,10)}.docx`,m3);
+  m3('備份產生中，請稍候…');
+  try{const ph={};for(const c of CASES.filter(c=>c.kind==='客訴'&&!c.purged)){const a=await PDB.get(c.id);if(a.length)ph[c.id]=a}
+    saveDocx(await buildDocx(null,false,ph),`客訴案件備份_${new Date().toISOString().slice(0,10)}.docx`,m3)}
+  catch(err){m3('備份產生失敗：'+(err.message||err)+'，請重試')}
 };
-$('fword').onclick=()=>{
+$('fword').onclick=async()=>{
   const d=inputs(),say=t=>$('fmsg').textContent=t;
   if(!d.date){say('請填日期');$('date').focus();return}
 if(!d.prod){say('請先填寫產品名稱');return}
 if($('fcat').value==='其它'&&!d.catother){say('請填寫異常說明');$('catother').focus();return}
   const sec={};[1,2,3,4,5,6,7].forEach(i=>sec['s'+i]=$('s'+i).value);
   const r={date:d.date,kind:'客訴',no:d.no,item:d.prod,lot:d.lot,sup:'',cat:$('fcat').value,status:$('fst').value,form:{inputs:d,sections:sec,shown:!$('out').hidden}};
-  saveDocx(buildDocx([r],true),`客訴案件_${fnm(d.no||d.prod)}.docx`,say);
+  saveDocx(await buildDocx([r],true,{'__cur':photos.map(p=>({name:p.name,blob:p.blob}))}),`客訴案件_${fnm(d.no||d.prod)}.docx`,say);
 };
-$('vfword').onclick=()=>{
+$('vfword').onclick=async()=>{
   const d=vin(),say=t=>$('vfmsg').textContent=t;
   if(!d.date){say('請填日期');$('vdate').focus();return}
 if(!d.sup||!d.mat){say('請先填寫供應商名稱與原料／包材名稱');return}
 if($('vcat').value==='其它'&&!d.catother){say('請填寫異常說明');$('vcatother').focus();return}
   const sec={};[1,2,3,4,5,6,7].forEach(i=>sec['s'+i]=$('v'+i).value);
   const r={date:d.date,kind:'供應商客訴',no:d.no,item:d.mat,lot:d.lot,sup:d.sup,cat:$('vcat').value,status:$('vstat').value,form:{inputs:d,sections:sec,shown:!$('vout').hidden}};
-  saveDocx(buildDocx([r],true),`供應商客訴_${fnm(d.no||d.sup)}.docx`,say);
+  saveDocx(await buildDocx([r],true),`供應商客訴_${fnm(d.no||d.sup)}.docx`,say);
 };
 
 ['lbody','vlbody'].forEach(id=>$(id).addEventListener('change',async e=>{
