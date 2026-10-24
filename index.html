@@ -601,7 +601,7 @@ function fillYM(yid,mid,all){
 }
 function pager(pages,cur,k){return pages<2?'':`<button data-pg="${cur-1}" data-k="${k}"${cur<=1?' disabled':''}>‹ 上一頁</button><span>第 ${cur} / ${pages} 頁</span><button data-pg="${cur+1}" data-k="${k}"${cur>=pages?' disabled':''}>下一頁 ›</button>`}
 function ymEmpty(fy,fm){return fy||fm?`${fy?fy+' 年':''}${fm?(+fm)+' 月':''}沒有符合條件的案件，可把年份改成「全部年份」或月份改成「全部月份」查看。`:'沒有符合條件的案件。'}
-const CATS=['異物','標示/包裝/數量有誤','口感不佳','酸敗/風味','血筋/肌紅素','其它'];
+const CATS=['異物','標示/包裝/數量有誤','口感不佳','酸敗/風味','血筋/血塊/肌紅素','其它'];
 const MN={Y:'年度分析',Q:'每季分析',M:'每月分析'};
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
@@ -752,7 +752,7 @@ try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv
 };
 // ---- 案件列表（先查詢，按「新增案件」才進入客訴分析頁）----
 const STS=['原因查證','改善執行','效果確認','已結案'],VSTS=['原因查證','通知供應商改善','改善執行','效果確認','已結案'];
-const normSt=x=>x&&x.status==='調查中'?{...x,status:'原因查證'}:x;
+const normSt=x=>{if(!x)return x;let y=x;if(y.status==='調查中')y={...y,status:'原因查證'};if(y.cat==='血筋/肌紅素')y={...y,cat:'血筋/血塊/肌紅素'};return y};
 function stepper(st,L=STS){const k=L.indexOf(st);if(k<0)return'';return`<div class="steps" aria-label="處理進度：${esc(st)}">${L.map((x,i)=>`<span class="${i<k?'done':i===k?'now':''}">${x}</span>`).join('<i>›</i>')}</div>`}
 function localShim(){
   const K='fca_cases_v1';let arr=[];
