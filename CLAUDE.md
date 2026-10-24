@@ -1,4 +1,4 @@
-# Casevora 食品客訴分析助手
+# Casevoras 食品客訴分析助手（品牌名稱統一為 Casevoras）
 
 ## 兩個版本，每次修改都要一起更新
 
