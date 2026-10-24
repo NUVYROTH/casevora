@@ -49,7 +49,16 @@ button:disabled{opacity:.5;cursor:default}
 @media(max-width:960px){.split{grid-template-columns:1fr}}
 .fsec{font-size:15px;margin:18px 0 6px;padding-top:12px;border-top:1px solid var(--bd)}
 .fsec b{color:#c0392b}
-.topbar{background:var(--ac);color:var(--acx);border-bottom:3px solid var(--gold)}
+.topbar{background:var(--ac);color:var(--acx);border-bottom:3px solid var(--gold);position:sticky;top:env(safe-area-inset-top,0px);z-index:30;box-shadow:0 2px 10px rgba(0,0,0,0)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:31;background:var(--ac)}
+.tbin,.logo,.bname,.bsub{transition:all .2s ease}
+.topbar.mini{box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.topbar.mini .tbin{padding-block:6px}
+.topbar.mini .logo{width:44px;height:44px}
+.topbar.mini .bname{font-size:30px}
+.topbar.mini .bsub{font-size:12px;letter-spacing:.12em}
+.topbar.mini .tbmeta{display:none}
+@media(prefers-reduced-motion:reduce){.tbin,.logo,.bname,.bsub{transition:none}}
 .tbin{max-width:1320px;margin:0 auto;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;justify-content:space-between}
 .brand{display:flex;align-items:center;gap:16px}
 .logo{width:76px;height:76px;border-radius:50%;flex:none;display:block;box-shadow:0 0 0 1px rgba(184,149,90,.5),0 2px 8px rgba(0,0,0,.35)}
@@ -767,6 +776,7 @@ function localShim(){
 $('lcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`<option>${c}</option>`).join('');
 $('lst').innerHTML='<option value="">全部狀態</option><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';
 $('fcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
+{const tb=document.querySelector('.topbar');let on=false;const f=()=>{const v=scrollY>60;if(v!==on){on=v;tb.classList.toggle('mini',v)}};addEventListener('scroll',f,{passive:true});f()}
 function syncOther(){$('catotherW').hidden=$('fcat').value!=='其它'}
 $('fcat').addEventListener('change',syncOther);$('resp').addEventListener('change',syncResp);
 const FK=['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','eff','conf','catother'];
