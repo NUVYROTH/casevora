@@ -76,6 +76,10 @@ h2{letter-spacing:.02em}
 .rcol textarea{background:#fff;border-color:var(--aibd)}
 .rcol .aikeep{background:#fff;color:var(--aitx);border:1px dashed var(--aibd)}
 .chart{margin:0}.chart-act{display:flex;justify-content:flex-end;margin-top:6px}.chart-act button{font-size:13px;padding:5px 12px}
+.seg{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--bd);border-radius:999px;background:var(--bg);margin:6px 0 4px}
+.seg button{border:0;border-radius:999px;background:none;color:var(--mu);padding:6px 20px;font-weight:600}
+.seg button:hover:not(:disabled){background:#efe6d5;color:var(--tx)}
+.seg button.on,.seg button.on:hover:not(:disabled){background:var(--ac);color:var(--acx)}
 .ainote{font-size:12.5px;line-height:1.6;color:var(--warnt);background:var(--warn);border-left:3px solid var(--gold);border-radius:6px;padding:8px 12px;margin:10px 0 0}
 .trbar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;margin:4px 0}
 .trall,.trrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -142,7 +146,7 @@ label b,.fsec b{color:#b42318}
 <p class="sub">輸入客訴資料 → 取得原因分析與改善建議 → 修改內容 → 匯出客訴分析紀錄</p>
 <div class="note">分析結果為輔助整理與建議，僅依您提供的資料推論；<b>可能原因不等於真因，也不判定責任歸屬</b>。請由品管/品保人員查證、修改後再定稿。</div>
 
-<div class="tabs"><button class="on" data-t="A">客訴分析</button><button data-t="B">供應商客訴</button><button data-t="Y">年度分析</button><button data-t="Q">每季分析</button><button data-t="M">每月分析</button></div>
+<div class="tabs"><button class="on" data-t="A">客訴分析</button><button data-t="B">供應商客訴</button><button data-t="S">統計分析</button></div>
 <div id="tabA">
 <div id="listView">
 <div class="card">
@@ -326,6 +330,7 @@ label b,.fsec b{color:#b42318}
 <div id="tabS" hidden>
 <div class="card">
 <h2 id="stitle">統計分析</h2>
+<div class="seg" role="group" aria-label="統計期間"><button type="button" data-m="Y" class="on">年度</button><button type="button" data-m="Q">每季</button><button type="button" data-m="M">每月</button></div>
 <p class="sub">客訴與供應商客訴分開統計，用下方按鈕切換。</p>
 <div class="grid" id="sctl"></div>
 <div id="sbody"></div>
@@ -525,7 +530,7 @@ async function restore(text){
 // ---- 分頁 ----
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  const t=b.dataset.t;$('tabA').hidden=t!=='A';$('tabB').hidden=t!=='B';$('tabS').hidden=!'YQM'.includes(t);if('YQM'.includes(t)){mode=t;resetSt();renderS()}
+  const t=b.dataset.t;$('tabA').hidden=t!=='A';$('tabB').hidden=t!=='B';$('tabS').hidden=t!=='S';if(t==='S'){resetSt();syncSeg();renderS()}
 });
 
 // ---- 供應商客訴 ----
@@ -606,6 +611,8 @@ $('vpr').onclick=()=>{$('printView').textContent=vFull();window.print()};
 // ---- 統計分析 ----
 let DBc=null,CASES=[],mode='Y',lastSum='',trashOpen={},stK='客訴',stN=5,stYear=new Date().getFullYear(),stMon=4,stChart='line',stMY=new Date().getFullYear(),stM=new Date().getMonth()+1;
 const LC=['#16213a','#c0392b','#2980b9','#d68910','#8e44ad','#7f8c8d'];
+function syncSeg(){document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x.dataset.m===mode))}
+document.querySelector('.seg').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(!b||b.dataset.m===mode)return;const k=stK;mode=b.dataset.m;resetSt();stK=k;syncSeg();renderS()});
 function resetSt(){const d=new Date();stK='客訴';stN=5;stYear=d.getFullYear();stMon=4;stChart='line';stMY=d.getFullYear();stM=d.getMonth()+1}
 let pendingSt=null,pendingDel=null,pendingPurge=null,pendingBulk=null;const trSel={'客訴':new Set(),'供應商客訴':new Set()},trMsg={};
 const inR=(c,s,e)=>c.date>=s&&c.date<=e;
