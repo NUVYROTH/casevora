@@ -146,6 +146,7 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
 .kpi{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 16px;position:relative;overflow:hidden;min-width:0}
 .kpi:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gold)}.kpi.warn:before{background:#b42318}
+.kpi{padding-right:58px}.kic{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:9px;background:#f3ece0;color:#8a6a35;display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1}.kic.kw{background:#fdecea;color:#b42318}
 .kpi .l{font-size:13px;color:var(--mu);font-weight:600}.kpi .n{font-size:30px;font-weight:800;line-height:1.2}.kpi .n small{font-size:14px;font-weight:600;color:var(--mu);margin-left:2px}.kpi .n.nt{font-size:21px;line-height:1.45}.kpi .d{font-size:12.5px;color:var(--mu)}
 .dgrid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:14px;align-items:start}
 .dgrid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:start}
@@ -173,19 +174,34 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .st-scroll{overflow-x:auto}.st-table{width:100%;border-collapse:collapse;font-size:14px}.st-table th,.st-table td{border-bottom:1px solid var(--bd);padding:7px 8px;text-align:left}.st-table th{background:#f7f1e6;color:var(--mu);font-weight:600;white-space:nowrap}.st-table tr.click{cursor:pointer}.st-table tr.click:hover{background:#f7f1e6}
 @media(max-width:600px){.st-tiles{grid-template-columns:1fr 1fr}.st-tile .n{font-size:28px}}
 @media(min-width:900px){.dl .case .cinfo{flex-basis:100%}.dl .case .ac{margin-left:auto}}
-#sideHelp,#sideTrash{display:none}
+#sideHelp,#sideTrash,.sbrand,.slab,.sfoot{display:none}
+.flowh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--bd)}.flowh h2{margin:0}.flowh span{font-size:13px;color:var(--mu)}
+.fsteps{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.fstep{border:1px solid var(--bd);border-radius:10px;padding:14px;background:#fff}.fno{font-size:11.5px;font-weight:800;letter-spacing:.12em;color:var(--gold);margin-bottom:6px}.fstep b{font-size:14.5px}.fstep p{margin:6px 0 0;font-size:12.5px;color:var(--mu);line-height:1.6}
+.sfoot b{color:#d6deec;font-weight:600;letter-spacing:.04em}
+.crumb{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--mu);margin:0 0 12px}.crumb b{color:var(--tx)}
+.lbadge{background:#e6f5ec;color:#167a3e;border-radius:999px;padding:3px 12px;font-weight:700;font-size:12.5px;white-space:nowrap}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.18em;color:var(--gold);margin-bottom:2px}
+.ptitle:has(.eyebrow){display:block}.ptitle:has(.eyebrow) h1{font-size:28px;margin:0 0 4px}.ptitle:has(.eyebrow) span{font-size:14.5px}
 @media(min-width:900px){
- .shell{display:grid;grid-template-columns:200px minmax(0,1fr);gap:22px;align-items:start}
- .side{position:sticky;top:92px;height:calc(100vh - 108px);min-height:320px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:4px}
+ .topbar{display:none}
+ body{padding-left:248px}
+ .shell{display:block}
+ .crumb{margin:-4px -2px 14px;padding:0 0 12px;border-bottom:1px solid var(--bd)}
+ .sbrand{display:flex;align-items:center;gap:12px;padding:6px 8px 18px}.sbrand img{width:44px;height:44px;border-radius:50%;box-shadow:0 0 0 1px rgba(184,149,90,.6)}
+ .sbn{font:400 28px/1 "Pinyon Script",Georgia,serif;color:#e2c891}.sbs{font-size:10.5px;letter-spacing:.16em;color:#9fb0cf;margin-top:4px}
+ .slab{display:block;font-size:11px;letter-spacing:.14em;color:#8796b3;padding:0 10px 8px}
+ .sfoot{display:block;border-top:1px solid rgba(255,255,255,.12);margin-top:12px;padding:12px 10px 4px;font-size:12px;line-height:1.7;color:#9fb0cf}
+ .side{position:fixed;left:0;top:0;bottom:0;width:248px;z-index:20;overflow:auto;background:#1a2a44;padding:18px 14px;display:flex;flex-direction:column;gap:4px}
  .side .tabs{flex-direction:column;border:0;margin:0;gap:4px}
- .side .tabs button,#sideHelp,#sideTrash{white-space:nowrap;display:flex;align-items:center;gap:10px;text-align:left;border:0;border-radius:10px;padding:10px 12px;background:none;color:var(--mu);font-weight:600}
- .side .tabs button.on,.side .tabs button.on:hover:not(:disabled){background:var(--ac);color:var(--acx)}
- .side .tabs button:not(.on):hover:not(:disabled),#sideHelp:hover:not(:disabled),#sideTrash:hover:not(:disabled){background:#f3ece0;color:var(--tx)}
- .side .ic{width:26px;height:26px;border-radius:8px;background:#efe6d5;display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+ .side .tabs button,#sideHelp,#sideTrash{white-space:nowrap;display:flex;align-items:center;gap:10px;text-align:left;border:0;border-radius:10px;padding:11px 12px;background:none;color:#d6deec;font-weight:600}
+ .side .tabs button.on,.side .tabs button.on:hover:not(:disabled){background:#2c4166;color:#fff}
+ .side .tabs button:not(.on):hover:not(:disabled),#sideHelp:hover:not(:disabled),#sideTrash:hover:not(:disabled){background:rgba(255,255,255,.08);color:#fff}
+ .side .ic{width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.1);display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:none}
  .side .tabs button.on .ic{background:var(--gold)}
- #sideHelp{margin-top:auto;font-size:14px;border-top:1px solid var(--bd);border-radius:0 0 10px 10px;padding-top:12px}
+ #sideHelp{margin-top:auto;font-size:14px}
 }
 @media(max-width:899px){.tabs .ic{display:none}.dgrid,.dgrid2{display:block}}
+@media(max-width:600px){.kpi{padding-right:40px}.kic{width:26px;height:26px;top:10px;right:8px}.kic svg{width:15px;height:15px}.ptitle:has(.eyebrow){flex-basis:100%}.ptitle:has(.eyebrow) h1{font-size:24px}.eyebrow{font-size:11px}
 @media(max-width:600px){.kpis{grid-template-columns:1fr 1fr;gap:8px}.kpi{padding:10px 12px}.kpi .n{font-size:25px}.kpi .n.nt{font-size:18px}}
 .case .tg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px}
 .tag{font-size:12px;background:var(--bg);border:1px solid var(--bd);color:var(--mu);border-radius:999px;padding:0 9px}
@@ -214,13 +230,14 @@ label b,.fsec b{color:#b42318}
 </div></header>
 <div class="wrap">
 <div class="shell">
-<nav class="side" aria-label="頁面選單"><div class="tabs"><button class="on" data-t="A"><span class="ic">📋</span>客訴清單</button><button data-t="B"><span class="ic">🚚</span>供應商客訴清單</button><button data-t="S"><span class="ic">📊</span>統計分析</button></div><button type="button" id="sideTrash"><span class="ic">🗑️</span>最近刪除</button><button type="button" id="sideHelp"><span class="ic">？</span>使用說明</button></nav>
+<nav class="side" aria-label="頁面選單"><div class="sbrand"><img id="sideLogo" alt="Casevoras 標誌" width="44" height="44"><div><div class="sbn">Casevoras</div><div class="sbs">FOOD QUALITY TOOLS</div></div></div><div class="slab">工作台 WORKSPACE</div><div class="tabs"><button class="on" data-t="A"><span class="ic">📋</span>客訴清單</button><button data-t="B"><span class="ic">🚚</span>供應商客訴清單</button><button data-t="S"><span class="ic">📊</span>統計分析</button></div><button type="button" id="sideTrash"><span class="ic">🗑️</span>最近刪除</button><button type="button" id="sideHelp"><span class="ic">？</span>使用說明</button><div class="sfoot"><b>CASEVORAS COMPLAINT</b><br>個人工作站・本機資料模式<br>v16</div></nav>
 <div class="mainc">
+<div class="crumb"><span>Casevoras / <b id="crumbNow">客訴清單</b></span><span class="lbadge">● 本機資料模式</span></div>
 <div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" id="openGuide">查看使用說明</button></div>
 
 <div id="tabA">
 <div id="listView">
-<div class="phead"><div class="ptitle"><h1>客訴清單</h1><span>消費者／下游廠商</span></div><div class="tbl"><button class="pri" id="lnew">＋ 新增案件</button></div></div>
+<div class="phead"><div class="ptitle"><div class="eyebrow">QUALITY CASE MANAGEMENT</div><h1>食品客訴管理工作台</h1><span>從案件建檔、調查、改善追蹤到結案，讓每一件客訴都有紀錄、有進度、有結果。</span></div><div class="tbl"><button class="pri" id="lnew">＋ 新增案件</button></div></div>
 <div class="tbar"><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div><div class="tmslot" id="slotAm"></div></div>
 <div class="kpis" id="kpiA"></div>
 <div class="dgrid"><div class="dl">
@@ -241,6 +258,7 @@ label b,.fsec b{color:#b42318}
 <div id="lpager" class="pager"></div>
 </div>
 </div><div class="dr" id="sideA"></div></div>
+<div class="card flow"><div class="flowh"><div><h2>標準處理流程</h2><span>用一致流程管理每一件案件</span></div><button type="button" class="fguide">查看作業指南 →</button></div><div class="fsteps"><div class="fstep"><div class="fno">STEP 01</div><b>案件建檔</b><p>記錄客訴來源、品名、批號、客訴內容與照片。</p></div><div class="fstep"><div class="fno">STEP 02</div><b>原因查證</b><p>確認事實、追溯批次、分析可能原因。</p></div><div class="fstep"><div class="fno">STEP 03</div><b>改善執行</b><p>指定權責單位（負責改善的部門）與具體改善措施。</p></div><div class="fstep"><div class="fno">STEP 04</div><b>效果確認</b><p>以紀錄或數據確認改善是否有效。</p></div><div class="fstep"><div class="fno">STEP 05</div><b>結案與回顧</b><p>完成結案，納入統計與趨勢回顧。</p></div></div></div>
 <div id="slotAh"></div>
 </div>
 <div id="trashView" hidden>
@@ -319,7 +337,7 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabB" hidden>
 <div id="vlistView">
-<div class="phead"><div class="ptitle"><h1>供應商客訴清單</h1><span>供應商／原物料</span></div><div class="tbl"><button class="pri" id="vnew">＋ 新增案件</button></div></div>
+<div class="phead"><div class="ptitle"><div class="eyebrow">SUPPLIER CASE MANAGEMENT</div><h1>供應商客訴清單</h1><span>原物料、包材異常的通知、改善與追蹤。</span></div><div class="tbl"><button class="pri" id="vnew">＋ 新增案件</button></div></div>
 <div class="tbar"><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div><div class="tmslot" id="slotBm"></div></div>
 <div class="kpis" id="kpiB"></div>
 <div class="dgrid"><div class="dl">
@@ -339,6 +357,7 @@ label b,.fsec b{color:#b42318}
 <div id="vlpager" class="pager"></div>
 </div>
 </div><div class="dr" id="sideB"></div></div>
+<div class="card flow"><div class="flowh"><div><h2>標準處理流程</h2><span>用一致流程管理每一件案件</span></div><button type="button" class="fguide">查看作業指南 →</button></div><div class="fsteps"><div class="fstep"><div class="fno">STEP 01</div><b>案件建檔</b><p>記錄供應商、原料／包材、批號、異常內容。</p></div><div class="fstep"><div class="fno">STEP 02</div><b>原因查證</b><p>確認事實、保留樣品、整理需供應商提供的資料。</p></div><div class="fstep"><div class="fno">STEP 03</div><b>通知供應商改善</b><p>寄出通知，要求原因調查與矯正預防措施。</p></div><div class="fstep"><div class="fno">STEP 04</div><b>改善執行</b><p>追蹤供應商與內部的處置及改善。</p></div><div class="fstep"><div class="fno">STEP 05</div><b>效果確認</b><p>以後續進料或檢驗紀錄確認改善有效。</p></div><div class="fstep"><div class="fno">STEP 06</div><b>結案與回顧</b><p>完成結案，納入統計與趨勢回顧。</p></div></div></div>
 <div id="slotBh"></div>
 </div>
 <div id="vtrashView" hidden>
@@ -411,7 +430,7 @@ label b,.fsec b{color:#b42318}
 </div>
 
 <div id="tabS" hidden>
-<div class="phead"><div class="ptitle"><h1>統計分析</h1><span>客訴依月／季／年統計</span></div><span class="status" id="sPrintMsg" role="status"></span><button type="button" id="sPrint">列印／存成 PDF</button></div>
+<div class="phead"><div class="ptitle"><div class="eyebrow">QUALITY ANALYTICS</div><h1>統計分析</h1><span>客訴依月／季／年統計。</span></div><span class="status" id="sPrintMsg" role="status"></span><button type="button" id="sPrint">列印／存成 PDF</button></div>
 <div class="kpis" id="kpiS"></div>
 <div class="dgrid2"><div class="card">
 <h2 id="stitle">統計報表</h2>
@@ -914,10 +933,10 @@ function dashData(kind){
   const cc={};yr.forEach(c=>{const k=c.cat||'未分類';cc[k]=(cc[k]||0)+1});
   return{kind,all,yr,open,closed:yr.filter(c=>c.status==='已結案').length,cats:Object.entries(cc).sort((a,b)=>b[1]-a[1]),nm:all.filter(c=>c.date.slice(0,7)===ym).length,pm:all.filter(c=>c.date.slice(0,7)===pm).length}}
 function kpiHtml(D){const rate=D.yr.length?Math.round(D.closed/D.yr.length*100):null,top=D.cats[0];
-  return `<div class="kpi"><div class="l">本月新增</div><div class="n">${D.nm}<small>件</small></div><div class="d">上月 ${D.pm} 件</div></div>`+
-  `<div class="kpi warn"><div class="l">未結案</div><div class="n">${D.open.length}<small>件</small></div><div class="d">${D.open.length?'最久已 '+daysSince(D.open[0].date)+' 天':'目前沒有未結案'}</div></div>`+
-  `<div class="kpi"><div class="l">今年結案率</div><div class="n">${rate==null?'—':rate+'<small>%</small>'}</div><div class="d">${D.yr.length?`${D.yr.length} 件中 ${D.closed} 件已結案`:'今年還沒有案件'}</div></div>`+
-  `<div class="kpi"><div class="l">最多的異常類別</div><div class="n nt">${top?esc(top[0]):'—'}</div><div class="d">${top?`今年 ${top[1]} 件（${Math.round(top[1]/D.yr.length*100)}%）`:'今年還沒有案件'}</div></div>`}
+  return `<div class="kpi"><span class="kic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><div class="l">本月新增</div><div class="n">${D.nm}<small>件</small></div><div class="d">上月 ${D.pm} 件</div></div>`+
+  `<div class="kpi warn"><span class="kic kw" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div class="l">未結案</div><div class="n">${D.open.length}<small>件</small></div><div class="d">${D.open.length?'最久已 '+daysSince(D.open[0].date)+' 天':'目前沒有未結案'}</div></div>`+
+  `<div class="kpi"><span class="kic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div class="l">今年結案率</div><div class="n">${rate==null?'—':rate+'<small>%</small>'}</div><div class="d">${D.yr.length?`${D.yr.length} 件中 ${D.closed} 件已結案`:'今年還沒有案件'}</div></div>`+
+  `<div class="kpi"><span class="kic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg></span><div class="l">最多的異常類別</div><div class="n nt">${top?esc(top[0]):'—'}</div><div class="d">${top?`今年 ${top[1]} 件（${Math.round(top[1]/D.yr.length*100)}%）`:'今年還沒有案件'}</div></div>`}
 // 處理狀態：每個階段一個彩色標籤＋件數（比照衛生缺失）
 const STC={'原因查證':'s1','通知供應商改善':'s2','改善執行':'s3','效果確認':'s4','已結案':'s5'};
 function donutHtml(D){const L=D.kind==='客訴'?STS:VSTS;
@@ -938,6 +957,9 @@ function renderDash(){
 document.addEventListener('click',e=>{const b=e.target.closest('[data-open]');if(!b)return;const r=CASES.find(c=>c.id===b.dataset.open);if(!r)return;
   const isA=r.kind==='客訴';document.querySelector(`.tabs button[data-t="${isA?'A':'B'}"]`).click();isA?openForm(r):openVForm(r)});
 $('sideHelp').onclick=()=>$('openGuide').click();
+document.querySelectorAll('.fguide').forEach(b=>b.onclick=()=>$('openGuide').click());
+$('sideLogo').src=document.querySelector('.topbar .logo').src;
+document.querySelectorAll('.tabs button[data-t]').forEach(b=>b.addEventListener('click',()=>{$('crumbNow').textContent={A:'客訴清單',B:'供應商客訴清單',S:'統計分析'}[b.dataset.t]}));
 let lastList='A';document.querySelectorAll('.tabs button[data-t]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.t!=='S')lastList=b.dataset.t}));
 const toList=()=>document.querySelector(`.tabs button[data-t="${lastList}"]`).click();
 if(typeof claude!=='undefined')$('sPrint').hidden=true;
