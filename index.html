@@ -88,7 +88,7 @@ input[type=checkbox]{width:18px;height:18px;margin:0;flex:none;accent-color:var(
 .stc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px}
 .sec textarea{min-height:130px}
 .hint{font-size:12px;color:var(--mu);margin:-2px 0 4px}
-#printView{display:none;white-space:pre-wrap}
+#printView{display:none;white-space:pre-wrap}#printView.pvhtml{white-space:normal}#printView button.dl,#printView .dlrow,#printView figure button{display:none}.pvh{font-size:18pt;text-align:center;margin:0}.pvs{text-align:center;color:#444;margin:2px 0 10px}.pvs2{font-size:13pt;margin:12px 0 4px}.pvg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}#printView .card{break-inside:avoid;margin-bottom:8px}#printView .kpi,#printView .card{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 select{width:100%;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:8px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0}
@@ -106,7 +106,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .tabs button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;color:var(--mu);padding:10px 16px;font-weight:600}
 .tabs button:hover{color:var(--tx)}
 .tabs button.on{background:none;color:var(--tx);border-bottom-color:var(--gold)}
-@media print{.wrap{display:none}#printView{display:block;font-size:12pt;color:#000;background:#fff;padding:0}#printView img{max-width:200px;margin:4px}}
+@media print{.wrap,.topbar{display:none!important}html,body{background:#fff!important}#printView{display:block;font-size:12pt;color:#000;background:#fff;padding:0}#printView img{max-width:200px;margin:4px}}
 .tip{background:var(--bg);border:1px solid var(--bd);border-left:4px solid var(--ac);border-radius:8px;padding:8px 12px;font-size:13px;margin:0 0 12px}
 .tip b{display:block;margin-bottom:2px}
 .tip ul{margin:2px 0 0 18px;padding:0}
@@ -141,7 +141,7 @@ button.gold{background:var(--gold);border-color:var(--gold);color:#16213a;font-w
 .tmslot{flex-basis:100%}
 .tmslot:not(:has(.status:not(:empty),.stc:not([hidden]))){display:none}
 button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;font-weight:700}button.danger:hover:not(:disabled){background:#8f1c13}
-.phead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px}.ptitle{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;flex:1}.ptitle h1{font-size:22px;margin:0}.ptitle span{color:var(--mu);font-size:13px}
+.phead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px}#sPrintMsg{font-size:13px;max-width:420px}.ptitle{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;flex:1}.ptitle h1{font-size:22px;margin:0}.ptitle span{color:var(--mu);font-size:13px}
 .tbar{margin-bottom:12px}
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
 .kpi{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 16px;position:relative;overflow:hidden;min-width:0}
@@ -206,7 +206,7 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabA">
 <div id="listView">
-<div class="phead"><div class="ptitle"><h1>客訴清單</h1><span>消費者／下游廠商</span></div><div class="tbl"><button class="pri" id="lnew">＋ 新增案件</button><button class="gold" data-stat="客訴">📊 統計報表</button></div></div>
+<div class="phead"><div class="ptitle"><h1>客訴清單</h1><span>消費者／下游廠商</span></div><div class="tbl"><button class="pri" id="lnew">＋ 新增案件</button></div></div>
 <div class="tbar"><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div><div class="tmslot" id="slotAm"></div></div>
 <div class="kpis" id="kpiA"></div>
 <div class="dgrid"><div class="dl">
@@ -305,7 +305,7 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabB" hidden>
 <div id="vlistView">
-<div class="phead"><div class="ptitle"><h1>供應商客訴清單</h1><span>供應商／原物料</span></div><div class="tbl"><button class="pri" id="vnew">＋ 新增案件</button><button class="gold" data-stat="供應商客訴">📊 統計報表</button></div></div>
+<div class="phead"><div class="ptitle"><h1>供應商客訴清單</h1><span>供應商／原物料</span></div><div class="tbl"><button class="pri" id="vnew">＋ 新增案件</button></div></div>
 <div class="tbar"><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div><div class="tmslot" id="slotBm"></div></div>
 <div class="kpis" id="kpiB"></div>
 <div class="dgrid"><div class="dl">
@@ -397,7 +397,7 @@ label b,.fsec b{color:#b42318}
 </div>
 
 <div id="tabS" hidden>
-<div class="phead"><button type="button" id="sBack">← 返回清單</button><div class="ptitle"><h1>統計報表</h1><span>客訴與供應商客訴分開統計</span></div></div>
+<div class="phead"><button type="button" id="sBack">← 返回清單</button><div class="ptitle"><h1>統計報表</h1><span>客訴與供應商客訴分開統計</span></div><span class="status" id="sPrintMsg" role="status"></span><button type="button" id="sPrint">列印／存成 PDF</button></div>
 <div class="kpis" id="kpiS"></div>
 <div class="dgrid2"><div class="card">
 <h2 id="stitle">統計報表</h2>
@@ -437,7 +437,7 @@ label b,.fsec b{color:#b42318}
 <li>按「儲存」。之後可從清單點「編輯」或小照片，繼續更新案件內容。</li>
 <li>處理狀態依序是：原因查證 → 改善執行 → 效果確認 → 已結案（供應商客訴多一個「通知供應商改善」）。可在清單上直接切換。</li>
 <li>清單上方可以用狀態膠囊、搜尋、類別、年月篩選；勾選案件後可刪除，或只匯出這幾件的 Word 報告。</li>
-<li>「匯出全部報表（Excel 可開）」會匯出這一頁的全部案件；「📊 統計報表」可看月報、季報、年報，並匯出統計報告。</li>
+<li>「匯出全部報表（Excel 可開）」會匯出這一頁的全部案件；左側「統計報表」可看月報、季報、年報，並匯出統計報告。</li>
 <li>換電腦時，在舊電腦按「下載備份」，再到新電腦按「從備份還原」。</li>
 </ol>
 </div>
@@ -909,6 +909,11 @@ $('sideHelp').onclick=()=>$('openGuide').click();
 let lastList='A';document.querySelectorAll('.tabs button[data-t]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.t!=='S')lastList=b.dataset.t}));
 const toList=()=>document.querySelector(`.tabs button[data-t="${lastList}"]`).click();
 $('sBack').onclick=toList;
+$('sPrint').onclick=()=>{
+  if(typeof claude!=='undefined'){$('sPrintMsg').textContent='claude.ai 版無法開啟列印視窗。請到網址版按「列印／存成 PDF」，或改用「匯出統計報告（Word）」。';return}
+  $('sPrintMsg').textContent='';const pv=$('printView'),P=statPeriod();
+  pv.innerHTML=`<h1 class="pvh">Casevoras ${esc(stK)}統計${MN[mode]}</h1><p class="pvs">${esc(P.label)}　列印日期：${todayLocal()}</p><div class="kpis">${$('kpiS').innerHTML}</div><h2 class="pvs2">${esc($('stitle').textContent)}</h2>${$('sbody').innerHTML}<div class="pvg">${$('sideS').innerHTML}</div><div class="card"><h2>未結案清單</h2>${$('sopen').innerHTML}</div><p class="pvs">統計只呈現件數分布，不代表原因或責任判定。</p>`;
+  pv.classList.add('pvhtml');window.print();pv.classList.remove('pvhtml')};
 $('sideTrash').onclick=()=>{toList();lastList==='B'?showVView('trash'):showView('trash');scrollTo(0,0)};
 async function exportCsv(rows,name,cmsg){
 const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
@@ -941,7 +946,6 @@ Object.entries(X).forEach(([k,o])=>{
       await saveDocx(await buildDocx(rows,true,ph),`${o.kind}案件_${todayLocal()}_${rows.length}件.docx`,say)}
     catch(err){say('匯出失敗：'+(err.message||err))}finally{b.disabled=false}};
 });
-document.querySelectorAll('button[data-stat]').forEach(b=>b.onclick=()=>{document.querySelector('.tabs button[data-t="S"]').click();if(stK!==b.dataset.stat){stK=b.dataset.stat;renderStats()}window.scrollTo({top:$('tabS').getBoundingClientRect().top+scrollY-140,behavior:'smooth'})});
 if(typeof claude!=='undefined')$('cvTip').hidden=false;
 // 「查看使用說明」：打開下面的說明並捲動過去（不在清單頁時先回清單）
 $('openGuide').onclick=()=>{
