@@ -124,6 +124,10 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .fdirty{margin-left:auto;font-size:13px;color:var(--mu)}
 .fdirty:empty{display:none}
 .fbnote{margin:8px 2px 0}
+.xbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0 2px}
+.xbar button{padding:6px 12px;font-size:13px}
+.xhint{font-size:12.5px;color:var(--mu)}
+.case .xsel{flex:none;width:18px;height:18px;margin:4px 0 0;accent-color:var(--ac)}
 .case .tg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px}
 .tag{font-size:12px;background:var(--bg);border:1px solid var(--bd);color:var(--mu);border-radius:999px;padding:0 9px}
 .tag.cat{color:var(--ac);border-color:var(--ac)}
@@ -167,6 +171,7 @@ label b,.fsec b{color:#b42318}
 </div>
 <div class="status" id="lcount"></div>
 <div class="status" id="lresp" style="margin-top:2px"></div>
+<div class="xbar"><label class="trall"><input type="checkbox" id="lxall"> 全選</label><button id="lxcsv">匯出 CSV（Excel 可開）</button><button id="lxword">匯出 Word（含照片）</button><span class="xhint" id="lxhint"></span><span class="status" id="lxmsg" role="status"></span></div>
 <div id="lbody"></div>
 <div id="lpager" class="pager"></div>
 <div id="ctrash"></div>
@@ -258,6 +263,7 @@ label b,.fsec b{color:#b42318}
 <select id="vlmo" aria-label="月份"></select>
 </div>
 <div class="status" id="vlcount"></div>
+<div class="xbar"><label class="trall"><input type="checkbox" id="vlxall"> 全選</label><button id="vlxcsv">匯出 CSV（Excel 可開）</button><button id="vlxword">匯出 Word（含照片）</button><span class="xhint" id="vlxhint"></span><span class="status" id="vlxmsg" role="status"></span></div>
 <div id="vlbody"></div>
 <div id="vlpager" class="pager"></div>
 <div id="vtrash"></div>
@@ -344,11 +350,6 @@ label b,.fsec b{color:#b42318}
 <p class="sub" style="margin-top:10px">統計自動從案件算出，客訴與供應商客訴分開計算。件數少時趨勢僅供參考；統計只呈現件數分布，不代表原因或責任判定。</p>
 </div>
 
-<div class="card">
-<h2>匯出</h2>
-<div class="row"><button id="cx">匯出案件清單 CSV</button><span class="status" id="cmsg"></span></div>
-<div class="status" id="sdb" style="margin-top:6px"></div>
-</div>
 </div>
 
 <div class="card">
@@ -361,6 +362,8 @@ label b,.fsec b{color:#b42318}
 <span class="status" id="st3"></span>
 <span class="stc" id="impAsk" hidden><span id="impTxt">目前的案件會全部被取代，確定要覆蓋嗎？</span><button class="pri" id="impYes">確定覆蓋</button><button id="impNo">取消</button></span>
 </div>
+<div class="status" id="cmsg"></div>
+<div class="status" id="sdb" style="margin-top:6px"></div>
 </div>
 </div>
 <div id="printView"></div>
@@ -780,15 +783,32 @@ $('trBack').onclick=()=>showView('list');$('vtrBack').onclick=()=>showVView('lis
 function renderS(){renderCases();renderVCases();renderTrash('客訴','ctrash');renderTrash('供應商客訴','vtrash');
   renderStats();
 }
-$('cx').onclick=async()=>{
+async function exportCsv(rows,name,cmsg){
 const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
-const rows=CASES.filter(c=>isLive(c)).sort((a,b)=>b.date.localeCompare(a.date));
 if(!rows.length){cmsg('目前沒有可匯出的案件');return}
 const csv='\ufeff'+[['日期','類型','編號','產品／原料','批號','供應商','異常類別','狀態','權責單位','業務人員','品管人員'].map(q).join(',')].concat(rows.map(r=>[r.date,r.kind,r.no,r.item,r.lot,r.sup,r.cat,r.status,respTxt((r.form||{}).inputs),((r.form||{}).inputs||{}).rec,((r.form||{}).inputs||{}).qcp].map(q).join(','))).join('\r\n');
-const name=`客訴案件清單_${todayLocal()}.csv`;
 try{if(typeof claude!=='undefined'&&claude&&typeof claude.use==='function'){const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data:csv});cmsg('已送出下載：'+name);return}}}catch(_){}
 try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.append(a);a.click();a.remove();cmsg('已匯出 CSV 檔：'+name)}catch(_){cmsg('匯出失敗，請改用 Chrome 直接開啟檔案')}
-};
+}
+// ---- 清單匯出：有勾選只匯出勾選的，沒勾選匯出清單上符合條件的全部 ----
+const X={c:{kind:'客訴',p:'l',body:'lbody',sel:new Set(),rows:[]},v:{kind:'供應商客訴',p:'vl',body:'vlbody',sel:new Set(),rows:[]}};
+const xBox=(k,id)=>`<input type="checkbox" class="xsel" data-x="${k}" data-id="${esc(id)}"${X[k].sel.has(id)?' checked':''} aria-label="勾選此案件">`;
+function xSet(k,rows){const o=X[k],ids=new Set(rows.map(r=>r.id));o.rows=rows;[...o.sel].forEach(id=>{if(!ids.has(id))o.sel.delete(id)});xHint(k)}
+function xHint(k){const o=X[k],n=o.sel.size,all=$(o.p+'xall');all.checked=!!n&&n===o.rows.length;all.indeterminate=!!n&&n<o.rows.length;all.disabled=!o.rows.length;
+  $(o.p+'xcsv').disabled=$(o.p+'xword').disabled=!o.rows.length;
+  $(o.p+'xhint').textContent=n?`已勾選 ${n} 件，只匯出勾選的案件`:`沒勾選時，匯出清單上所有符合條件的案件（${o.rows.length} 件）`}
+const xRows=k=>{const o=X[k];return o.sel.size?o.rows.filter(r=>o.sel.has(r.id)):o.rows};
+Object.entries(X).forEach(([k,o])=>{
+  const say=t=>$(o.p+'xmsg').textContent=t;
+  $(o.body).addEventListener('change',e=>{const c=e.target.closest('input.xsel');if(!c)return;c.checked?o.sel.add(c.dataset.id):o.sel.delete(c.dataset.id);say('');xHint(k)});
+  $(o.p+'xall').onchange=e=>{o.sel=new Set(e.target.checked?o.rows.map(r=>r.id):[]);say('');(k==='c'?renderCases:renderVCases)()};
+  $(o.p+'xcsv').onclick=()=>exportCsv(xRows(k),`${o.kind}清單_${todayLocal()}_${xRows(k).length}件.csv`,say);
+  $(o.p+'xword').onclick=async()=>{const rows=xRows(k);if(!rows.length){say('目前沒有可匯出的案件');return}
+    const b=$(o.p+'xword');b.disabled=true;say('正在產生 Word…');
+    try{const ph={};if(o.kind==='客訴')for(const r of rows){const a=await PDB.get(r.id);if(a.length)ph[r.id]=a}
+      await saveDocx(await buildDocx(rows,true,ph),`${o.kind}案件_${todayLocal()}_${rows.length}件.docx`,say)}
+    catch(err){say('匯出失敗：'+(err.message||err))}finally{b.disabled=false}};
+});
 // ---- 案件列表（先查詢，按「新增案件」才進入客訴分析頁）----
 const STS=['原因查證','改善執行','效果確認','已結案'],VSTS=['原因查證','通知供應商改善','改善執行','效果確認','已結案'];
 const normSt=x=>{if(!x)return x;let y=x;if(y.status==='調查中')y={...y,status:'原因查證'};if(y.cat==='血筋/肌紅素')y={...y,cat:'血筋/血塊/肌紅素'};return y};
@@ -861,7 +881,7 @@ function renderCases(){
     const i=(c.form&&c.form.inputs)||{};
     return keepC.has(c.id)||((!fy||ymOf(c).slice(0,4)===fy)&&(!fm||ymOf(c).slice(5,7)===fm)&&(!fc||c.cat===fc)&&(!fs||c.status===fs)&&(!q||[c.no,c.item,c.lot,c.sup,c.cat,c.kind,i.desc,i.src,i.catother,i.rec,i.qcp,i.conf,respTxt(i)].join(' ').toLowerCase().includes(q)));
   }).sort((a,b)=>b.date.localeCompare(a.date));
-  const pages=Math.max(1,Math.ceil(rows.length/PG));pgS.c=Math.min(Math.max(1,pgS.c),pages);const shown=rows.slice((pgS.c-1)*PG,pgS.c*PG);
+  xSet('c',rows);const pages=Math.max(1,Math.ceil(rows.length/PG));pgS.c=Math.min(Math.max(1,pgS.c),pages);const shown=rows.slice((pgS.c-1)*PG,pgS.c*PG);
   const pg=pgS.c;
   $('lcount').textContent=(qq?'搜尋所有年份：':'')+`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'')+(rows.length>PG?`，顯示第 ${(pg-1)*PG+1}–${Math.min(pg*PG,rows.length)} 件`:'');
   $('lpager').innerHTML=pager(pages,pgS.c,'c');
@@ -872,7 +892,7 @@ function renderCases(){
     const i=(r.form&&r.form.inputs)||{},isA=r.kind==='客訴';
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
     const tu=TH.get(r.id);
-    return`<div class="case"><div class="cinfo"><button type="button" class="cth" data-a="edit" data-id="${esc(r.id)}" data-th="${esc(r.id)}" aria-label="開啟案件">${tu?`<img src="${tu}" alt="客訴照片">`:'<span>無照片</span>'}</button><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status)}
+    return`<div class="case"><div class="cinfo">${xBox('c',r.id)}<button type="button" class="cth" data-a="edit" data-id="${esc(r.id)}" data-th="${esc(r.id)}" aria-label="開啟案件">${tu?`<img src="${tu}" alt="客訴照片">`:'<span>無照片</span>'}</button><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status)}
 <div class="ti">${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
 <div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${isA&&r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?ymEmpty(fy,fm):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
@@ -944,15 +964,15 @@ function renderVCases(){
     const i=(c.form&&c.form.inputs)||{};
     return keepV.has(c.id)||((!fy||ymOf(c).slice(0,4)===fy)&&(!fm||ymOf(c).slice(5,7)===fm)&&(!fc||c.cat===fc)&&(!fs||c.status===fs)&&(!q||[c.no,c.item,c.lot,c.sup,c.cat,i.desc,i.con,i.spec,i.owner,i.buyer,i.qcp,i.req,i.fol,i.catother].join(' ').toLowerCase().includes(q)));
   }).sort((a,b)=>b.date.localeCompare(a.date));
-  const pages=Math.max(1,Math.ceil(rows.length/PG));pgS.v=Math.min(Math.max(1,pgS.v),pages);const shown=rows.slice((pgS.v-1)*PG,pgS.v*PG);
+  xSet('v',rows);const pages=Math.max(1,Math.ceil(rows.length/PG));pgS.v=Math.min(Math.max(1,pgS.v),pages);const shown=rows.slice((pgS.v-1)*PG,pgS.v*PG);
   const pg=pgS.v;
   $('vlcount').textContent=(qq?'搜尋所有年份：':'')+`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'')+(rows.length>PG?`，顯示第 ${(pg-1)*PG+1}–${Math.min(pg*PG,rows.length)} 件`:'');
   $('vlpager').innerHTML=pager(pages,pgS.v,'v');
   $('vlbody').innerHTML=rows.length?shown.map(r=>{
     const i=(r.form&&r.form.inputs)||{};
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
-    return`<div class="case"><div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status,VSTS)}
-<div class="ti">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div>
+    return`<div class="case"><div class="cinfo">${xBox('v',r.id)}<div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status,VSTS)}
+<div class="ti">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
 <div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${VSTS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?ymEmpty(fy,fm):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
 }
