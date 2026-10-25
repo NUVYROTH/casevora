@@ -151,6 +151,8 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .dgrid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:start}
 .dl>.card,.dr>.card,.dgrid2>.card,#sideS>.card{margin-bottom:14px}
 .card h2 .r{margin-left:auto;font-size:12.5px;color:var(--mu);font-weight:400}.card h2:has(.r){display:flex;align-items:center;gap:8px}
+.stl{list-style:none;margin:0;padding:0}.stl li{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bd)}.stl li:last-child{border:0}.stl b{font-size:15px}
+.stb{display:inline-block;border-radius:999px;padding:2px 12px;font-size:13.5px;font-weight:700}.stb.s1{background:#e8f0fb;color:#1d4f91}.stb.s2{background:#efe9fb;color:#5b3a9c}.stb.s3{background:#fff4e0;color:#b45309}.stb.s4{background:#e6f5ec;color:#167a3e}.stb.s5{background:#e9ecea;color:#4b5a55}
 .donut{display:flex;justify-content:center}.dleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--mu);margin-top:6px}.dleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .hb{display:grid;grid-template-columns:minmax(70px,130px) 1fr 30px;gap:8px;align-items:center;font-size:13px;margin:7px 0}.hb .b{height:12px;background:#efe6d5;border-radius:4px}.hb .b i{display:block;height:12px;border-radius:0 4px 4px 0;background:var(--ac);min-width:3px}.hb .v{text-align:right;font-weight:700}
 .mini{list-style:none;margin:0;padding:0}.mini li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13.5px}.mini li:last-child{border:0}
@@ -916,12 +918,10 @@ function kpiHtml(D){const rate=D.yr.length?Math.round(D.closed/D.yr.length*100):
   `<div class="kpi warn"><div class="l">未結案</div><div class="n">${D.open.length}<small>件</small></div><div class="d">${D.open.length?'最久已 '+daysSince(D.open[0].date)+' 天':'目前沒有未結案'}</div></div>`+
   `<div class="kpi"><div class="l">今年結案率</div><div class="n">${rate==null?'—':rate+'<small>%</small>'}</div><div class="d">${D.yr.length?`${D.yr.length} 件中 ${D.closed} 件已結案`:'今年還沒有案件'}</div></div>`+
   `<div class="kpi"><div class="l">最多的異常類別</div><div class="n nt">${top?esc(top[0]):'—'}</div><div class="d">${top?`今年 ${top[1]} 件（${Math.round(top[1]/D.yr.length*100)}%）`:'今年還沒有案件'}</div></div>`}
-function donutHtml(D){const L=D.kind==='客訴'?STS:VSTS,ramp=['#c3cde0','#9fb0cf','#5f76a3','#2c4372'].slice(-(L.length-1)).concat(['#b8955a']);
-  const v=L.map(x=>D.yr.filter(c=>c.status===x).length),tot=v.reduce((a,b)=>a+b,0);
-  if(!tot)return '<p class="sub">今年還沒有案件。</p>';
-  const S=170,r=S/2-14,C=2*Math.PI*r;let off=0;
-  const arcs=v.map((n,i)=>{if(!n)return'';const len=C*n/tot,a=`<circle cx="${S/2}" cy="${S/2}" r="${r}" fill="none" stroke="${ramp[i]}" stroke-width="22" stroke-dasharray="${Math.max(len-(n<tot?2:0),0)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 ${S/2} ${S/2})"><title>${L[i]} ${n} 件</title></circle>`;off+=len;return a}).join('');
-  return `<div class="donut"><svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" role="img" aria-label="今年處理狀態分布">${arcs}<text x="50%" y="48%" text-anchor="middle" font-size="26" font-weight="800" fill="#16213a">${Math.round(D.closed/tot*100)}%</text><text x="50%" y="62%" text-anchor="middle" font-size="12" fill="#5d6779">結案率</text></svg></div><div class="dleg">${L.map((x,i)=>`<span><i style="background:${ramp[i]}"></i>${x} ${v[i]}</span>`).join('')}</div>`}
+// 處理狀態：每個階段一個彩色標籤＋件數（比照衛生缺失）
+const STC={'原因查證':'s1','通知供應商改善':'s2','改善執行':'s3','效果確認':'s4','已結案':'s5'};
+function donutHtml(D){const L=D.kind==='客訴'?STS:VSTS;
+  return '<ul class="stl">'+L.map(x=>`<li><span class="stb ${STC[x]||'s1'}">${x}</span><b>${D.yr.filter(c=>c.status===x).length}</b></li>`).join('')+'</ul>'}
 function hbarHtml(rows,empty){const mx=Math.max(1,...rows.map(r=>r[1]));return rows.length?rows.map(([t,n])=>`<div class="hb"><span>${esc(t)}</span><span class="b"><i style="width:${n/mx*100}%"></i></span><span class="v">${n}</span></div>`).join(''):`<p class="sub">${empty}</p>`}
 function openHtml(D,n,rows){const a=D.open.slice(0,n);if(!a.length)return '<p class="sub">目前沒有未結案的案件。</p>';
   return rows?a.map(r=>`<button type="button" class="orow" data-open="${esc(r.id)}"><span class="tag">${esc(r.status||'')}</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}<b>${esc(D.kind==='客訴'?r.item:(r.sup||'（未填供應商）')+'｜'+r.item)}</b><span class="mt">${esc(r.no||'')}　${esc(r.date)}</span><span class="age">已 ${daysSince(r.date)} 天</span></button>`).join('')
