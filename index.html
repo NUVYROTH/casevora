@@ -182,8 +182,8 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .sfoot b{color:#d6deec;font-weight:600;letter-spacing:.04em}
 .crumb{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--mu);margin:0 0 12px}.crumb b{color:var(--tx)}
 .lbadge{background:#e6f5ec;color:#167a3e;border-radius:999px;padding:3px 12px;font-weight:700;font-size:12.5px;white-space:nowrap}
-.eyebrow{font-size:12px;font-weight:800;letter-spacing:.18em;color:var(--gold);margin-bottom:2px}
-.ptitle:has(.eyebrow){display:block}.ptitle:has(.eyebrow) h1{font-size:28px;margin:0 0 4px}.ptitle:has(.eyebrow) span{font-size:14.5px}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.22em;color:var(--gold);margin:0 0 8px;display:flex;align-items:center;gap:10px}.eyebrow:before{content:"";width:28px;height:2px;background:var(--gold);border-radius:2px}
+.ptitle:has(.eyebrow){display:block}.ptitle:has(.eyebrow) h1{font-size:28px;margin:0 0 2px;line-height:1.3}.ptitle:has(.eyebrow) span{font-size:14.5px}
 @media(min-width:900px){
  .topbar{display:none}
  body{padding-left:248px}
@@ -239,7 +239,7 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabA">
 <div id="listView">
-<div class="phead"><div class="ptitle"><div class="eyebrow">QUALITY CASE MANAGEMENT</div><h1>食品客訴管理工作台</h1><span>從案件建檔、調查、改善追蹤到結案，讓每一件客訴都有紀錄、有進度、有結果。</span></div><div class="pact"><button class="pri" id="lnew">＋ 新增案件</button><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div></div></div>
+<div class="phead"><div class="ptitle"><h1>食品客訴管理工作台</h1><div class="eyebrow">QUALITY CASE MANAGEMENT</div><span>從案件建檔、調查、改善追蹤到結案，讓每一件客訴都有紀錄、有進度、有結果。</span></div><div class="pact"><button class="pri" id="lnew">＋ 新增案件</button><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div></div></div>
 <div class="tmslot" id="slotAm"></div>
 <div class="kpis" id="kpiA"></div>
 <div class="dgrid"><div class="dl">
@@ -339,7 +339,7 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabB" hidden>
 <div id="vlistView">
-<div class="phead"><div class="ptitle"><div class="eyebrow">SUPPLIER CASE MANAGEMENT</div><h1>供應商客訴清單</h1><span>原物料、包材異常的通知、改善與追蹤。</span></div><div class="pact"><button class="pri" id="vnew">＋ 新增案件</button><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div></div></div>
+<div class="phead"><div class="ptitle"><h1>供應商客訴清單</h1><div class="eyebrow">SUPPLIER CASE MANAGEMENT</div><span>原物料、包材異常的通知、改善與追蹤。</span></div><div class="pact"><button class="pri" id="vnew">＋ 新增案件</button><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div></div></div>
 <div class="tmslot" id="slotBm"></div>
 <div class="kpis" id="kpiB"></div>
 <div class="dgrid"><div class="dl">
@@ -432,7 +432,7 @@ label b,.fsec b{color:#b42318}
 </div>
 
 <div id="tabS" hidden>
-<div class="phead"><div class="ptitle"><div class="eyebrow">QUALITY ANALYTICS</div><h1>統計分析</h1><span>客訴依月／季／年統計。</span></div><span class="status" id="sPrintMsg" role="status"></span><button type="button" id="sPrint">列印／存成 PDF</button></div>
+<div class="phead"><div class="ptitle"><h1>統計分析</h1><div class="eyebrow">QUALITY ANALYTICS</div><span>客訴依月／季／年統計。</span></div><span class="status" id="sPrintMsg" role="status"></span><button type="button" id="sPrint">列印／存成 PDF</button></div>
 <div class="kpis" id="kpiS"></div>
 <div class="dgrid2"><div class="card">
 <h2 id="stitle">統計報表</h2>
