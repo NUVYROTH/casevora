@@ -164,7 +164,7 @@ label b,.fsec b{color:#b42318}
 <div class="tbmeta">品質管理部｜客訴與供應商客訴紀錄<span class="ver">v16</span></div>
 </div></header>
 <div class="wrap">
-<div class="alert" role="note"><span class="atag">重要</span><div><div class="aloc">本機儲存 · 僅在此裝置此瀏覽器有效 · 可匯出備份</div><b>案件資料存在這台電腦的瀏覽器裡。</b>清除瀏覽資料時，若勾選「<b>Cookie 和其他網站資料</b>」，<b>所有案件與照片會被刪除，且無法復原</b>。請不要使用無痕視窗（關閉後資料會遺失），並每兩週至一個月按一次「<b>下載備份</b>」。</div></div>
+<div class="alert" role="note"><span class="atag">重要</span><div><div class="aloc">本機儲存 · 僅在此裝置此瀏覽器有效 · 可匯出備份</div><b>案件資料存在這台電腦的瀏覽器裡。</b>清除瀏覽資料時，若勾選「<b>Cookie 和其他網站資料</b>」，<b>所有案件與照片會被刪除，且無法復原</b>。請不要使用無痕視窗（關閉後資料會遺失），並每兩週至一個月按一次「<b>下載備份</b>」。<br>分享本工具給品管時，請使用「<b>Can view（可以檢視）</b>」權限，對方即可完整使用。</div></div>
 <p class="sub">輸入客訴資料 → 取得原因分析與改善建議 → 修改內容 → 匯出客訴分析紀錄</p>
 
 <div class="tabs"><button class="on" data-t="A">客訴分析</button><button data-t="B">供應商客訴</button><button data-t="S">統計分析</button></div>
@@ -187,6 +187,7 @@ label b,.fsec b{color:#b42318}
 <div id="lbody"></div>
 <div id="lpager" class="pager"></div>
 </div>
+<div id="slotAh"></div>
 </div>
 <div id="trashView" hidden>
 <div class="card"><div class="row" style="margin:0 0 12px"><button id="trBack">← 返回案件列表</button></div><h2>最近刪除（客訴案件）</h2><div id="ctrashBody"></div></div>
@@ -280,6 +281,7 @@ label b,.fsec b{color:#b42318}
 <div id="vlbody"></div>
 <div id="vlpager" class="pager"></div>
 </div>
+<div id="slotBh"></div>
 </div>
 <div id="vtrashView" hidden>
 <div class="card"><div class="row" style="margin:0 0 12px"><button id="vtrBack">← 返回案件列表</button></div><h2>最近刪除（供應商客訴）</h2><div id="vtrashBody"></div></div>
@@ -364,6 +366,7 @@ label b,.fsec b{color:#b42318}
 
 </div>
 
+<div id="helpCards">
 <div class="card help"><details>
 <summary>使用說明</summary>
 <ol class="sub">
@@ -390,6 +393,7 @@ label b,.fsec b{color:#b42318}
 </ul>
 </div>
 </details></div>
+</div>
 <div id="tools" class="tools"><button id="cx" title="匯出這個分頁的所有案件（不含最近刪除），可用 Excel 開啟">匯出全部報表（Excel 可開）</button><button id="bkw" title="所有客訴與供應商客訴案件、照片、最近刪除與已占用編號整理成一份 Word 檔，換電腦時用「從備份還原」。備份檔含客訴資料，請妥善保管">下載備份</button><button id="bki" title="只能還原本工具下載的備份；還原會取代目前所有案件與照片">從備份還原</button>
 <input id="bkf" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden></div>
 <div id="toolmsg" class="toolmsg"><span class="status" id="st3"></span>
@@ -850,7 +854,7 @@ Object.entries(X).forEach(([k,o])=>{
 document.querySelectorAll('button[data-stat]').forEach(b=>b.onclick=()=>{document.querySelector('.tabs button[data-t="S"]').click();if(stK!==b.dataset.stat){stK=b.dataset.stat;renderStats()}window.scrollTo({top:$('tabS').getBoundingClientRect().top+scrollY-140,behavior:'smooth'})});
 $('storeHelp').addEventListener('toggle',async e=>{if(!e.target.open)return;try{const est=await navigator.storage.estimate();$('usedMB').textContent=(est.usage/1048576).toFixed(1)+' MB'}catch(_){$('usedMB').textContent='（此瀏覽器無法顯示）'}});
 // 工具列：匯出全部報表／下載備份／從備份還原 共用一組，切換分頁時搬到該分頁
-function placeTools(t){const sl=t==='B'?'slotB':'slotA';$(sl).append($('tools'));$(sl+'m').append($('toolmsg'))}
+function placeTools(t){const sl=t==='B'?'slotB':'slotA';$(sl).append($('tools'));$(sl+'m').append($('toolmsg'));$(sl+'h').append($('helpCards'))}
 placeTools('A');
 $('cx').onclick=()=>{const kind=$('tabB').hidden?'客訴':'供應商客訴',rows=CASES.filter(c=>isLive(c)&&c.kind===kind).sort((a,b)=>b.date.localeCompare(a.date));
   exportCsv(rows,`${kind}_全部報表_${todayLocal()}.csv`,cmsg)};
@@ -875,7 +879,7 @@ function localShim(){
 $('lcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`<option>${c}</option>`).join('');
 $('lst').innerHTML='<option value="">全部狀態</option><option value="__open">未結案</option><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';
 $('fcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
-{const tb=document.querySelector('.topbar');let on=false;const f=()=>{const v=scrollY>60;if(v!==on){on=v;tb.classList.toggle('mini',v)}};addEventListener('scroll',f,{passive:true});f()}
+{const tb=document.querySelector('.topbar');let on=false;const f=()=>{const v=on?scrollY>8:scrollY>60;if(v!==on){on=v;tb.classList.toggle('mini',v)}};addEventListener('scroll',f,{passive:true});f()}
 function syncOther(){$('catotherW').hidden=$('fcat').value!=='其它'}
 $('fcat').addEventListener('change',syncOther);$('resp').addEventListener('change',syncResp);
 const FK=['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','eff','conf','catother'];
