@@ -135,12 +135,12 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .gh{margin:12px 0 4px;font-size:14px;color:var(--tx);border-left:3px solid var(--gold);padding-left:6px}
 .help details>summary{cursor:pointer;font-weight:700;color:var(--tx)}.help ol,.help ul{margin:10px 0 0;padding-left:22px;line-height:1.8}.help p{margin:10px 0 0}
 .tbl{display:flex;flex-wrap:wrap;gap:8px}
-button.gold{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600}button.gold:hover:not(:disabled){background:#a5834b}
+button.gold{background:var(--gold);border-color:var(--gold);color:#16213a;font-weight:700}button.gold:hover:not(:disabled){background:#a6844c}
 .tbr,.tools{display:flex;flex-wrap:wrap;gap:8px}
 .tbr>div:empty{display:none}
 .tmslot{flex-basis:100%}
 .tmslot:not(:has(.status:not(:empty),.stc:not([hidden]))){display:none}
-button.danger:not(:disabled){color:#b42318;border-color:#e3a39b}
+button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;font-weight:700}button.danger:hover:not(:disabled){background:#8f1c13}
 .case .tg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px}
 .tag{font-size:12px;background:var(--bg);border:1px solid var(--bd);color:var(--mu);border-radius:999px;padding:0 9px}
 .tag.cat{color:var(--ac);border-color:var(--ac)}
@@ -168,7 +168,6 @@ label b,.fsec b{color:#b42318}
 </div></header>
 <div class="wrap">
 <div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" id="openGuide">查看使用說明</button></div>
-<p class="sub">輸入客訴資料 → 取得原因分析與改善建議 → 修改內容 → 匯出客訴分析紀錄</p>
 
 <div class="tabs"><button class="on" data-t="A">客訴分析</button><button data-t="B">供應商客訴</button><button data-t="S">統計分析</button></div>
 <div id="tabA">
@@ -683,6 +682,7 @@ function fillYM(yid,mid,all){
 }
 function pager(pages,cur,k,total){return total?`<button data-pg="${cur-1}" data-k="${k}"${cur<=1?' disabled':''}>上一頁</button><span>第 ${cur}／${pages} 頁（共 ${total} 件）</span><button data-pg="${cur+1}" data-k="${k}"${cur>=pages?' disabled':''}>下一頁</button><span class="pgsp"></span><label class="pgsz">每頁 <select data-pgsz aria-label="每頁件數">${PAGE_SIZES.map(n=>`<option${n===PG?' selected':''}>${n}</option>`).join('')}</select> 件</label>`:''}
 document.addEventListener('change',e=>{const sel=e.target.closest('select[data-pgsz]');if(!sel)return;PG=parseInt(sel.value,10)||20;try{localStorage.setItem('casevoras_pageSize',String(PG))}catch(_){}pgS.c=pgS.v=1;renderCases();renderVCases()});
+function stEmpty(fs){return `目前「${fs==='__open'?'未結案':fs}」沒有符合條件的案件，可點「全部」查看所有案件。`}
 function ymEmpty(fy,fm){return fy||fm?`${fy?fy+' 年':''}${fm?(+fm)+' 月':''}沒有符合條件的案件，可把年份改成「全部年份」或月份改成「全部月份」查看。`:'沒有符合條件的案件。'}
 const CATS=['異物','標示/包裝/數量有誤','口感不佳','酸敗/風味','血筋/血塊/肌紅素','其它'];
 const MN={Y:'年度分析',Q:'每季分析',M:'每月分析'};
@@ -888,7 +888,7 @@ function localShim(){
       delete:async()=>{arr=arr.filter(x=>x.id!==id);save()}})};
 }
 $('lcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`<option>${c}</option>`).join('');
-$('lst').innerHTML='<option value="">全部狀態</option><option value="__open">未結案</option><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';
+$('lst').innerHTML='<option value="">全部狀態</option><option value="__open">未結案</option><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';$('lst').value='__open';
 $('fcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
 {const tb=document.querySelector('.topbar');let on=false;const f=()=>{const v=on?scrollY>8:scrollY>60;if(v!==on){on=v;tb.classList.toggle('mini',v)}};addEventListener('scroll',f,{passive:true});f()}
 function syncOther(){$('catotherW').hidden=$('fcat').value!=='其它'}
@@ -961,7 +961,7 @@ function renderCases(){
     return`<div class="case"><div class="cinfo">${xBox('c',r.id)}<button type="button" class="cth" data-a="edit" data-id="${esc(r.id)}" data-th="${esc(r.id)}" aria-label="開啟案件">${tu?`<img src="${tu}" alt="客訴照片">`:'<span>無照片</span>'}</button><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status)}
 <div class="ti">${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
 <div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${isA&&r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
-  :`<p class="sub" style="margin-top:12px">${all.length?ymEmpty(fy,fm):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
+  :`<p class="sub" style="margin-top:12px">${all.length?(fs?stEmpty(fs):ymEmpty(fy,fm)):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
   shown.filter(r=>!TH.has(r.id)).forEach(r=>{const v=THv.get(r.id);PDB.get(r.id).then(a=>{if(TH.has(r.id)||THv.get(r.id)!==v)return;TH.set(r.id,a.length?URL.createObjectURL(a[0].blob):'');const el=document.querySelector(`#lbody [data-th="${CSS.escape(r.id)}"]`);if(el&&a.length)el.innerHTML=`<img src="${TH.get(r.id)}" alt="客訴照片">`})});
 }
 $('lpills').onclick=e=>{const b=e.target.closest('button[data-st]');if(!b)return;$('lst').value=b.dataset.st;keepC.clear();pgS.c=1;renderCases()};
@@ -1001,7 +1001,7 @@ if(!editId&&CASES.some(c=>c.kind==='客訴'&&c.no===d.no)){d.no=calcNo(d.date,'�
 
 // ---- 供應商客訴列表 ----
 $('vlcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`<option>${c}</option>`).join('');
-$('vlst').innerHTML='<option value="">全部狀態</option><option value="__open">未結案</option><option>原因查證</option><option>通知供應商改善</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';
+$('vlst').innerHTML='<option value="">全部狀態</option><option value="__open">未結案</option><option>原因查證</option><option>通知供應商改善</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';$('vlst').value='__open';
 $('vcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
 function syncVOther(){$('vcatotherW').hidden=$('vcat').value!=='其它'}
 $('vcat').addEventListener('change',syncVOther);
@@ -1043,7 +1043,7 @@ function renderVCases(){
     return`<div class="case"><div class="cinfo">${xBox('v',r.id)}<div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status,VSTS)}
 <div class="ti">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
 <div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${VSTS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
-  :`<p class="sub" style="margin-top:12px">${all.length?ymEmpty(fy,fm):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
+  :`<p class="sub" style="margin-top:12px">${all.length?(fs?stEmpty(fs):ymEmpty(fy,fm)):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
 }
 $('vlpills').onclick=e=>{const b=e.target.closest('button[data-st]');if(!b)return;$('vlst').value=b.dataset.st;keepV.clear();pgS.v=1;renderVCases()};
 ['vlq','vlcat','vlst','vlyr','vlmo'].forEach(id=>{$(id).oninput=()=>{keepV.clear();pgS.v=1;renderVCases()};$(id).onchange=()=>{keepV.clear();pgS.v=1;renderVCases()}});
