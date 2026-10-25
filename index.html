@@ -142,11 +142,13 @@ button.gold{background:var(--gold);border-color:var(--gold);color:#16213a;font-w
 .tmslot:not(:has(.status:not(:empty),.stc:not([hidden]))){display:none}
 button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;font-weight:700}button.danger:hover:not(:disabled){background:#8f1c13}
 .phead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px}#sPrintMsg{font-size:13px;max-width:420px}.ptitle{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;flex:1}.ptitle h1{font-size:22px;margin:0}.ptitle span{color:var(--mu);font-size:13px}
-.tbar{margin-bottom:12px}
+.pact{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;margin-left:auto}.pact .tbr button{padding:6px 12px;font-size:13.5px;border-color:var(--bd);background:var(--card)}.pact .tbr button:hover:not(:disabled){border-color:var(--ac)}.pact>.pri{padding:9px 18px}
+.phead:has(.pact){align-items:flex-end;margin-bottom:14px}.phead:has(.pact) .ptitle{flex:1 1 440px;min-width:0}
+@media(max-width:899px){.crumb{display:none}}
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
 .kpi{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 16px;position:relative;overflow:hidden;min-width:0}
-.kpi:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gold)}.kpi.warn:before{background:#b42318}
-.kpi{padding-right:58px}.kic{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:9px;background:#f3ece0;color:#8a6a35;display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1}.kic.kw{background:#fdecea;color:#b42318}
+.kpi:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gold)}.kpi.warn:before{background:#b42318}.kpi.k-ok:before{background:#2f9e5b}.kpi.k-top:before{background:#3b6fb6}
+.kpi{padding-right:58px}.kic{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:9px;background:#f3ece0;color:#8a6a35;display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1}.kic.kw{background:#fdecea;color:#b42318}.kic.ko{background:#e6f5ec;color:#2f9e5b}.kic.kt{background:#e8f0fb;color:#3b6fb6}
 .kpi .l{font-size:13px;color:var(--mu);font-weight:600}.kpi .n{font-size:30px;font-weight:800;line-height:1.2}.kpi .n small{font-size:14px;font-weight:600;color:var(--mu);margin-left:2px}.kpi .n.nt{font-size:21px;line-height:1.45}.kpi .d{font-size:12.5px;color:var(--mu)}
 .dgrid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:14px;align-items:start}
 .dgrid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:start}
@@ -237,8 +239,8 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabA">
 <div id="listView">
-<div class="phead"><div class="ptitle"><div class="eyebrow">QUALITY CASE MANAGEMENT</div><h1>食品客訴管理工作台</h1><span>從案件建檔、調查、改善追蹤到結案，讓每一件客訴都有紀錄、有進度、有結果。</span></div><div class="tbl"><button class="pri" id="lnew">＋ 新增案件</button></div></div>
-<div class="tbar"><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div><div class="tmslot" id="slotAm"></div></div>
+<div class="phead"><div class="ptitle"><div class="eyebrow">QUALITY CASE MANAGEMENT</div><h1>食品客訴管理工作台</h1><span>從案件建檔、調查、改善追蹤到結案，讓每一件客訴都有紀錄、有進度、有結果。</span></div><div class="pact"><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div><button class="pri" id="lnew">＋ 新增案件</button></div></div>
+<div class="tmslot" id="slotAm"></div>
 <div class="kpis" id="kpiA"></div>
 <div class="dgrid"><div class="dl">
 <div class="card">
@@ -337,8 +339,8 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabB" hidden>
 <div id="vlistView">
-<div class="phead"><div class="ptitle"><div class="eyebrow">SUPPLIER CASE MANAGEMENT</div><h1>供應商客訴清單</h1><span>原物料、包材異常的通知、改善與追蹤。</span></div><div class="tbl"><button class="pri" id="vnew">＋ 新增案件</button></div></div>
-<div class="tbar"><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div><div class="tmslot" id="slotBm"></div></div>
+<div class="phead"><div class="ptitle"><div class="eyebrow">SUPPLIER CASE MANAGEMENT</div><h1>供應商客訴清單</h1><span>原物料、包材異常的通知、改善與追蹤。</span></div><div class="pact"><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div><button class="pri" id="vnew">＋ 新增案件</button></div></div>
+<div class="tmslot" id="slotBm"></div>
 <div class="kpis" id="kpiB"></div>
 <div class="dgrid"><div class="dl">
 <div class="card">
@@ -474,7 +476,7 @@ label b,.fsec b{color:#b42318}
 </div>
 </details></div>
 </div>
-<div id="tools" class="tools"><button id="cx" title="匯出這個分頁的所有案件（不含最近刪除），可用 Excel 開啟">匯出全部報表（Excel 可開）</button><button id="bkw" title="所有客訴與供應商客訴案件、照片、最近刪除與已占用編號整理成一份 Word 檔，換電腦時用「從備份還原」。備份檔含客訴資料，請妥善保管">下載備份</button><button id="bki" title="只能還原本工具下載的備份；還原會取代目前所有案件與照片">從備份還原</button>
+<div id="tools" class="tools"><button id="cx" title="匯出這個分頁的所有案件（不含最近刪除），可用 Excel 開啟">匯出報表（Excel）</button><button id="bkw" title="所有客訴與供應商客訴案件、照片、最近刪除與已占用編號整理成一份 Word 檔，換電腦時用「從備份還原」。備份檔含客訴資料，請妥善保管">下載備份</button><button id="bki" title="只能還原本工具下載的備份；還原會取代目前所有案件與照片">從備份還原</button>
 <input id="bkf" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden></div>
 <div id="toolmsg" class="toolmsg"><span class="status" id="st3"></span>
 <span class="stc" id="impAsk" hidden><span id="impTxt">目前的案件會全部被取代，確定要覆蓋嗎？</span><button class="pri" id="impYes">確定覆蓋</button><button id="impNo">取消</button></span>
@@ -935,8 +937,8 @@ function dashData(kind){
 function kpiHtml(D){const rate=D.yr.length?Math.round(D.closed/D.yr.length*100):null,top=D.cats[0];
   return `<div class="kpi"><span class="kic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><div class="l">本月新增</div><div class="n">${D.nm}<small>件</small></div><div class="d">上月 ${D.pm} 件</div></div>`+
   `<div class="kpi warn"><span class="kic kw" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div class="l">未結案</div><div class="n">${D.open.length}<small>件</small></div><div class="d">${D.open.length?'最久已 '+daysSince(D.open[0].date)+' 天':'目前沒有未結案'}</div></div>`+
-  `<div class="kpi"><span class="kic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div class="l">今年結案率</div><div class="n">${rate==null?'—':rate+'<small>%</small>'}</div><div class="d">${D.yr.length?`${D.yr.length} 件中 ${D.closed} 件已結案`:'今年還沒有案件'}</div></div>`+
-  `<div class="kpi"><span class="kic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg></span><div class="l">最多的異常類別</div><div class="n nt">${top?esc(top[0]):'—'}</div><div class="d">${top?`今年 ${top[1]} 件（${Math.round(top[1]/D.yr.length*100)}%）`:'今年還沒有案件'}</div></div>`}
+  `<div class="kpi k-ok"><span class="kic ko" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="l">今年結案率</div><div class="n">${rate==null?'—':rate+'<small>%</small>'}</div><div class="d">${D.yr.length?`${D.yr.length} 件中 ${D.closed} 件已結案`:'今年還沒有案件'}</div></div>`+
+  `<div class="kpi k-top"><span class="kic kt" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8" r="1.5" fill="currentColor"/></svg></span><div class="l">最多的異常類別</div><div class="n nt">${top?esc(top[0]):'—'}</div><div class="d">${top?`今年 ${top[1]} 件（${Math.round(top[1]/D.yr.length*100)}%）`:'今年還沒有案件'}</div></div>`}
 // 處理狀態：每個階段一個彩色標籤＋件數（比照衛生缺失）
 const STC={'原因查證':'s1','通知供應商改善':'s2','改善執行':'s3','效果確認':'s4','已結案':'s5'};
 function donutHtml(D){const L=D.kind==='客訴'?STS:VSTS;
