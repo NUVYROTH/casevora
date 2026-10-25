@@ -116,6 +116,10 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .pager{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin:12px 0 4px;font-size:14px;color:var(--mu)}.pager:empty{display:none}
 @media(max-width:600px){.lfilter{grid-template-columns:1fr 1fr}}
 .case{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-top:10px;background:var(--card)}
+.case .cinfo{display:flex;gap:12px;align-items:flex-start;flex:1 1 320px;min-width:0}
+.case .cinfo>div{min-width:0}
+.case .cth{flex:none;width:64px;height:64px;padding:0;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--mu);font-weight:400}
+.case .cth img{width:100%;height:100%;object-fit:cover;display:block}
 .case .tg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px}
 .tag{font-size:12px;background:var(--bg);border:1px solid var(--bd);color:var(--mu);border-radius:999px;padding:0 9px}
 .tag.cat{color:var(--ac);border-color:var(--ac)}
@@ -363,13 +367,15 @@ label b,.fsec b{color:#b42318}
 const $=id=>document.getElementById(id);
 let photos=[]; // {blob,url,name}
 // ---- 照片保存：IndexedDB（只在這台電腦的這個瀏覽器）----
+// 清單小照片快取：id → 縮圖網址（''＝沒有照片）
+const TH=new Map(),THv=new Map(),thDrop=id=>{const u=TH.get(id);if(u)URL.revokeObjectURL(u);TH.delete(id);THv.set(id,(THv.get(id)||0)+1)};
 const PDB=(()=>{let dbp=null;
   const open=()=>dbp||(dbp=new Promise((ok,no)=>{try{const q=indexedDB.open('casevoras_photos',1);q.onupgradeneeded=()=>q.result.createObjectStore('photos');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)}catch(e){no(e)}}));
   const tx=async(mode,fn)=>{const db=await open();return new Promise((ok,no)=>{const t=db.transaction('photos',mode),q=fn(t.objectStore('photos'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error);t.onabort=()=>no(t.error||new Error('儲存空間不足'))})};
   return{get:id=>tx('readonly',st=>st.get(id)).then(v=>v||[]).catch(()=>[]),
-    put:(id,arr)=>tx('readwrite',st=>arr&&arr.length?st.put(arr,id):st.delete(id)),
-    del:id=>tx('readwrite',st=>st.delete(id)).catch(()=>{}),
-    clear:()=>tx('readwrite',st=>st.clear())};
+    put:(id,arr)=>(thDrop(id),tx('readwrite',st=>arr&&arr.length?st.put(arr,id):st.delete(id))),
+    del:id=>(thDrop(id),tx('readwrite',st=>st.delete(id)).catch(()=>{})),
+    clear:()=>([...TH.keys()].forEach(thDrop),tx('readwrite',st=>st.clear()))};
 })();
 
 // ---- 照片：縮圖壓縮 ----
@@ -863,10 +869,12 @@ function renderCases(){
   $('lbody').innerHTML=rows.length?shown.map(r=>{
     const i=(r.form&&r.form.inputs)||{},isA=r.kind==='客訴';
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
-    return`<div class="case"><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status)}
-<div class="ti">${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div>
+    const tu=TH.get(r.id);
+    return`<div class="case"><div class="cinfo"><button type="button" class="cth" data-a="edit" data-id="${esc(r.id)}" data-th="${esc(r.id)}" aria-label="開啟案件">${tu?`<img src="${tu}" alt="客訴照片">`:'<span>無照片</span>'}</button><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(r.cat)}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status)}
+<div class="ti">${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
 <div class="ac">${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${isA&&r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?ymEmpty(fy,fm):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
+  shown.filter(r=>!TH.has(r.id)).forEach(r=>{const v=THv.get(r.id);PDB.get(r.id).then(a=>{if(TH.has(r.id)||THv.get(r.id)!==v)return;TH.set(r.id,a.length?URL.createObjectURL(a[0].blob):'');const el=document.querySelector(`#lbody [data-th="${CSS.escape(r.id)}"]`);if(el&&a.length)el.innerHTML=`<img src="${TH.get(r.id)}" alt="客訴照片">`})});
 }
 ['lq','lcat','lst','lyr','lmo'].forEach(id=>{$(id).oninput=()=>{keepC.clear();pgS.c=1;renderCases()};$(id).onchange=()=>{keepC.clear();pgS.c=1;renderCases()}});
 $('lpager').onclick=e=>{const b=e.target.closest('button[data-pg]');if(!b)return;pgS.c=+b.dataset.pg;renderCases();$('lcount').scrollIntoView({block:'nearest'})};
@@ -895,7 +903,7 @@ if(!editId&&CASES.some(c=>c.kind==='客訴'&&c.no===d.no)){d.no=calcNo(d.date,'�
   const pf=(editId&&(CASES.find(c=>c.id===editId)||{}).form)||{};
   const r={date:d.date,kind:'客訴',no:d.no,item:d.prod,lot:d.lot,sup:'',cat:$('fcat').value,status:$('fst').value,form:{inputs:d,...(pf.sections?{sections:pf.sections,shown:pf.shown}:{})}};
   try{let id=editId;if(id)await DBc.doc(id).update(r);else id=await DBc.add(r);
-    try{await PDB.put(id,photos.map(p=>({name:p.name,blob:p.blob})));if(photos.length&&navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}
+    try{await PDB.put(id,photos.map(p=>({name:p.name,blob:p.blob})));if(photos.length&&navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});renderCases()}
     catch(pe){editId=id;snapC=stateC();$('fmsg').textContent='案件已儲存，但照片儲存失敗（可能是瀏覽器空間不足）。請先下載照片另外保存。';return}
     editId=null;showView('list')}
   catch(err){$('fmsg').textContent='儲存失敗：'+(err.message||err.code)}
