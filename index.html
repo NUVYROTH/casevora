@@ -142,7 +142,7 @@ button.gold{background:var(--gold);border-color:var(--gold);color:#16213a;font-w
 .tmslot:not(:has(.status:not(:empty),.stc:not([hidden]))){display:none}
 button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;font-weight:700}button.danger:hover:not(:disabled){background:#8f1c13}
 .phead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px}#sPrintMsg{font-size:13px;max-width:420px}.ptitle{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;flex:1}.ptitle h1{font-size:22px;margin:0}.ptitle span{color:var(--mu);font-size:13px}
-.pact{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;margin-left:auto}.pact .tbr button{padding:6px 12px;font-size:13.5px;border-color:var(--bd);background:var(--card)}.pact .tbr button:hover:not(:disabled){border-color:var(--ac)}.pact>.pri{padding:9px 18px}
+.pact{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;margin-left:auto}.pact .tbr button{padding:6px 12px;font-size:13.5px;border-color:var(--bd);background:var(--card)}.pact .tbr button:hover:not(:disabled){border-color:var(--ac)}.pact>.pri{padding:6px 14px;font-size:13.5px;border:1px solid var(--ac)}
 .phead:has(.pact){align-items:flex-end;margin-bottom:14px}.phead:has(.pact) .ptitle{flex:1 1 440px;min-width:0}
 @media(max-width:899px){.crumb{display:none}}
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
@@ -239,7 +239,7 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabA">
 <div id="listView">
-<div class="phead"><div class="ptitle"><div class="eyebrow">QUALITY CASE MANAGEMENT</div><h1>食品客訴管理工作台</h1><span>從案件建檔、調查、改善追蹤到結案，讓每一件客訴都有紀錄、有進度、有結果。</span></div><div class="pact"><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div><button class="pri" id="lnew">＋ 新增案件</button></div></div>
+<div class="phead"><div class="ptitle"><div class="eyebrow">QUALITY CASE MANAGEMENT</div><h1>食品客訴管理工作台</h1><span>從案件建檔、調查、改善追蹤到結案，讓每一件客訴都有紀錄、有進度、有結果。</span></div><div class="pact"><button class="pri" id="lnew">＋ 新增案件</button><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div></div></div>
 <div class="tmslot" id="slotAm"></div>
 <div class="kpis" id="kpiA"></div>
 <div class="dgrid"><div class="dl">
@@ -339,7 +339,7 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabB" hidden>
 <div id="vlistView">
-<div class="phead"><div class="ptitle"><div class="eyebrow">SUPPLIER CASE MANAGEMENT</div><h1>供應商客訴清單</h1><span>原物料、包材異常的通知、改善與追蹤。</span></div><div class="pact"><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div><button class="pri" id="vnew">＋ 新增案件</button></div></div>
+<div class="phead"><div class="ptitle"><div class="eyebrow">SUPPLIER CASE MANAGEMENT</div><h1>供應商客訴清單</h1><span>原物料、包材異常的通知、改善與追蹤。</span></div><div class="pact"><button class="pri" id="vnew">＋ 新增案件</button><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div></div></div>
 <div class="tmslot" id="slotBm"></div>
 <div class="kpis" id="kpiB"></div>
 <div class="dgrid"><div class="dl">
