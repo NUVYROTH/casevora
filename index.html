@@ -128,6 +128,12 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .xbar button{padding:6px 12px;font-size:13px}
 .xhint{font-size:12.5px;color:var(--mu)}
 .case .xsel{flex:none;width:18px;height:18px;margin:4px 0 0;accent-color:var(--ac)}
+.tbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.tbr,.tools{display:flex;flex-wrap:wrap;gap:8px}
+.tbr>div:empty{display:none}
+.tmslot{flex-basis:100%}
+.tmslot:not(:has(.status:not(:empty),.stc:not([hidden]))){display:none}
+button.danger:not(:disabled){color:#b42318;border-color:#e3a39b}
 .case .tg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px}
 .tag{font-size:12px;background:var(--bg);border:1px solid var(--bd);color:var(--mu);border-radius:999px;padding:0 9px}
 .tag.cat{color:var(--ac);border-color:var(--ac)}
@@ -154,14 +160,15 @@ label b,.fsec b{color:#b42318}
 <div class="tbmeta">品質管理部｜客訴與供應商客訴紀錄<span class="ver">v16</span></div>
 </div></header>
 <div class="wrap">
-<div class="alert" role="note"><span class="atag">重要</span><div><div class="aloc">本機儲存 · 僅在此裝置此瀏覽器有效 · 可匯出備份</div><b>案件資料存在這台電腦的瀏覽器裡。</b>清除瀏覽資料時，若勾選「<b>Cookie 和其他網站資料</b>」，<b>所有案件與照片會被刪除，且無法復原</b>。請不要使用無痕視窗（關閉後資料會遺失），並每兩週至一個月按一次「<b>匯出 Word 備份</b>」。</div></div>
+<div class="alert" role="note"><span class="atag">重要</span><div><div class="aloc">本機儲存 · 僅在此裝置此瀏覽器有效 · 可匯出備份</div><b>案件資料存在這台電腦的瀏覽器裡。</b>清除瀏覽資料時，若勾選「<b>Cookie 和其他網站資料</b>」，<b>所有案件與照片會被刪除，且無法復原</b>。請不要使用無痕視窗（關閉後資料會遺失），並每兩週至一個月按一次「<b>下載備份</b>」。</div></div>
 <p class="sub">輸入客訴資料 → 取得原因分析與改善建議 → 修改內容 → 匯出客訴分析紀錄</p>
 
 <div class="tabs"><button class="on" data-t="A">客訴分析</button><button data-t="B">供應商客訴</button><button data-t="S">統計分析</button></div>
 <div id="tabA">
 <div id="listView">
+<div class="card tbar"><div class="tbl"><button class="pri" id="lnew">＋ 新增案件</button></div><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div><div class="tmslot" id="slotAm"></div></div>
 <div class="card">
-<div class="lhead"><h2 style="margin:0">客訴案件（消費者／下游廠商）</h2><button class="pri" id="lnew">＋ 新增案件</button></div>
+<h2>客訴案件（消費者／下游廠商）</h2>
 <div class="lfilter">
 <input id="lq" placeholder="搜尋 產品名稱／批號／廠商／編號／說明">
 <select id="lcat"></select>
@@ -171,10 +178,9 @@ label b,.fsec b{color:#b42318}
 </div>
 <div class="status" id="lcount"></div>
 <div class="status" id="lresp" style="margin-top:2px"></div>
-<div class="xbar"><label class="trall"><input type="checkbox" id="lxall"> 全選</label><button id="lxcsv">匯出 CSV（Excel 可開）</button><button id="lxword">匯出 Word（含照片）</button><span class="xhint" id="lxhint"></span><span class="status" id="lxmsg" role="status"></span></div>
+<div class="xbar"><label class="trall"><input type="checkbox" id="lxall"> 全選</label><button class="danger" id="lxdel" disabled>刪除</button><button id="lxword">匯出 Word 報告</button><span class="xhint" id="lxhint"></span><span class="status" id="lxmsg" role="status"></span></div>
 <div id="lbody"></div>
 <div id="lpager" class="pager"></div>
-<div id="ctrash"></div>
 </div>
 </div>
 <div id="trashView" hidden>
@@ -253,8 +259,9 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabB" hidden>
 <div id="vlistView">
+<div class="card tbar"><div class="tbl"><button class="pri" id="vnew">＋ 新增案件</button></div><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div><div class="tmslot" id="slotBm"></div></div>
 <div class="card">
-<div class="lhead"><h2 style="margin:0">供應商客訴案件</h2><button class="pri" id="vnew">＋ 新增案件</button></div>
+<h2>供應商客訴案件</h2>
 <div class="lfilter">
 <input id="vlq" placeholder="搜尋 供應商／原料名稱／批號／編號／說明">
 <select id="vlcat"></select>
@@ -263,10 +270,9 @@ label b,.fsec b{color:#b42318}
 <select id="vlmo" aria-label="月份"></select>
 </div>
 <div class="status" id="vlcount"></div>
-<div class="xbar"><label class="trall"><input type="checkbox" id="vlxall"> 全選</label><button id="vlxcsv">匯出 CSV（Excel 可開）</button><button id="vlxword">匯出 Word（含照片）</button><span class="xhint" id="vlxhint"></span><span class="status" id="vlxmsg" role="status"></span></div>
+<div class="xbar"><label class="trall"><input type="checkbox" id="vlxall"> 全選</label><button class="danger" id="vlxdel" disabled>刪除</button><button id="vlxword">匯出 Word 報告</button><span class="xhint" id="vlxhint"></span><span class="status" id="vlxmsg" role="status"></span></div>
 <div id="vlbody"></div>
 <div id="vlpager" class="pager"></div>
-<div id="vtrash"></div>
 </div>
 </div>
 <div id="vtrashView" hidden>
@@ -352,19 +358,11 @@ label b,.fsec b{color:#b42318}
 
 </div>
 
-<div class="card">
-<h2>③ 資料備份（換裝置或避免資料遺失）</h2>
-<p class="sub">本工具不會自動儲存，資料只存在這個裝置這個瀏覽器。Word 備份（.docx）會把所有客訴與供應商客訴案件整理成一份文件，並附上「最近刪除」的案件與已占用的編號，換裝置時用「匯入 Word 備份」還原。只能匯入本工具匯出的新版 Word 備份；匯入會取代目前所有案件與照片；照片也會一起備份與還原，所以備份檔可能比較大。備份檔含客訴機敏資料，請妥善保管。</p>
-<div class="row" style="margin-top:0">
-<button class="pri" id="bkw">匯出 Word 備份（所有案件）</button>
-<button id="bki">匯入 Word 備份（會取代目前案件）</button>
-<input id="bkf" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
-<span class="status" id="st3"></span>
+<div id="tools" class="tools"><button id="cx" title="匯出這個分頁的所有案件（不含最近刪除），可用 Excel 開啟">匯出全部報表（Excel 可開）</button><button id="bkw" title="所有客訴與供應商客訴案件、照片、最近刪除與已占用編號整理成一份 Word 檔，換電腦時用「從備份還原」。備份檔含客訴資料，請妥善保管">下載備份</button><button id="bki" title="只能還原本工具下載的備份；還原會取代目前所有案件與照片">從備份還原</button>
+<input id="bkf" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden></div>
+<div id="toolmsg" class="toolmsg"><span class="status" id="st3"></span>
 <span class="stc" id="impAsk" hidden><span id="impTxt">目前的案件會全部被取代，確定要覆蓋嗎？</span><button class="pri" id="impYes">確定覆蓋</button><button id="impNo">取消</button></span>
-</div>
-<div class="status" id="cmsg"></div>
-<div class="status" id="sdb" style="margin-top:6px"></div>
-</div>
+<span class="status" id="cmsg"></span><span class="status" id="sdb"></span></div>
 </div>
 <div id="printView"></div>
 
@@ -540,7 +538,7 @@ async function restore(text){
 // ---- 分頁 ----
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  const t=b.dataset.t;$('tabA').hidden=t!=='A';$('tabB').hidden=t!=='B';$('tabS').hidden=t!=='S';if(t==='S'){resetSt();syncSeg();renderS()}
+  const t=b.dataset.t;$('tabA').hidden=t!=='A';$('tabB').hidden=t!=='B';$('tabS').hidden=t!=='S';if(t!=='S')placeTools(t);if(t==='S'){resetSt();syncSeg();renderS()}
 });
 
 // ---- 供應商客訴 ----
@@ -652,7 +650,7 @@ const now=new Date();
 (async()=>{
   await 0; // 等整份程式載入完再初始化，避免「定義前使用」錯誤
   // 不使用共用資料庫：每個人的案件只存在自己的瀏覽器
-  DBc=localShim();$('sdb').textContent='本機儲存 · 僅在此裝置此瀏覽器有效 · 可匯出備份';renderS();
+  DBc=localShim();renderS();
 })();
 function cnt(list,fn){const m={};list.forEach(c=>{const k=fn(c);if(k)m[k]=(m[k]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
 function bars(rows){const mx=Math.max(1,...rows.map(r=>r[1]));return rows.length?rows.map(([k,n])=>`<div class="bar"><i title="${esc(k)}">${esc(k)}</i><u style="width:${n/mx*55}%"></u><em>${n}</em></div>`).join(''):'<p class="sub">無資料</p>'}
@@ -749,7 +747,7 @@ function clip15(t){t=String(t||'').trim();const g=typeof Intl!=='undefined'&&Int
 function noteSpan(r){const t=((r.form&&r.form.inputs)||{}).catother;return t&&String(t).trim()?`<span class="mt" style="align-self:center">${esc(clip15(t))}</span>`:''}
 function renderTrash(kind,elId){
   const el=$(elId),rows=CASES.filter(c=>c.deleted&&!c.purged&&c.kind===kind).sort((a,b)=>String(b.deletedAt||'').localeCompare(String(a.deletedAt||'')));
-    el.innerHTML=`<button class="trbtn" style="margin-top:14px;background:transparent" data-a="opentrash">最近刪除（${rows.length}）</button>`;
+    el.innerHTML=`<button data-a="opentrash">最近刪除（${rows.length}）</button>`;
   const sel=trSel[kind],ids=new Set(rows.map(r=>r.id));[...sel].forEach(x=>{if(!ids.has(x))sel.delete(x)});
   const n=sel.size,allOn=rows.length>0&&n===rows.length,k=esc(kind);
   const bar=rows.length?`<div class="trbar"><span class="status">共 ${rows.length} 件${n?`，已選 ${n} 件`:''}</span><label class="trall"><input type="checkbox" data-a="selall" data-k="${k}"${allOn?' checked':''}> 全選</label></div>
@@ -795,20 +793,30 @@ const X={c:{kind:'客訴',p:'l',body:'lbody',sel:new Set(),rows:[]},v:{kind:'供
 const xBox=(k,id)=>`<input type="checkbox" class="xsel" data-x="${k}" data-id="${esc(id)}"${X[k].sel.has(id)?' checked':''} aria-label="勾選此案件">`;
 function xSet(k,rows){const o=X[k],ids=new Set(rows.map(r=>r.id));o.rows=rows;[...o.sel].forEach(id=>{if(!ids.has(id))o.sel.delete(id)});xHint(k)}
 function xHint(k){const o=X[k],n=o.sel.size,all=$(o.p+'xall');all.checked=!!n&&n===o.rows.length;all.indeterminate=!!n&&n<o.rows.length;all.disabled=!o.rows.length;
-  $(o.p+'xcsv').disabled=$(o.p+'xword').disabled=!o.rows.length;
-  $(o.p+'xhint').textContent=n?`已勾選 ${n} 件，只匯出勾選的案件`:`沒勾選時，匯出清單上所有符合條件的案件（${o.rows.length} 件）`}
+  $(o.p+'xword').disabled=!o.rows.length;$(o.p+'xword').textContent=`匯出 Word 報告（${n?'勾選 '+n:'清單 '+o.rows.length} 件）`;
+  const d=$(o.p+'xdel');d.disabled=!n;d.textContent=n?`刪除（${n}）`:'刪除';if(!n&&o.ask){o.ask=false;$(o.p+'xmsg').textContent=''}
+  $(o.p+'xhint').textContent='勾選案件後可刪除或只匯出這幾件的報告；沒勾選時，報告包含清單上所有符合條件的案件'}
 const xRows=k=>{const o=X[k];return o.sel.size?o.rows.filter(r=>o.sel.has(r.id)):o.rows};
 Object.entries(X).forEach(([k,o])=>{
   const say=t=>$(o.p+'xmsg').textContent=t;
   $(o.body).addEventListener('change',e=>{const c=e.target.closest('input.xsel');if(!c)return;c.checked?o.sel.add(c.dataset.id):o.sel.delete(c.dataset.id);say('');xHint(k)});
   $(o.p+'xall').onchange=e=>{o.sel=new Set(e.target.checked?o.rows.map(r=>r.id):[]);say('');(k==='c'?renderCases:renderVCases)()};
-  $(o.p+'xcsv').onclick=()=>exportCsv(xRows(k),`${o.kind}清單_${todayLocal()}_${xRows(k).length}件.csv`,say);
+  $(o.p+'xdel').onclick=()=>{if(!o.sel.size)return;o.ask=true;$(o.p+'xmsg').innerHTML=`<span class="stc">確定要刪除 ${o.sel.size} 件嗎？可在「最近刪除」還原<button class="pri" data-xd="ok">確定</button><button data-xd="no">取消</button></span>`};
+  $(o.p+'xmsg').addEventListener('click',async e=>{const b=e.target.closest('button[data-xd]');if(!b)return;o.ask=false;
+    if(b.dataset.xd==='no'){say('');return}
+    const ids=[...o.sel];o.sel.clear();say('');let bad=0;for(const id of ids){try{await softDel(id)}catch(_){bad++}}
+    say(bad?`有 ${bad} 件刪除失敗，請再試一次`:`已刪除 ${ids.length} 件，可在「最近刪除」還原`)});
   $(o.p+'xword').onclick=async()=>{const rows=xRows(k);if(!rows.length){say('目前沒有可匯出的案件');return}
     const b=$(o.p+'xword');b.disabled=true;say('正在產生 Word…');
     try{const ph={};if(o.kind==='客訴')for(const r of rows){const a=await PDB.get(r.id);if(a.length)ph[r.id]=a}
       await saveDocx(await buildDocx(rows,true,ph),`${o.kind}案件_${todayLocal()}_${rows.length}件.docx`,say)}
     catch(err){say('匯出失敗：'+(err.message||err))}finally{b.disabled=false}};
 });
+// 工具列：匯出全部報表／下載備份／從備份還原 共用一組，切換分頁時搬到該分頁
+function placeTools(t){const sl=t==='B'?'slotB':'slotA';$(sl).append($('tools'));$(sl+'m').append($('toolmsg'))}
+placeTools('A');
+$('cx').onclick=()=>{const kind=$('tabB').hidden?'客訴':'供應商客訴',rows=CASES.filter(c=>isLive(c)&&c.kind===kind).sort((a,b)=>b.date.localeCompare(a.date));
+  exportCsv(rows,`${kind}_全部報表_${todayLocal()}.csv`,cmsg)};
 // ---- 案件列表（先查詢，按「新增案件」才進入客訴分析頁）----
 const STS=['原因查證','改善執行','效果確認','已結案'],VSTS=['原因查證','通知供應商改善','改善執行','效果確認','已結案'];
 const normSt=x=>{if(!x)return x;let y=x;if(y.status==='調查中')y={...y,status:'原因查證'};if(y.cat==='血筋/肌紅素')y={...y,cat:'血筋/血塊/肌紅素'};return y};
@@ -1060,7 +1068,7 @@ async function buildDocx(list,single,phMap){
     if(!rows.length)body.push(wp('（無）',{sz:20}));
   });
   body.push(wp('※ 可能原因未經查證不代表真因，亦不涉及責任歸屬；含 AI 輔助整理內容者，請經品管/品保人員審核。'+(media.length?'':'照片未包含於本檔。'),{sz:18}));
-  if(!single){const nd=CASES.filter(c=>c.deleted&&!c.purged).length;body.push(wp(`※ 本檔另含最近刪除 ${nd} 件案件資料與已占用的編號，僅供「匯入 Word 備份」還原使用。`,{sz:18}))}
+  if(!single){const nd=CASES.filter(c=>c.deleted&&!c.purged).length;body.push(wp(`※ 本檔另含最近刪除 ${nd} 件案件資料與已占用的編號，僅供「從備份還原」使用。`,{sz:18}))}
   if(!single)Object.keys(phInfo).forEach(id=>addMedia(id));
   const phMapOut={};Object.entries(phIdx).forEach(([id,a])=>{if(a.length&&id!=='__cur')phMapOut[id]=a.map(x=>({name:x.name,file:'word/media/ph'+x.n+'.jpg'}))});
   const W='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
@@ -1222,6 +1230,7 @@ async function applyImport(o){
   for(const [id,arr] of Object.entries(o.photos||{})){if(!Array.isArray(arr))continue;const items=[];
     for(const x of arr.slice(0,4)){try{if(!/^word\/media\/ph\d+\.jpg$/.test(x.file))throw 0;items.push({name:String(x.name||'photo.jpg').slice(0,120),blob:new Blob([readZipBytes(o.__buf,x.file)],{type:'image/jpeg'})})}catch(_){pf++}}
     if(items.length){try{await PDB.put(id,items);pc+=items.length}catch(_){pf+=items.length}}}
+  renderCases();
   pendingSt=null;pendingDel=null;pendingPurge=null;pendingBulk=null;trSel['客訴'].clear();trSel['供應商客訴'].clear();keepC.clear();keepV.clear();cmsg('');
   showView('list');showVView('list');
   const live=o.cases.filter(c=>!c.purged&&!c.deleted).length,tr=o.cases.filter(c=>!c.purged&&c.deleted).length;
