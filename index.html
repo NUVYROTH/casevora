@@ -122,6 +122,13 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .case .ac button{padding:5px 12px;font-size:13px}
 .case .ac select.stsel{width:auto;padding:4px 8px;font-size:13px}
 #impAsk[hidden]{display:none!important}
+/* v17 美化：互動回饋 */
+button:hover:not(:disabled){background:#f3ece0}
+button.pri:hover:not(:disabled){background:var(--navy2)}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,149,90,.25);background:#fff}
+label b,.fsec b{color:#b42318}
+.tabs button:hover:not(:disabled){background:none}
 </style>
 </head>
 <body>
