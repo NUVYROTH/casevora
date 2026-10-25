@@ -180,6 +180,11 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .flowh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--bd)}.flowh h2{margin:0}.flowh span{font-size:13px;color:var(--mu)}
 .fsteps{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.fstep{border:1px solid var(--bd);border-radius:10px;padding:14px;background:#fff}.fno{font-size:11.5px;font-weight:800;letter-spacing:.12em;color:var(--gold);margin-bottom:6px}.fstep b{font-size:14.5px}.fstep p{margin:6px 0 0;font-size:12.5px;color:var(--mu);line-height:1.6}
 .sfoot b{color:#d6deec;font-weight:600;letter-spacing:.04em}
+.mainc:has(#tabA:not([hidden]) #listView:not([hidden]))>.crumb,.mainc:has(#tabA:not([hidden]) #listView:not([hidden]))>.alert,.mainc:has(#tabB:not([hidden]) #vlistView:not([hidden]))>.crumb,.mainc:has(#tabB:not([hidden]) #vlistView:not([hidden]))>.alert{display:none}
+.hcard{margin-bottom:14px}.hcard .alert{margin:0}
+.hc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--bd);margin-bottom:14px}.hc-top .ptitle{flex:1 1 360px;min-width:0}.hc-top .lbadge{flex:none}
+.hc-bot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}.hc-bot .pact{margin-left:0}@media(max-width:899px){.hc-bot .pact{justify-content:flex-start}}
+.hcrumb{font-size:13px;color:var(--mu);margin-top:6px}.hcrumb b{color:var(--tx)}
 .crumb{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--mu);margin:0 0 12px}.crumb b{color:var(--tx)}
 .lbadge{background:#e6f5ec;color:#167a3e;border-radius:999px;padding:3px 12px;font-weight:700;font-size:12.5px;white-space:nowrap}
 .eyebrow{font-size:12px;font-weight:800;letter-spacing:.22em;color:var(--gold);margin:0 0 8px;display:flex;align-items:center;gap:10px}.eyebrow:before{content:"";width:28px;height:2px;background:var(--gold);border-radius:2px}
@@ -239,7 +244,9 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabA">
 <div id="listView">
-<div class="phead"><div class="ptitle"><h1>食品客訴管理工作台</h1><div class="eyebrow">QUALITY CASE MANAGEMENT</div><span>從案件建檔、調查、改善追蹤到結案，讓每一件客訴都有紀錄、有進度、有結果。</span></div><div class="pact"><button class="pri" id="lnew">＋ 新增案件</button><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div></div></div>
+<div class="hcard"><div class="hc-top"><div class="ptitle"><h1>食品客訴管理工作台</h1><div class="eyebrow">QUALITY CASE MANAGEMENT</div><span>從案件建檔、調查、改善追蹤到結案，讓每一件客訴都有紀錄、有進度、有結果。</span></div><span class="lbadge">● 本機資料模式</span></div>
+<div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
+<div class="hc-bot"><div class="hcrumb">Casevoras / <b>客訴清單</b></div><div class="pact"><button class="pri" id="lnew">＋ 新增案件</button><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div></div></div></div>
 <div class="tmslot" id="slotAm"></div>
 <div class="kpis" id="kpiA"></div>
 <div class="dgrid"><div class="dl">
@@ -339,7 +346,9 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabB" hidden>
 <div id="vlistView">
-<div class="phead"><div class="ptitle"><h1>供應商客訴清單</h1><div class="eyebrow">SUPPLIER CASE MANAGEMENT</div><span>原物料、包材異常的通知、改善與追蹤。</span></div><div class="pact"><button class="pri" id="vnew">＋ 新增案件</button><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div></div></div>
+<div class="hcard"><div class="hc-top"><div class="ptitle"><h1>供應商客訴清單</h1><div class="eyebrow">SUPPLIER CASE MANAGEMENT</div><span>原物料、包材異常的通知、改善與追蹤。</span></div><span class="lbadge">● 本機資料模式</span></div>
+<div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
+<div class="hc-bot"><div class="hcrumb">Casevoras / <b>供應商客訴清單</b></div><div class="pact"><button class="pri" id="vnew">＋ 新增案件</button><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div></div></div></div>
 <div class="tmslot" id="slotBm"></div>
 <div class="kpis" id="kpiB"></div>
 <div class="dgrid"><div class="dl">
@@ -959,6 +968,7 @@ function renderDash(){
 document.addEventListener('click',e=>{const b=e.target.closest('[data-open]');if(!b)return;const r=CASES.find(c=>c.id===b.dataset.open);if(!r)return;
   const isA=r.kind==='客訴';document.querySelector(`.tabs button[data-t="${isA?'A':'B'}"]`).click();isA?openForm(r):openVForm(r)});
 $('sideHelp').onclick=()=>$('openGuide').click();
+document.querySelectorAll('[data-og]').forEach(b=>b.onclick=()=>$('openGuide').click());
 document.querySelectorAll('.fguide').forEach(b=>b.onclick=()=>$('openGuide').click());
 $('sideLogo').src=document.querySelector('.topbar .logo').src;
 document.querySelectorAll('.tabs button[data-t]').forEach(b=>b.addEventListener('click',()=>{$('crumbNow').textContent={A:'客訴清單',B:'供應商客訴清單',S:'統計分析'}[b.dataset.t]}));
