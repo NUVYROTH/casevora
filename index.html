@@ -120,6 +120,10 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .case .cinfo>div{min-width:0}
 .case .cth{flex:none;width:64px;height:64px;padding:0;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--mu);font-weight:400}
 .case .cth img{width:100%;height:100%;object-fit:cover;display:block}
+.fbar{position:sticky;bottom:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;margin-top:12px;box-shadow:0 -4px 14px rgba(22,33,58,.08)}
+.fdirty{margin-left:auto;font-size:13px;color:var(--mu)}
+.fdirty:empty{display:none}
+.fbnote{margin:8px 2px 0}
 .case .tg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px}
 .tag{font-size:12px;background:var(--bg);border:1px solid var(--bd);color:var(--mu);border-radius:999px;padding:0 9px}
 .tag.cat{color:var(--ac);border-color:var(--ac)}
@@ -237,9 +241,8 @@ label b,.fsec b{color:#b42318}
 </div>
 </div>
 </div></div>
-<div class="card"><div class="row" style="margin:0">
-<button class="pri" id="fsave">儲存案件並返回列表</button><button id="fword">匯出此案件 Word</button><span class="status" id="fmsg"></span></div>
-<p class="sub" style="margin:8px 0 0">「匯出此案件 Word」只匯出目前這一件（含尚未儲存的內容）。儲存後案件會出現在列表並納入統計；照片會跟著案件存在這台電腦的瀏覽器裡（每件最多 4 張），單件 Word 與 Word 備份都會附上照片。</p></div>
+<div class="fbar"><button class="pri" id="fsave">儲存</button><button id="fback1">返回清單</button><button id="fword">匯出此案件 Word</button><span class="status" id="fmsg"></span><span class="fdirty" id="fdirty"></span></div>
+<p class="sub fbnote">「匯出此案件 Word」只匯出目前這一件（含尚未儲存的內容）。儲存後案件會出現在列表並納入統計；照片會跟著案件存在這台電腦的瀏覽器裡（每件最多 4 張），單件 Word 與 Word 備份都會附上照片。按「儲存」後會回到案件列表。</p>
 </div>
 </div>
 
@@ -324,9 +327,8 @@ label b,.fsec b{color:#b42318}
 </div>
 </div>
 </div></div>
-<div class="card"><div class="row" style="margin:0">
-<button class="pri" id="vfsave">儲存案件並返回列表</button><button id="vfword">匯出此案件 Word</button><span class="status" id="vfmsg"></span></div>
-<p class="sub" style="margin:8px 0 0">儲存後案件會出現在列表並納入統計。</p></div>
+<div class="fbar"><button class="pri" id="vfsave">儲存</button><button id="vfback1">返回清單</button><button id="vfword">匯出此案件 Word</button><span class="status" id="vfmsg"></span><span class="fdirty" id="vfdirty"></span></div>
+<p class="sub fbnote">按「儲存」後會回到案件列表，案件會出現在列表並納入統計。</p>
 </div>
 </div>
 
@@ -835,7 +837,7 @@ pendingSt=null;keepC.clear();$('photoMsg').textContent='';
   $('out').hidden=!(sec&&f.shown);
   $('st').textContent='';$('st2').textContent='';$('fmsg').textContent='';
   $('ftitle').textContent=c?'編輯案件：'+(c.item||''):'新增案件';
-  showView('form');$('leaveC').hidden=true;snapC=stateC();
+  showView('form');$('leaveC').hidden=true;snapC=stateC();$('fdirty').textContent='';
   if(c){const cid=c.id;PDB.get(cid).then(arr=>{if(editId!==cid||!arr.length)return;const same=stateC()===snapC;photos=arr.map(x=>({blob:x.blob,url:URL.createObjectURL(x.blob),name:x.name}));drawThumbs();if(same)snapC=stateC()})}
   if(toResult&&!$('out').hidden)$('out').scrollIntoView();
 }
@@ -880,6 +882,7 @@ function renderCases(){
 $('lpager').onclick=e=>{const b=e.target.closest('button[data-pg]');if(!b)return;pgS.c=+b.dataset.pg;renderCases();$('lcount').scrollIntoView({block:'nearest'})};
 $('lnew').onclick=()=>openForm(null);
 $('fback0').onclick=()=>{if(stateC()===snapC)showView('list');else $('leaveC').hidden=false};
+$('fback1').onclick=()=>{$('fback0').click();if(!$('leaveC').hidden)$('leaveC').scrollIntoView({behavior:'smooth',block:'center'})};
 $('leaveCyes').onclick=()=>{$('leaveC').hidden=true;showView('list')};
 $('leaveCno').onclick=()=>{$('leaveC').hidden=true};
 $('lbody').onclick=async e=>{
@@ -904,7 +907,7 @@ if(!editId&&CASES.some(c=>c.kind==='客訴'&&c.no===d.no)){d.no=calcNo(d.date,'�
   const r={date:d.date,kind:'客訴',no:d.no,item:d.prod,lot:d.lot,sup:'',cat:$('fcat').value,status:$('fst').value,form:{inputs:d,...(pf.sections?{sections:pf.sections,shown:pf.shown}:{})}};
   try{let id=editId;if(id)await DBc.doc(id).update(r);else id=await DBc.add(r);
     try{await PDB.put(id,photos.map(p=>({name:p.name,blob:p.blob})));if(photos.length&&navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});renderCases()}
-    catch(pe){editId=id;snapC=stateC();$('fmsg').textContent='案件已儲存，但照片儲存失敗（可能是瀏覽器空間不足）。請先下載照片另外保存。';return}
+    catch(pe){editId=id;snapC=stateC();$('fdirty').textContent='';$('fmsg').textContent='案件已儲存，但照片儲存失敗（可能是瀏覽器空間不足）。請先下載照片另外保存。';return}
     editId=null;showView('list')}
   catch(err){$('fmsg').textContent='儲存失敗：'+(err.message||err.code)}
 };
@@ -931,7 +934,7 @@ pendingSt=null;keepV.clear();
   $('vcat').value=(c&&c.cat)||CATS[0];$('vstat').value=(c&&c.status)||'原因查證';syncVOther();
   $('vst').textContent='';$('vst2').textContent='';$('vfmsg').textContent='';
   $('vftitle').textContent=c?'編輯案件：'+(c.sup||'')+' '+(c.item||''):'新增案件';
-  showVView('form');$('leaveV').hidden=true;snapV=stateV();
+  showVView('form');$('leaveV').hidden=true;snapV=stateV();$('vfdirty').textContent='';
   if(toResult&&!$('vout').hidden)$('vout').scrollIntoView();
 }
 function renderVCases(){
@@ -957,6 +960,10 @@ function renderVCases(){
 $('vlpager').onclick=e=>{const b=e.target.closest('button[data-pg]');if(!b)return;pgS.v=+b.dataset.pg;renderVCases();$('vlcount').scrollIntoView({block:'nearest'})};
 $('vnew').onclick=()=>openVForm(null);
 $('vfback0').onclick=()=>{if(stateV()===snapV)showVView('list');else $('leaveV').hidden=false};
+$('vfback1').onclick=()=>{$('vfback0').click();if(!$('leaveV').hidden)$('leaveV').scrollIntoView({behavior:'smooth',block:'center'})};
+// 底部固定列：有未儲存的修改時提示
+const dirtyMark=()=>{if(!$('formView').hidden)$('fdirty').textContent=stateC()===snapC?'':'尚未儲存';if(!$('vformView').hidden)$('vfdirty').textContent=stateV()===snapV?'':'尚未儲存'};
+['input','change','click'].forEach(t=>{$('formView').addEventListener(t,()=>requestAnimationFrame(dirtyMark));$('vformView').addEventListener(t,()=>requestAnimationFrame(dirtyMark))});
 $('leaveVyes').onclick=()=>{$('leaveV').hidden=true;showVView('list')};
 $('leaveVno').onclick=()=>{$('leaveV').hidden=true};
 $('vlbody').onclick=async e=>{
