@@ -159,14 +159,14 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .orow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;width:100%;text-align:left;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-top:8px;background:var(--card);font-weight:400}.orow b{font-size:15px}.orow .mt{font-size:12.5px;color:var(--mu)}.orow .age{margin-left:auto}
 .note{font-size:12px;color:var(--mu);margin:6px 0 0}
 @media(min-width:900px){.dl .case .cinfo{flex-basis:100%}.dl .case .ac{margin-left:auto}}
-#sideHelp{display:none}
+#sideHelp,#sideTrash{display:none}
 @media(min-width:900px){
- .shell{display:grid;grid-template-columns:184px minmax(0,1fr);gap:22px;align-items:start}
+ .shell{display:grid;grid-template-columns:200px minmax(0,1fr);gap:22px;align-items:start}
  .side{position:sticky;top:92px;height:calc(100vh - 108px);min-height:320px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:4px}
  .side .tabs{flex-direction:column;border:0;margin:0;gap:4px}
- .side .tabs button,#sideHelp{display:flex;align-items:center;gap:10px;text-align:left;border:0;border-radius:10px;padding:10px 12px;background:none;color:var(--mu);font-weight:600}
+ .side .tabs button,#sideHelp,#sideTrash{white-space:nowrap;display:flex;align-items:center;gap:10px;text-align:left;border:0;border-radius:10px;padding:10px 12px;background:none;color:var(--mu);font-weight:600}
  .side .tabs button.on,.side .tabs button.on:hover:not(:disabled){background:var(--ac);color:var(--acx)}
- .side .tabs button:not(.on):hover:not(:disabled),#sideHelp:hover:not(:disabled){background:#f3ece0;color:var(--tx)}
+ .side .tabs button:not(.on):hover:not(:disabled),#sideHelp:hover:not(:disabled),#sideTrash:hover:not(:disabled){background:#f3ece0;color:var(--tx)}
  .side .ic{width:26px;height:26px;border-radius:8px;background:#efe6d5;display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:none}
  .side .tabs button.on .ic{background:var(--gold)}
  #sideHelp{margin-top:auto;font-size:14px;border-top:1px solid var(--bd);border-radius:0 0 10px 10px;padding-top:12px}
@@ -200,13 +200,13 @@ label b,.fsec b{color:#b42318}
 </div></header>
 <div class="wrap">
 <div class="shell">
-<nav class="side" aria-label="頁面選單"><div class="tabs"><button class="on" data-t="A"><span class="ic">📋</span>客訴分析</button><button data-t="B"><span class="ic">🚚</span>供應商客訴</button><button data-t="S"><span class="ic">📊</span>統計分析</button></div><button type="button" id="sideHelp"><span class="ic">？</span>使用說明</button></nav>
+<nav class="side" aria-label="頁面選單"><div class="tabs"><button class="on" data-t="A"><span class="ic">📋</span>客訴清單</button><button data-t="B"><span class="ic">🚚</span>供應商客訴清單</button><button data-t="S"><span class="ic">📊</span>統計報表</button></div><button type="button" id="sideTrash"><span class="ic">🗑️</span>最近刪除</button><button type="button" id="sideHelp"><span class="ic">？</span>使用說明</button></nav>
 <div class="mainc">
 <div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" id="openGuide">查看使用說明</button></div>
 
 <div id="tabA">
 <div id="listView">
-<div class="phead"><div class="ptitle"><h1>客訴分析</h1><span>消費者／下游廠商</span></div><div class="tbl"><button class="pri" id="lnew">＋ 新增案件</button><button class="gold" data-stat="客訴">📊 統計報表</button></div></div>
+<div class="phead"><div class="ptitle"><h1>客訴清單</h1><span>消費者／下游廠商</span></div><div class="tbl"><button class="pri" id="lnew">＋ 新增案件</button><button class="gold" data-stat="客訴">📊 統計報表</button></div></div>
 <div class="tbar"><div class="tbr"><div id="ctrash"></div><div class="tslot" id="slotA"></div></div><div class="tmslot" id="slotAm"></div></div>
 <div class="kpis" id="kpiA"></div>
 <div class="dgrid"><div class="dl">
@@ -305,7 +305,7 @@ label b,.fsec b{color:#b42318}
 
 <div id="tabB" hidden>
 <div id="vlistView">
-<div class="phead"><div class="ptitle"><h1>供應商客訴</h1><span>供應商／原物料</span></div><div class="tbl"><button class="pri" id="vnew">＋ 新增案件</button><button class="gold" data-stat="供應商客訴">📊 統計報表</button></div></div>
+<div class="phead"><div class="ptitle"><h1>供應商客訴清單</h1><span>供應商／原物料</span></div><div class="tbl"><button class="pri" id="vnew">＋ 新增案件</button><button class="gold" data-stat="供應商客訴">📊 統計報表</button></div></div>
 <div class="tbar"><div class="tbr"><div id="vtrash"></div><div class="tslot" id="slotB"></div></div><div class="tmslot" id="slotBm"></div></div>
 <div class="kpis" id="kpiB"></div>
 <div class="dgrid"><div class="dl">
@@ -397,11 +397,11 @@ label b,.fsec b{color:#b42318}
 </div>
 
 <div id="tabS" hidden>
-<div class="phead"><div class="ptitle"><h1>統計分析</h1><span>客訴與供應商客訴分開統計</span></div></div>
+<div class="phead"><button type="button" id="sBack">← 返回清單</button><div class="ptitle"><h1>統計報表</h1><span>客訴與供應商客訴分開統計</span></div></div>
 <div class="kpis" id="kpiS"></div>
 <div class="dgrid2"><div class="card">
-<h2 id="stitle">統計分析</h2>
-<div class="seg" role="group" aria-label="統計期間"><button type="button" data-m="Y" class="on">年度</button><button type="button" data-m="Q">每季</button><button type="button" data-m="M">每月</button></div>
+<h2 id="stitle">統計報表</h2>
+<div class="seg" role="group" aria-label="統計期間"><button type="button" data-m="M" class="on">月報</button><button type="button" data-m="Q">季報</button><button type="button" data-m="Y">年報</button></div>
 <p class="sub">客訴與供應商客訴分開統計，用下方按鈕切換。</p>
 <div class="grid" id="sctl"></div>
 <div id="sbody"></div>
@@ -437,7 +437,7 @@ label b,.fsec b{color:#b42318}
 <li>按「儲存」。之後可從清單點「編輯」或小照片，繼續更新案件內容。</li>
 <li>處理狀態依序是：原因查證 → 改善執行 → 效果確認 → 已結案（供應商客訴多一個「通知供應商改善」）。可在清單上直接切換。</li>
 <li>清單上方可以用狀態膠囊、搜尋、類別、年月篩選；勾選案件後可刪除，或只匯出這幾件的 Word 報告。</li>
-<li>「匯出全部報表（Excel 可開）」會匯出這一頁的全部案件；「📊 統計報表」可看年度、每季、每月統計，並匯出統計報告。</li>
+<li>「匯出全部報表（Excel 可開）」會匯出這一頁的全部案件；「📊 統計報表」可看月報、季報、年報，並匯出統計報告。</li>
 <li>換電腦時，在舊電腦按「下載備份」，再到新電腦按「從備份還原」。</li>
 </ol>
 </div>
@@ -702,11 +702,11 @@ $('vcp').onclick=async()=>{try{await navigator.clipboard.writeText(vFull());$('v
 $('vpr').onclick=()=>{$('printView').textContent=vFull();window.print()};
 
 // ---- 統計分析 ----
-let DBc=null,CASES=[],mode='Y',lastSum='',trashOpen={},stK='客訴',stN=5,stYear=new Date().getFullYear(),stMon=4,stChart='line',stMY=new Date().getFullYear(),stM=new Date().getMonth()+1;
+let DBc=null,CASES=[],mode='M',lastSum='',trashOpen={},stK='客訴',stN=5,stYear=new Date().getFullYear(),stMon=4,stChart='line',stMY=new Date().getFullYear(),stM=new Date().getMonth()+1,stQY=new Date().getFullYear(),stQ=Math.floor(new Date().getMonth()/3)+1;
 const LC=['#16213a','#c0392b','#2980b9','#d68910','#8e44ad','#7f8c8d'];
 function syncSeg(){document.querySelectorAll('.seg button[data-m]').forEach(x=>x.classList.toggle('on',x.dataset.m===mode))}
 document.querySelector('.seg').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(!b||b.dataset.m===mode)return;const k=stK;mode=b.dataset.m;resetSt();stK=k;syncSeg();renderS()});
-function resetSt(){const d=new Date();stK='客訴';stN=5;stYear=d.getFullYear();stMon=4;stChart='line';stMY=d.getFullYear();stM=d.getMonth()+1}
+function resetSt(){const d=new Date();stK='客訴';stN=5;stYear=d.getFullYear();stMon=4;stChart='line';stMY=d.getFullYear();stM=d.getMonth()+1;stQY=d.getFullYear();stQ=Math.floor(d.getMonth()/3)+1}
 let pendingSt=null,pendingDel=null,pendingPurge=null,pendingBulk=null;const trSel={'客訴':new Set(),'供應商客訴':new Set()},trMsg={};
 const inR=(c,s,e)=>c.date>=s&&c.date<=e;
 const isLive=c=>typeof c.date==='string'&&!c.deleted&&!c.purged;
@@ -731,7 +731,7 @@ document.addEventListener('change',e=>{const sel=e.target.closest('select[data-p
 function stEmpty(fs){return `目前「${fs==='__open'?'未結案':fs}」沒有符合條件的案件，可點「全部」查看所有案件。`}
 function ymEmpty(fy,fm){return fy||fm?`${fy?fy+' 年':''}${fm?(+fm)+' 月':''}沒有符合條件的案件，可把年份改成「全部年份」或月份改成「全部月份」查看。`:'沒有符合條件的案件。'}
 const CATS=['異物','標示/包裝/數量有誤','口感不佳','酸敗/風味','血筋/血塊/肌紅素','其它'];
-const MN={Y:'年度分析',Q:'每季分析',M:'每月分析'};
+const MN={Y:'年報',Q:'季報',M:'月報'};
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
 const cmsg=t=>$('cmsg').textContent=t;
@@ -808,29 +808,30 @@ function renderStats(){
  const mine=CASES.filter(c=>isLive(c)&&c.kind===stK),first=mine.map(c=>c.date).sort()[0]||'',fm=first.slice(0,7),fy=+first.slice(0,4)||cy;
  const monthChart=keys=>{const empty=!mine.some(c=>keys.includes(c.date.slice(0,7))),ok=k=>empty||(k<=curKey&&k>=fm);
   return lineSvg(CATS.map(ct=>({name:ct,vals:keys.map(k=>ok(k)?mine.filter(c=>c.cat===ct&&c.date.slice(0,7)===k).length:null)})),keys.map(k=>+k.slice(5)+'月'))};
- const opt=(arr,sel)=>arr.map(v=>`<option${v===sel?' selected':''}>${v}</option>`).join('');
+ const opt=(arr,sel,suf='')=>arr.map(v=>`<option value="${v}"${v===sel?' selected':''}>${v}${suf}</option>`).join('');
  let h='',ctl='';
  const kb=`<div style="grid-column:1/-1"><div class="seg" role="group" aria-label="案件類型"><button type="button" data-k="客訴" class="${stK==='客訴'?'on':''}">客訴</button><button type="button" data-k="供應商客訴" class="${stK==='供應商客訴'?'on':''}">供應商客訴</button></div></div>`;
  if(mode==='Y'){
   const ys=[...Array(stN)].map((_,i)=>cy-i);if(!ys.includes(stYear))stYear=cy;
-  ctl=`<div><label>列出幾年（1–10）</label><select id="sN">${opt([1,2,3,4,5,6,7,8,9,10],stN)}</select></div><div><label>年度</label><select id="sY">${opt(ys,stYear)}</select></div>`;
+  ctl=`<div><label>列出幾年（1–10）</label><select id="sN">${opt([1,2,3,4,5,6,7,8,9,10],stN)}</select></div><div><label>年度</label><select id="sY">${opt(ys,stYear,' 年')}</select></div>`;
   const keys=[...Array(12)].map((_,i)=>stYear+'-'+p2(i+1)),yrs=ys.slice().reverse(),emptyY=!mine.some(c=>yrs.includes(+c.date.slice(0,4)));
   const ser=['異物','口感不佳','酸敗/風味'].map(ct=>({name:ct,vals:yrs.map(y=>(emptyY||(y<=cy&&y>=fy))?mine.filter(c=>c.cat===ct&&+c.date.slice(0,4)===y).length:null)}));
   h=`<p class="sh">${stYear} 年 1–12 月：各異常類別件數</p>${monthChart(keys)}<p class="sh">近 ${stN} 年重點類別趨勢</p>${lineSvg(ser,yrs.map(y=>y+''))}`;
  }else if(mode==='Q'){
-  const keys=[...Array(stMon)].map((_,i)=>{const d=new Date(cy,now.getMonth()-(stMon-1)+i,1);return d.getFullYear()+'-'+p2(d.getMonth()+1)});
-  ctl=`<div><label>看最近幾個月</label><select id="sMon">${opt([4,5,6],stMon)}</select></div><div><label>圖表</label><div class="row"><button data-ch="line" class="${stChart==='line'?'pri':''}">折線圖</button><button data-ch="bar" class="${stChart==='bar'?'pri':''}">長條圖</button></div></div>`;
-  if(stChart==='line')h=`<p class="sh">最近 ${stMon} 個月：各異常類別趨勢</p>`+monthChart(keys);
-  else{const inW=mine.filter(c=>keys.includes(c.date.slice(0,7)));h=`<p class="sh">最近 ${stMon} 個月：各異常類別件數加總</p>`+bars(CATS.map(ct=>[ct,inW.filter(c=>c.cat===ct).length]))}
+  const qys=[...Array(10)].map((_,i)=>cy-i);if(!qys.includes(stQY))stQY=cy;
+  const keys=[0,1,2].map(i=>stQY+'-'+p2((stQ-1)*3+1+i));
+  ctl=`<div><label>年度</label><select id="sQY">${opt(qys,stQY,' 年')}</select></div><div><label>季</label><select id="sQ">${[1,2,3,4].map(q=>`<option value="${q}"${q===stQ?' selected':''}>第 ${q} 季</option>`).join('')}</select></div><div><label>圖表</label><div class="row"><button data-ch="line" class="${stChart==='line'?'pri':''}">折線圖</button><button data-ch="bar" class="${stChart==='bar'?'pri':''}">長條圖</button></div></div>`;
+  if(stChart==='line')h=`<p class="sh">${stQY} 年第 ${stQ} 季（${(stQ-1)*3+1}–${stQ*3} 月）：各異常類別趨勢</p>`+monthChart(keys);
+  else{const inW=mine.filter(c=>keys.includes(c.date.slice(0,7)));h=`<p class="sh">${stQY} 年第 ${stQ} 季：各異常類別件數加總</p>`+bars(CATS.map(ct=>[ct,inW.filter(c=>c.cat===ct).length]))}
  }else{
   const yrs=[...Array(10)].map((_,i)=>cy-i);if(!yrs.includes(stMY))stMY=cy;
-  ctl=`<div><label>年度</label><select id="sMY">${opt(yrs,stMY)}</select></div><div><label>月</label><select id="sM">${opt([1,2,3,4,5,6,7,8,9,10,11,12],stM)}</select></div>`;
+  ctl=`<div><label>年度</label><select id="sMY">${opt(yrs,stMY,' 年')}</select></div><div><label>月</label><select id="sM">${opt([1,2,3,4,5,6,7,8,9,10,11,12],stM,' 月')}</select></div>`;
   const k=stMY+'-'+p2(stM),inM=mine.filter(c=>c.date.slice(0,7)===k),wk=c=>Math.min(5,Math.ceil(+c.date.slice(8,10)/7));
   h=`<p class="sh">${stMY} 年 ${stM} 月：各異常類別每週件數</p>`+lineSvg(CATS.map(ct=>({name:ct,vals:[1,2,3,4,5].map(w=>inM.filter(c=>c.cat===ct&&wk(c)===w).length)})),['第1週','第2週','第3週','第4週','第5週'])+'<p class="sub">1–7 日第 1 週、8–14 日第 2 週、15–21 日第 3 週、22–28 日第 4 週、29 日起第 5 週。</p>';
  }
  $('stitle').textContent=MN[mode]+'（'+stK+'）';$('sctl').innerHTML=kb+ctl;$('sbody').innerHTML=h;
 }
-$('sctl').addEventListener('change',e=>{const t=e.target,v=+t.value;if(t.id==='sN')stN=v;else if(t.id==='sY')stYear=v;else if(t.id==='sMon')stMon=v;else if(t.id==='sMY')stMY=v;else if(t.id==='sM')stM=v;renderStats()});
+$('sctl').addEventListener('change',e=>{const t=e.target,v=+t.value;if(t.id==='sN')stN=v;else if(t.id==='sY')stYear=v;else if(t.id==='sMon')stMon=v;else if(t.id==='sQY')stQY=v;else if(t.id==='sQ')stQ=v;else if(t.id==='sMY')stMY=v;else if(t.id==='sM')stM=v;renderStats()});
 $('sctl').addEventListener('click',e=>{const k=e.target.closest('button[data-k]');if(k){stK=k.dataset.k;renderStats();renderDash();return}const b=e.target.closest('button[data-ch]');if(b){stChart=b.dataset.ch;renderStats()}});
 function clip15(t){t=String(t||'').trim();const g=typeof Intl!=='undefined'&&Intl.Segmenter?[...new Intl.Segmenter('zh',{granularity:'grapheme'}).segment(t)].map(x=>x.segment):Array.from(t);return g.length>15?g.slice(0,15).join('')+'…':t}
 function noteSpan(r){const t=((r.form&&r.form.inputs)||{}).catother;return t&&String(t).trim()?`<span class="mt" style="align-self:center">${esc(clip15(t))}</span>`:''}
@@ -905,6 +906,10 @@ function renderDash(){
 document.addEventListener('click',e=>{const b=e.target.closest('[data-open]');if(!b)return;const r=CASES.find(c=>c.id===b.dataset.open);if(!r)return;
   const isA=r.kind==='客訴';document.querySelector(`.tabs button[data-t="${isA?'A':'B'}"]`).click();isA?openForm(r):openVForm(r)});
 $('sideHelp').onclick=()=>$('openGuide').click();
+let lastList='A';document.querySelectorAll('.tabs button[data-t]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.t!=='S')lastList=b.dataset.t}));
+const toList=()=>document.querySelector(`.tabs button[data-t="${lastList}"]`).click();
+$('sBack').onclick=toList;
+$('sideTrash').onclick=()=>{toList();lastList==='B'?showVView('trash'):showView('trash');scrollTo(0,0)};
 async function exportCsv(rows,name,cmsg){
 const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
 if(!rows.length){cmsg('目前沒有可匯出的案件');return}
@@ -1257,8 +1262,8 @@ const chartTitle=fig=>{const p=fig.previousElementSibling;return p&&p.classList.
 function statPeriod(){
   const cy=now.getFullYear(),p2=n=>String(n).padStart(2,'0'),ym=c=>String(c.date||'').slice(0,7);
   if(mode==='Y')return{label:stYear+' 年',tag:String(stYear),inP:c=>String(c.date||'').slice(0,4)===String(stYear),pLabel:(stYear-1)+' 年',inPrev:c=>String(c.date||'').slice(0,4)===String(stYear-1),unit:'年'};
-  if(mode==='Q'){const ks=off=>[...Array(stMon)].map((_,i)=>{const d=new Date(cy,now.getMonth()-(stMon-1)+i-off,1);return d.getFullYear()+'-'+p2(d.getMonth()+1)});
-    const a=ks(0),b=ks(stMon);return{label:`${a[0]} ～ ${a[a.length-1]}（最近 ${stMon} 個月）`,tag:a[0]+'_'+a[a.length-1],inP:c=>a.includes(ym(c)),pLabel:`${b[0]} ～ ${b[b.length-1]}`,inPrev:c=>b.includes(ym(c)),unit:'期'}}
+  if(mode==='Q'){const qk=(y,q)=>[0,1,2].map(i=>y+'-'+p2((q-1)*3+1+i)),py=stQ===1?stQY-1:stQY,pq=stQ===1?4:stQ-1,a=qk(stQY,stQ),b=qk(py,pq);
+    return{label:`${stQY} 年第 ${stQ} 季（${a[0]} ～ ${a[2]}）`,tag:stQY+'Q'+stQ,inP:c=>a.includes(ym(c)),pLabel:`${py} 年第 ${pq} 季`,inPrev:c=>b.includes(ym(c)),unit:'季'}}
   const k=stMY+'-'+p2(stM),pd=new Date(stMY,stM-2,1),pk=pd.getFullYear()+'-'+p2(pd.getMonth()+1);
   return{label:`${stMY} 年 ${stM} 月`,tag:k,inP:c=>ym(c)===k,pLabel:`${pd.getFullYear()} 年 ${pd.getMonth()+1} 月`,inPrev:c=>ym(c)===pk,unit:'月'};
 }
