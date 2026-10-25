@@ -114,7 +114,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .lhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .spill{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}.spill button{border-radius:999px;padding:5px 14px;font-size:13.5px}.spill button.on,.spill button.on:hover:not(:disabled){background:var(--ac);color:var(--acx);border-color:var(--ac)}
 .lfilter{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 6px}.lfilter input{grid-column:1/-1}
-.pager{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin:12px 0 4px;font-size:14px;color:var(--mu)}.pager:empty{display:none}
+.pager{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 4px;padding-top:12px;border-top:1px solid var(--bd);font-size:14px;color:var(--mu)}.pager .pgsp{flex:1}.pgsz select{width:auto;padding:4px 8px;font-size:13px}.pager:empty{display:none}
 @media(max-width:600px){.lfilter{grid-template-columns:1fr 1fr}.lfilter select:first-of-type{grid-column:1/-1}}
 .case{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-top:10px;background:var(--card)}
 .case .cinfo{display:flex;gap:12px;align-items:flex-start;flex:1 1 320px;min-width:0}
@@ -130,6 +130,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .xhint{font-size:12.5px;color:var(--mu)}
 .case .xsel{flex:none;width:18px;height:18px;margin:4px 0 0;accent-color:var(--ac)}
 .tbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.help details>summary{cursor:pointer;font-weight:700;color:var(--tx)}.help ol,.help ul{margin:10px 0 0;padding-left:22px;line-height:1.8}.help p{margin:10px 0 0}
 .tbl{display:flex;flex-wrap:wrap;gap:8px}
 button.gold{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600}button.gold:hover:not(:disabled){background:#a5834b}
 .tbr,.tools{display:flex;flex-wrap:wrap;gap:8px}
@@ -363,6 +364,32 @@ label b,.fsec b{color:#b42318}
 
 </div>
 
+<div class="card help"><details>
+<summary>使用說明</summary>
+<ol class="sub">
+<li>按「＋ 新增案件」，填寫客訴日期、產品名稱、批號、異常描述，必要時上傳照片（每件最多 4 張）。</li>
+<li>claude.ai 版可按「產生分析」，AI 建議會顯示在右欄。<b>AI 建議不會儲存</b>，請查證後再自己修改左欄內容。</li>
+<li>按「儲存」。之後可從清單點「編輯」或小照片，繼續更新案件內容。</li>
+<li>處理狀態依序是：原因查證 → 改善執行 → 效果確認 → 已結案（供應商客訴多一個「通知供應商改善」）。可在清單上直接切換。</li>
+<li>清單上方可以用狀態膠囊、搜尋、類別、年月篩選；勾選案件後可刪除，或只匯出這幾件的 Word 報告。</li>
+<li>「匯出全部報表（Excel 可開）」會匯出這一頁的全部案件；「📊 統計報表」可看年度、每季、每月統計，並匯出統計報告。</li>
+<li>換電腦時，在舊電腦按「下載備份」，再到新電腦按「從備份還原」。</li>
+</ol>
+</details></div>
+<div class="card help"><details id="storeHelp">
+<summary>資料保存方式與限制（請務必閱讀）</summary>
+<div class="sub">
+<p>本工具把案件資料保存在<b>這台電腦的這個瀏覽器</b>裡（瀏覽器內建的儲存空間 localStorage），不會上傳到任何伺服器。關閉網頁後重新開啟，資料仍會保留。使用 AI 分析時，填寫的內容會送到使用者自己的 Claude 帳號產生建議。</p>
+<ul>
+<li><b>換電腦或換瀏覽器就看不到</b>原本的資料（例如 Chrome 存的資料，Edge 看不到）。</li>
+<li>請<b>固定用同一個瀏覽器、從同一個網址開啟</b>（建議加入書籤）。網址版和 claude.ai 版是不同的地方，資料不互通。</li>
+<li><b>清除瀏覽器資料／Cookie</b>、使用無痕視窗，資料會消失或不會被保存。</li>
+<li>照片會自動壓縮，存在瀏覽器的大容量儲存空間（IndexedDB），一樣<b>只在這台電腦、這個瀏覽器</b>。目前已使用約 <b id="usedMB">…</b>。</li>
+<li>無法多人共用同一份資料。</li>
+<li>建議<b>每兩週至一個月按一次「下載備份」</b>。備份檔包含所有案件、照片、最近刪除與已占用的編號，可用「從備份還原」匯回（還原會取代目前所有資料）。只能還原本工具下載的備份。備份檔含客訴資料，請妥善保管。</li>
+</ul>
+</div>
+</details></div>
 <div id="tools" class="tools"><button id="cx" title="匯出這個分頁的所有案件（不含最近刪除），可用 Excel 開啟">匯出全部報表（Excel 可開）</button><button id="bkw" title="所有客訴與供應商客訴案件、照片、最近刪除與已占用編號整理成一份 Word 檔，換電腦時用「從備份還原」。備份檔含客訴資料，請妥善保管">下載備份</button><button id="bki" title="只能還原本工具下載的備份；還原會取代目前所有案件與照片">從備份還原</button>
 <input id="bkf" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden></div>
 <div id="toolmsg" class="toolmsg"><span class="status" id="st3"></span>
@@ -634,7 +661,9 @@ const softDel=id=>DBc.doc(id).update({deleted:true,deletedAt:new Date().toISOStr
 const restoreCase=id=>DBc.doc(id).update({deleted:false,deletedAt:null});
 const purgeCase=id=>(PDB.del(id),DBc.doc(id)).update({purged:true,deleted:false,deletedAt:null,date:null,item:'',lot:'',sup:'',cat:'',status:'',form:null});
 const keepC=new Set(),keepV=new Set();
-const PG=20,pgS={c:1,v:1};
+// 每頁件數（比照衛生缺失 20／30／50／100，記在這個瀏覽器）
+const PAGE_SIZES=[20,30,50,100];let PG=20;const pgS={c:1,v:1};
+try{const ps=parseInt(localStorage.getItem('casevoras_pageSize'),10);if(PAGE_SIZES.includes(ps))PG=ps}catch(_){}
 const ymOf=c=>String(c.date||'');
 function fillYM(yid,mid,all){
   const cur=String(new Date().getFullYear()),sel=$(yid);
@@ -644,7 +673,8 @@ function fillYM(yid,mid,all){
   sel.value=(v===''||ys.includes(v))?v:cur;sel.dataset.init='1';
   if(!$(mid).options.length)$(mid).innerHTML='<option value="">全部月份</option>'+[...Array(12)].map((_,i)=>`<option value="${String(i+1).padStart(2,'0')}">${i+1} 月</option>`).join('');
 }
-function pager(pages,cur,k){return pages<2?'':`<button data-pg="${cur-1}" data-k="${k}"${cur<=1?' disabled':''}>‹ 上一頁</button><span>第 ${cur} / ${pages} 頁</span><button data-pg="${cur+1}" data-k="${k}"${cur>=pages?' disabled':''}>下一頁 ›</button>`}
+function pager(pages,cur,k,total){return total?`<button data-pg="${cur-1}" data-k="${k}"${cur<=1?' disabled':''}>上一頁</button><span>第 ${cur}／${pages} 頁（共 ${total} 件）</span><button data-pg="${cur+1}" data-k="${k}"${cur>=pages?' disabled':''}>下一頁</button><span class="pgsp"></span><label class="pgsz">每頁 <select data-pgsz aria-label="每頁件數">${PAGE_SIZES.map(n=>`<option${n===PG?' selected':''}>${n}</option>`).join('')}</select> 件</label>`:''}
+document.addEventListener('change',e=>{const sel=e.target.closest('select[data-pgsz]');if(!sel)return;PG=parseInt(sel.value,10)||20;try{localStorage.setItem('casevoras_pageSize',String(PG))}catch(_){}pgS.c=pgS.v=1;renderCases();renderVCases()});
 function ymEmpty(fy,fm){return fy||fm?`${fy?fy+' 年':''}${fm?(+fm)+' 月':''}沒有符合條件的案件，可把年份改成「全部年份」或月份改成「全部月份」查看。`:'沒有符合條件的案件。'}
 const CATS=['異物','標示/包裝/數量有誤','口感不佳','酸敗/風味','血筋/血塊/肌紅素','其它'];
 const MN={Y:'年度分析',Q:'每季分析',M:'每月分析'};
@@ -818,6 +848,7 @@ Object.entries(X).forEach(([k,o])=>{
     catch(err){say('匯出失敗：'+(err.message||err))}finally{b.disabled=false}};
 });
 document.querySelectorAll('button[data-stat]').forEach(b=>b.onclick=()=>{document.querySelector('.tabs button[data-t="S"]').click();if(stK!==b.dataset.stat){stK=b.dataset.stat;renderStats()}window.scrollTo({top:$('tabS').getBoundingClientRect().top+scrollY-140,behavior:'smooth'})});
+$('storeHelp').addEventListener('toggle',async e=>{if(!e.target.open)return;try{const est=await navigator.storage.estimate();$('usedMB').textContent=(est.usage/1048576).toFixed(1)+' MB'}catch(_){$('usedMB').textContent='（此瀏覽器無法顯示）'}});
 // 工具列：匯出全部報表／下載備份／從備份還原 共用一組，切換分頁時搬到該分頁
 function placeTools(t){const sl=t==='B'?'slotB':'slotA';$(sl).append($('tools'));$(sl+'m').append($('toolmsg'))}
 placeTools('A');
@@ -904,7 +935,7 @@ function renderCases(){
   xSet('c',rows);const pages=Math.max(1,Math.ceil(rows.length/PG));pgS.c=Math.min(Math.max(1,pgS.c),pages);const shown=rows.slice((pgS.c-1)*PG,pgS.c*PG);
   const pg=pgS.c;
   $('lcount').textContent=(qq?'搜尋所有年份：':'')+`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'')+(rows.length>PG?`，顯示第 ${(pg-1)*PG+1}–${Math.min(pg*PG,rows.length)} 件`:'');
-  $('lpager').innerHTML=pager(pages,pgS.c,'c');
+  $('lpager').innerHTML=pager(pages,pgS.c,'c',rows.length);
   {const cnt={};rows.forEach(c=>{const v=((c.form||{}).inputs||{}).resp||'尚未指定';cnt[v]=(cnt[v]||0)+1});
    const order=['生產單位','倉儲單位','物流','其他','尚未指定'].filter(k=>cnt[k]).sort((a,b)=>cnt[b]-cnt[a]||0);
    $('lresp').textContent=rows.length?'依權責單位：'+order.map(k=>`${k} ${cnt[k]} 件`).join('・'):'';}
@@ -990,7 +1021,7 @@ function renderVCases(){
   xSet('v',rows);const pages=Math.max(1,Math.ceil(rows.length/PG));pgS.v=Math.min(Math.max(1,pgS.v),pages);const shown=rows.slice((pgS.v-1)*PG,pgS.v*PG);
   const pg=pgS.v;
   $('vlcount').textContent=(qq?'搜尋所有年份：':'')+`共 ${rows.length} 件`+(rows.length!==all.length?`（全部 ${all.length} 件）`:'')+(rows.length>PG?`，顯示第 ${(pg-1)*PG+1}–${Math.min(pg*PG,rows.length)} 件`:'');
-  $('vlpager').innerHTML=pager(pages,pgS.v,'v');
+  $('vlpager').innerHTML=pager(pages,pgS.v,'v',rows.length);
   $('vlbody').innerHTML=rows.length?shown.map(r=>{
     const i=(r.form&&r.form.inputs)||{};
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
