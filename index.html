@@ -110,6 +110,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .tip{background:var(--bg);border:1px solid var(--bd);border-left:4px solid var(--ac);border-radius:8px;padding:8px 12px;font-size:13px;margin:0 0 12px}
 .tip b{display:block;margin-bottom:2px}
 .tip ul{margin:2px 0 0 18px;padding:0}
+.fohint{border-left-color:var(--gold);margin:4px 0 14px;line-height:1.65}.fohint summary{cursor:pointer;font-weight:700;padding:2px 0}.fohint b{display:inline}.fohint ol{margin:6px 0 0 20px;padding:0}.fohint li{margin:3px 0}.fohint ul{margin:2px 0 0 16px}.fohint .fw{background:#fdecec;color:#a12a2a;border-radius:6px;padding:6px 10px;margin:8px 0 2px}.fohint .fn{color:var(--mu);font-size:12px;margin-top:6px}
 .lhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .spill{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}.spill button{border-radius:999px;padding:5px 14px;font-size:13.5px}.spill button.on,.spill button.on:hover:not(:disabled){background:var(--ac);color:var(--acx);border-color:var(--ac)}
 .lfilter{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 6px}.lfilter input{grid-column:1/-1}
@@ -302,6 +303,7 @@ label b,.fsec b{color:#b42318}
 <div><label>處理狀態</label><select id="fst"><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option></select></div>
 <div><label>權責單位（負責改善的部門）</label><select id="resp"><option value="">（尚未指定）</option><option>生產單位</option><option>倉儲單位</option><option>物流</option><option>其他</option></select><input id="respx" maxlength="60" hidden style="margin-top:6px"></div>
 </div>
+<details class="tip fohint" id="fohint" open hidden></details>
 <div id="catotherW" hidden><label>其它異常說明 <b>*</b>（請寫清楚是什麼異常）</label><input id="catother" maxlength="200"></div>
 <label>客訴異常情況描述 <b>*</b>（誰、何時、何處發現、什麼異常、數量）</label>
 <textarea id="desc" placeholder="例：誰、何時、在哪個位置發現（包裝內／封口處／產品中）、異常外觀、數量…（只寫看到的情況，不寫推測的來源）"></textarea>
@@ -409,6 +411,7 @@ label b,.fsec b{color:#b42318}
 <div><label>採購人員</label><input id="vbuyer"></div>
 <div><label>品管人員</label><input id="vqcp"></div>
 </div>
+<details class="tip fohint" id="vfohint" open hidden></details>
 <div id="vcatotherW" hidden><label>其它異常說明 <b>*</b>（請寫清楚是什麼異常）</label><input id="vcatother" maxlength="200"></div>
 <h3 class="fsec">二、異常情況描述 <b>*</b></h3>
 <div class="hint">何時、何處發現、什麼異常、數量</div>
@@ -1062,7 +1065,20 @@ $('lcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`
 $('lst').innerHTML='<option value="">全部狀態</option><option value="__open">未結案</option><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';$('lst').value='__open';
 $('fcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
 {const tb=document.querySelector('.topbar');let on=false;const f=()=>{const v=on?scrollY>8:scrollY>60;if(v!==on){on=v;tb.classList.toggle('mini',v)}};addEventListener('scroll',f,{passive:true});f()}
-function syncOther(){$('catotherW').hidden=$('fcat').value!=='其它'}
+const FOHINT=`<summary>異物判斷提示（選「異物」時顯示，可收合）</summary><ol>
+<li><b>先保留證據</b>：拍照前不拆、不洗、不切、不丟；拍原位置、取出後、旁邊放尺規。</li>
+<li><b>量測描述</b>：長、寬、厚、形狀、顏色、軟硬、有無磁性；在表面還是嵌入內部、有沒有沾到醬汁或油脂。只寫看到的。</li>
+<li><b>先排除產品本身成分</b>：血筋、軟骨碎骨、筋膜、香料、焦化物、結晶，常被誤認為異物。</li>
+<li><b>依材質比對</b><ul>
+<li>昆蟲：頭、胸、腹是否完整，有沒有加熱過的樣子；對照病媒監測紀錄。</li>
+<li>毛髮：有無毛根、粗細、捲曲；燃燒有蛋白質焦味（塑膠絲會熔化）。</li>
+<li>塑膠：厚度、紋路、斷口，與現場使用中的材料比對；燃燒會熔化、有塑膠味。</li>
+<li>金屬：磁鐵測試；查金屬檢測紀錄。</li>
+<li>玻璃：先排除結晶（可溶於水）與硬質塑膠。</li></ul></li>
+<li><b>三級判定</b>：確認來源（有實體比對或紀錄證明）／疑似來源（特徵相符但證據不足）／來源不明。外觀相似不能直接認定來源。</li>
+</ol><div class="fw">金屬、玻璃、尖銳硬物，或消費者表示身體不適 → 立即通報主管。</div><div class="fn">提示只供參考，不會存進案件。</div>`;
+$('fohint').innerHTML=$('vfohint').innerHTML=FOHINT;
+function syncOther(){$('catotherW').hidden=$('fcat').value!=='其它';$('fohint').hidden=$('fcat').value!=='異物'}
 $('fcat').addEventListener('change',syncOther);$('resp').addEventListener('change',syncResp);
 const FK=['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','eff','conf','catother'];
 let editId=null;
@@ -1174,7 +1190,7 @@ if(!editId&&CASES.some(c=>c.kind==='客訴'&&c.no===d.no)){d.no=calcNo(d.date,'�
 $('vlcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`<option>${c}</option>`).join('');
 $('vlst').innerHTML='<option value="">全部狀態</option><option value="__open">未結案</option><option>原因查證</option><option>通知供應商改善</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';$('vlst').value='__open';
 $('vcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
-function syncVOther(){$('vcatotherW').hidden=$('vcat').value!=='其它'}
+function syncVOther(){$('vcatotherW').hidden=$('vcat').value!=='其它';$('vfohint').hidden=$('vcat').value!=='異物'}
 $('vcat').addEventListener('change',syncVOther);
 let editVId=null;
 function updVNo(){if(editVId)return;$('vno').value=calcNo($('vdate').value,'供應商客訴','QC')}
