@@ -1076,8 +1076,9 @@ const FOHINT=`<summary>異物判斷提示（選「異物」時顯示，可收合
 <li>金屬：磁鐵測試；查金屬檢測紀錄。</li>
 <li>玻璃：先排除結晶（可溶於水）與硬質塑膠。</li></ul></li>
 <li><b>三級判定</b>：確認來源（有實體比對或紀錄證明）／疑似來源（特徵相符但證據不足）／來源不明。外觀相似不能直接認定來源。</li>
-</ol><div class="fw">金屬、玻璃、尖銳硬物，或消費者表示身體不適 → 立即通報主管。</div><div class="fn">提示只供參考，不會存進案件。</div>`;
-$('fohint').innerHTML=$('vfohint').innerHTML=FOHINT;
+</ol><div class="fw">金屬、玻璃、尖銳硬物，或FOWARN → 立即通報主管。</div><div class="fn">提示只供參考，不會存進案件。</div>`;
+$('fohint').innerHTML=FOHINT.replace('FOWARN','消費者表示身體不適');
+$('vfohint').innerHTML=FOHINT.replace('FOWARN','有問題的原料已經用於生產、出貨');
 function syncOther(){$('catotherW').hidden=$('fcat').value!=='其它';$('fohint').hidden=$('fcat').value!=='異物'}
 $('fcat').addEventListener('change',syncOther);$('resp').addEventListener('change',syncResp);
 const FK=['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','eff','conf','catother'];
