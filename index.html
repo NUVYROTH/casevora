@@ -180,10 +180,10 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .flowh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--bd)}.flowh h2{margin:0}.flowh span{font-size:13px;color:var(--mu)}
 .fsteps{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.fstep{border:1px solid var(--bd);border-radius:10px;padding:14px;background:#fff}.fno{font-size:11.5px;font-weight:800;letter-spacing:.12em;color:var(--gold);margin-bottom:6px}.fstep b{font-size:14.5px}.fstep p{margin:6px 0 0;font-size:12.5px;color:var(--mu);line-height:1.6}
 .sfoot b{color:#d6deec;font-weight:600;letter-spacing:.04em}
-.mainc:has(#tabA:not([hidden]) #listView:not([hidden]))>.crumb,.mainc:has(#tabA:not([hidden]) #listView:not([hidden]))>.alert,.mainc:has(#tabB:not([hidden]) #vlistView:not([hidden]))>.crumb,.mainc:has(#tabB:not([hidden]) #vlistView:not([hidden]))>.alert{display:none}
+.mainc>.crumb,.mainc>.alert{display:none}
 .hcard{margin-bottom:14px}.hcard .alert{margin:0}
 .hc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--bd);margin-bottom:14px}.hc-top .ptitle{flex:1 1 360px;min-width:0}.hc-top .lbadge{flex:none}
-.hc-bot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}.hc-bot .pact{margin-left:0}@media(max-width:899px){.hc-bot .pact{justify-content:flex-start}}
+.hc-bot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}.hc-bot .pact{margin-left:0}.hc-bot .pact>button:not(.pri){padding:6px 12px;font-size:13.5px;border-color:var(--bd);background:var(--card)}.hc-bot .pact>button:not(.pri):hover:not(:disabled){border-color:var(--ac)}@media(max-width:899px){.hc-bot .pact{justify-content:flex-start}}
 .hcrumb{font-size:13px;color:var(--mu);margin-top:6px}.hcrumb b{color:var(--tx)}
 .crumb{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--mu);margin:0 0 12px}.crumb b{color:var(--tx)}
 .lbadge{background:#e6f5ec;color:#167a3e;border-radius:999px;padding:3px 12px;font-weight:700;font-size:12.5px;white-space:nowrap}
@@ -271,10 +271,16 @@ label b,.fsec b{color:#b42318}
 <div id="slotAh"></div>
 </div>
 <div id="trashView" hidden>
-<div class="card"><div class="row" style="margin:0 0 12px"><button id="trBack">← 返回案件列表</button></div><h2>最近刪除（客訴案件）</h2><div id="ctrashBody"></div></div>
+<div class="hcard"><div class="hc-top"><div class="ptitle"><h1>最近刪除</h1><div class="eyebrow">RECENTLY DELETED</div><span>刪除的客訴案件會先放在這裡，可以還原，或確認後永久刪除。</span></div><span class="lbadge">● 本機資料模式</span></div>
+<div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
+<div class="hc-bot"><div class="hcrumb">Casevoras / 客訴清單 / <b>最近刪除</b></div><div class="pact"><button id="trBack">← 返回清單</button></div></div></div>
+<div class="card"><h2>最近刪除（客訴案件）</h2><div id="ctrashBody"></div></div>
 </div>
 <div id="formView" hidden>
-<div class="row" style="margin:0 0 12px"><button id="fback0">← 返回案件列表</button><span class="status" id="ftitle"></span></div>
+<div class="hcard"><div class="hc-top"><div class="ptitle"><h1>客訴案件紀錄</h1><div class="eyebrow">CASE RECORD</div><span>左邊填寫客訴資料並儲存；claude.ai 版可在右邊產生 AI 分析建議，建議不會存進案件。</span></div><span class="lbadge">● 本機資料模式</span></div>
+<div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
+<div class="hc-bot"><div class="hcrumb">Casevoras / 客訴清單 / <b id="ftitle"></b></div><div class="pact"><button id="fback0">← 返回清單</button></div></div></div>
+
 <div class="note" id="leaveC" hidden><b>尚未儲存，確定要離開嗎？</b><div class="row"><button class="pri" id="leaveCyes">確定離開</button><button id="leaveCno">繼續編輯</button></div></div>
 <div class="split"><div class="lcol">
 <div class="card">
@@ -372,10 +378,16 @@ label b,.fsec b{color:#b42318}
 <div id="slotBh"></div>
 </div>
 <div id="vtrashView" hidden>
-<div class="card"><div class="row" style="margin:0 0 12px"><button id="vtrBack">← 返回案件列表</button></div><h2>最近刪除（供應商客訴）</h2><div id="vtrashBody"></div></div>
+<div class="hcard"><div class="hc-top"><div class="ptitle"><h1>最近刪除</h1><div class="eyebrow">RECENTLY DELETED</div><span>刪除的供應商客訴會先放在這裡，可以還原，或確認後永久刪除。</span></div><span class="lbadge">● 本機資料模式</span></div>
+<div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
+<div class="hc-bot"><div class="hcrumb">Casevoras / 供應商客訴清單 / <b>最近刪除</b></div><div class="pact"><button id="vtrBack">← 返回清單</button></div></div></div>
+<div class="card"><h2>最近刪除（供應商客訴）</h2><div id="vtrashBody"></div></div>
 </div>
 <div id="vformView" hidden>
-<div class="row" style="margin:0 0 12px"><button id="vfback0">← 返回案件列表</button><span class="status" id="vftitle"></span></div>
+<div class="hcard"><div class="hc-top"><div class="ptitle"><h1>供應商客訴紀錄</h1><div class="eyebrow">SUPPLIER CASE RECORD</div><span>記錄原料或包材異常、通知供應商改善並追蹤；claude.ai 版可產生 AI 建議與通知函草稿，建議不會存進案件。</span></div><span class="lbadge">● 本機資料模式</span></div>
+<div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
+<div class="hc-bot"><div class="hcrumb">Casevoras / 供應商客訴清單 / <b id="vftitle"></b></div><div class="pact"><button id="vfback0">← 返回清單</button></div></div></div>
+
 <div class="note" id="leaveV" hidden><b>尚未儲存，確定要離開嗎？</b><div class="row"><button class="pri" id="leaveVyes">確定離開</button><button id="leaveVno">繼續編輯</button></div></div>
 <div class="split"><div class="lcol">
 <div class="card">
@@ -441,7 +453,10 @@ label b,.fsec b{color:#b42318}
 </div>
 
 <div id="tabS" hidden>
-<div class="phead"><div class="ptitle"><h1>統計分析</h1><div class="eyebrow">QUALITY ANALYTICS</div><span>客訴依月／季／年統計。</span></div><span class="status" id="sPrintMsg" role="status"></span><button type="button" id="sPrint">列印／存成 PDF</button></div>
+<div class="hcard"><div class="hc-top"><div class="ptitle"><h1>統計分析</h1><div class="eyebrow">QUALITY ANALYTICS</div><span>客訴依月／季／年統計，只呈現件數分布，不代表原因或責任判定。</span></div><span class="lbadge">● 本機資料模式</span></div>
+<div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
+<div class="hc-bot"><div class="hcrumb">Casevoras / <b>統計分析</b></div><div class="pact"><span class="status" id="sPrintMsg" role="status"></span><button type="button" id="sPrint">列印／存成 PDF</button></div></div></div>
+
 <div class="kpis" id="kpiS"></div>
 <div class="dgrid2"><div class="card">
 <h2 id="stitle">統計報表</h2>
