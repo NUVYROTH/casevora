@@ -303,7 +303,7 @@ label b,.fsec b{color:#b42318}
 <div><label>處理狀態</label><select id="fst"><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option></select></div>
 <div><label>權責單位（負責改善的部門）</label><select id="resp"><option value="">（尚未指定）</option><option>生產單位</option><option>倉儲單位</option><option>物流</option><option>其他</option></select><input id="respx" maxlength="60" hidden style="margin-top:6px"></div>
 </div>
-<details class="tip fohint" id="fohint" open hidden></details>
+<details class="tip fohint" id="fohint" hidden></details>
 <div id="catotherW" hidden><label>其它異常說明 <b>*</b>（請寫清楚是什麼異常）</label><input id="catother" maxlength="200"></div>
 <label>客訴異常情況描述 <b>*</b>（誰、何時、何處發現、什麼異常、數量）</label>
 <textarea id="desc" placeholder="例：誰、何時、在哪個位置發現（包裝內／封口處／產品中）、異常外觀、數量…（只寫看到的情況，不寫推測的來源）"></textarea>
@@ -411,7 +411,7 @@ label b,.fsec b{color:#b42318}
 <div><label>採購人員</label><input id="vbuyer"></div>
 <div><label>品管人員</label><input id="vqcp"></div>
 </div>
-<details class="tip fohint" id="vfohint" open hidden></details>
+<details class="tip fohint" id="vfohint" hidden></details>
 <div id="vcatotherW" hidden><label>其它異常說明 <b>*</b>（請寫清楚是什麼異常）</label><input id="vcatother" maxlength="200"></div>
 <h3 class="fsec">二、異常情況描述 <b>*</b></h3>
 <div class="hint">何時、何處發現、什麼異常、數量</div>
@@ -1065,7 +1065,7 @@ $('lcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`
 $('lst').innerHTML='<option value="">全部狀態</option><option value="__open">未結案</option><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';$('lst').value='__open';
 $('fcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
 {const tb=document.querySelector('.topbar');let on=false;const f=()=>{const v=on?scrollY>8:scrollY>60;if(v!==on){on=v;tb.classList.toggle('mini',v)}};addEventListener('scroll',f,{passive:true});f()}
-const FOHINT=`<summary>異物判斷提示（選「異物」時顯示，可收合）</summary><ol>
+const FOHINT=`<summary>異物判斷提示（點此展開）</summary><ol>
 <li><b>先保留證據</b>：拍照前不拆、不洗、不切、不丟；拍原位置、取出後、旁邊放尺規。</li>
 <li><b>量測描述</b>：長、寬、厚、形狀、顏色、軟硬、有無磁性；在表面還是嵌入內部、有沒有沾到醬汁或油脂。只寫看到的。</li>
 <li><b>先排除產品本身成分</b>：血筋、軟骨碎骨、筋膜、香料、焦化物、結晶，常被誤認為異物。</li>
@@ -1103,7 +1103,7 @@ pendingSt=null;keepC.clear();$('photoMsg').textContent='';
   FK.forEach(k=>{let x=inp[k];if(x==null&&c)x=({no:c.no,date:c.date,prod:c.item,lot:c.lot})[k];$(k).value=x||''});syncResp();
   if(!c){$('date').value=todayLocal();updNo()}
   photos.forEach(p=>URL.revokeObjectURL(p.url));photos=[];drawThumbs();
-  $('fcat').value=(c&&c.cat)||CATS[0];$('fst').value=(c&&c.status)||'原因查證';syncOther();
+  $('fcat').value=(c&&c.cat)||CATS[0];$('fst').value=(c&&c.status)||'原因查證';syncOther();$('fohint').open=false;
   const sec=f.sections;
   [1,2,3,4,5,6,7].forEach(i=>$('s'+i).value=sec?(sec['s'+i]||''):'');
   $('out').hidden=!(sec&&f.shown);
@@ -1206,7 +1206,7 @@ pendingSt=null;keepV.clear();
   const sec=f.sections;
   [1,2,3,4,5,6,7].forEach(i=>$('v'+i).value=sec?(sec['s'+i]||''):'');
   $('vout').hidden=!(sec&&f.shown);
-  $('vcat').value=(c&&c.cat)||CATS[0];$('vstat').value=(c&&c.status)||'原因查證';syncVOther();
+  $('vcat').value=(c&&c.cat)||CATS[0];$('vstat').value=(c&&c.status)||'原因查證';syncVOther();$('vfohint').open=false;
   $('vst').textContent='';$('vst2').textContent='';$('vfmsg').textContent='';
   $('vftitle').textContent=c?'編輯案件：'+(c.sup||'')+' '+(c.item||''):'新增案件';
   showVView('form');$('leaveV').hidden=true;snapV=stateV();$('vfdirty').textContent='';
