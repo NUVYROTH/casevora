@@ -110,7 +110,11 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .tip{background:var(--bg);border:1px solid var(--bd);border-left:4px solid var(--ac);border-radius:8px;padding:8px 12px;font-size:13px;margin:0 0 12px}
 .tip b{display:block;margin-bottom:2px}
 .tip ul{margin:2px 0 0 18px;padding:0}
-.fohint{border-left-color:var(--gold);margin:4px 0 14px;line-height:1.65}.fohint summary{cursor:pointer;font-weight:700;padding:2px 0}.fohint b{display:inline}.fohint ol{margin:6px 0 0 20px;padding:0}.fohint li{margin:3px 0}.fohint ul{margin:2px 0 0 16px}.fohint .fw{background:#fdecec;color:#a12a2a;border-radius:6px;padding:6px 10px;margin:8px 0 2px}.fohint .fn{color:var(--mu);font-size:12px;margin-top:6px}
+.fohint{border:1px solid var(--gold);border-radius:10px;padding:0;overflow:hidden;background:#fdf8ee;margin:4px 0 14px;line-height:1.65;box-shadow:0 2px 6px rgba(26,42,68,.12)}
+.fohint summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;background:#1a2a44;color:#f3dfb2;font-weight:700;font-size:14px;padding:11px 14px}.fohint summary::-webkit-details-marker{display:none}
+.fohint summary::after{content:"▾";margin-left:auto;color:var(--gold);transition:transform .2s}.fohint[open] summary::after{transform:rotate(180deg)}.fohint summary:hover{background:#243a5e}
+.fohint .fo-o,.fohint[open] .fo-c{display:none}.fohint[open] .fo-o{display:inline}.fohint .fbadge{background:var(--gold);color:#1a2a44;border-radius:999px;padding:1px 10px;font-size:12px;font-weight:800;white-space:nowrap}
+.fohint b{display:inline}.fohint ol{margin:10px 14px 0 34px;padding:0}.fohint .fw,.fohint .fn{margin-left:14px;margin-right:14px}.fohint .fn{margin-bottom:10px}.fohint li{margin:3px 0}.fohint ul{margin:2px 0 0 16px}.fohint .fw{background:#fdecec;color:#a12a2a;border-radius:6px;padding:6px 10px;margin:8px 14px 2px}.fohint .fn{color:var(--mu);font-size:12px;margin-top:6px}
 .lhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .spill{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}.spill button{border-radius:999px;padding:5px 14px;font-size:13.5px}.spill button.on,.spill button.on:hover:not(:disabled){background:var(--ac);color:var(--acx);border-color:var(--ac)}
 .lfilter{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 6px}.lfilter input{grid-column:1/-1}
@@ -1065,7 +1069,7 @@ $('lcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`
 $('lst').innerHTML='<option value="">全部狀態</option><option value="__open">未結案</option><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';$('lst').value='__open';
 $('fcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
 {const tb=document.querySelector('.topbar');let on=false;const f=()=>{const v=on?scrollY>8:scrollY>60;if(v!==on){on=v;tb.classList.toggle('mini',v)}};addEventListener('scroll',f,{passive:true});f()}
-const FOHINT=`<summary>異物判斷提示（點此展開）</summary><ol>
+const FOHINT=`<summary><span class="fbadge">新手必看</span><span>🔍 異物判斷提示<span class="fo-c">（點此展開）</span><span class="fo-o">（點此收合）</span></span></summary><ol>
 <li><b>先保留證據</b>：拍照前不拆、不洗、不切、不丟；拍原位置、取出後、旁邊放尺規。</li>
 <li><b>量測描述</b>：長、寬、厚、形狀、顏色、軟硬、有無磁性；在表面還是嵌入內部、有沒有沾到醬汁或油脂。只寫看到的。</li>
 <li><b>先排除產品本身成分</b>：血筋、軟骨碎骨、筋膜、香料、焦化物、結晶，常被誤認為異物。</li>
