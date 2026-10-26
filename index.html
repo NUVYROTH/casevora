@@ -1069,7 +1069,7 @@ $('lcat').innerHTML='<option value="">全部異常類別</option>'+CATS.map(c=>`
 $('lst').innerHTML='<option value="">全部狀態</option><option value="__open">未結案</option><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option>';$('lst').value='__open';
 $('fcat').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
 {const tb=document.querySelector('.topbar');let on=false;const f=()=>{const v=on?scrollY>8:scrollY>60;if(v!==on){on=v;tb.classList.toggle('mini',v)}};addEventListener('scroll',f,{passive:true});f()}
-const FOHINT=`<summary><span class="fbadge">新手必看</span><span>🔍 異物判斷提示<span class="fo-c">（點此展開）</span><span class="fo-o">（點此收合）</span></span></summary><ol>
+const FOHINT=`<summary><span>🔍 異物判斷提示<span class="fo-c">（點此展開）</span><span class="fo-o">（點此收合）</span></span></summary><ol>
 <li><b>先保留證據</b>：拍照前不拆、不洗、不切、不丟；拍原位置、取出後、旁邊放尺規。</li>
 <li><b>量測描述</b>：長、寬、厚、形狀、顏色、軟硬、有無磁性；在表面還是嵌入內部、有沒有沾到醬汁或油脂。只寫看到的。</li>
 <li><b>先排除產品本身成分</b>：血筋、軟骨碎骨、筋膜、香料、焦化物、結晶，常被誤認為異物。</li>
