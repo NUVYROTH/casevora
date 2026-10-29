@@ -120,6 +120,9 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .tip{background:var(--bg);border:1px solid var(--bd);border-left:4px solid var(--ac);border-radius:8px;padding:8px 12px;font-size:13px;margin:0 0 12px}
 .tip b{display:block;margin-bottom:2px}
 .tip ul{margin:2px 0 0 18px;padding:0}
+.modal{position:fixed;inset:0;background:rgba(22,33,58,.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.modal .box{background:var(--card);border:1px solid var(--bd);border-top:4px solid var(--gold);border-radius:10px;max-width:440px;width:100%;padding:18px 20px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.exg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .cmrow{display:flex;gap:6px;margin-top:6px}.cmrow[hidden]{display:none}.cmrow input{flex:1;min-width:0}button.cmadd{padding:4px 10px;font-size:13px;white-space:nowrap}
 .ogrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}.ogrid .card{margin:0}@media(max-width:899px){.ogrid{grid-template-columns:1fr}}
 .oinfo{background:#e8f0fb;color:#1d3f72;border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.7;margin-top:14px}
@@ -536,13 +539,13 @@ label b,.fsec b{color:#b42318}
 <li>按「儲存」。之後可從清單點「編輯」或小照片，繼續更新案件內容。</li>
 <li>處理狀態依序是：原因查證 → 改善執行 → 效果確認 → 已結案（供應商客訴多一個「通知供應商改善」）。可在清單上直接切換。</li>
 <li>清單上方可以用狀態膠囊、搜尋、類別、年月篩選；勾選案件後可刪除，或只匯出這幾件的 Word 報告。</li>
-<li>「匯出全部報表（Excel 可開）」會匯出這一頁的全部案件；左側「統計分析」可看年度、每季、每月統計，並按「下載統計報告（Word）」下載。</li>
+<li>「匯出報表（Excel）」可選年份、月份，匯出這一頁符合期間的案件；左側「統計分析」可看年度、每季、每月統計，並按「下載統計報告（Word）」下載。</li>
 <li>換電腦時，在舊電腦按「下載備份」，再到新電腦按「從備份還原」。</li>
 </ol>
 </div>
 </details></div>
 </div>
-<div id="tools" class="tools"><button id="cx" title="匯出這個分頁的所有案件（不含最近刪除），可用 Excel 開啟">匯出報表（Excel）</button><button id="bkw" title="所有客訴與供應商客訴案件、照片、最近刪除與已占用編號整理成一份 Word 檔，換電腦時用「從備份還原」。備份檔含客訴資料，請妥善保管">下載備份</button><button id="bki" title="只能還原本工具下載的備份；還原會取代目前所有案件與照片">從備份還原</button>
+<div id="tools" class="tools"><button id="cx" title="選擇年份、月份後匯出（不含最近刪除），可用 Excel 開啟">匯出報表（Excel）</button><button id="bkw" title="所有客訴與供應商客訴案件、照片、最近刪除與已占用編號整理成一份 Word 檔，換電腦時用「從備份還原」。備份檔含客訴資料，請妥善保管">下載備份</button><button id="bki" title="只能還原本工具下載的備份；還原會取代目前所有案件與照片">從備份還原</button>
 <input id="bkf" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden></div>
 <div id="toolmsg" class="toolmsg"><span class="status" id="st3"></span>
 <span class="stc" id="impAsk" hidden><span id="impTxt">目前的案件會全部被取代，確定要覆蓋嗎？</span><button class="pri" id="impYes">確定覆蓋</button><button id="impNo">取消</button></span>
@@ -1135,8 +1138,24 @@ $('guide').addEventListener('toggle',async e=>{if(!e.target.open)return;try{cons
 // 工具列：匯出全部報表／下載備份／從備份還原 共用一組，切換分頁時搬到該分頁
 function placeTools(t){const sl=t==='B'?'slotB':'slotA';$(sl).append($('tools'));$(sl+'m').append($('toolmsg'));$(sl+'h').append($('helpCards'))}
 placeTools('A');
-$('cx').onclick=()=>{const kind=$('tabB').hidden?'客訴':'供應商客訴',rows=CASES.filter(c=>isLive(c)&&c.kind===kind).sort((a,b)=>b.date.localeCompare(a.date));
-  exportCsv(rows,`${kind}_全部報表_${todayLocal()}.csv`,cmsg)};
+// 匯出報表：先選年份／月份（依日期），預設帶入清單目前的年月篩選；所有狀態都匯出，不含最近刪除
+$('cx').onclick=()=>{const kind=$('tabB').hidden?'客訴':'供應商客訴',px=kind==='客訴'?'':'v',all=CASES.filter(c=>isLive(c)&&c.kind===kind);
+  if(!all.length){cmsg('目前沒有任何案件可以匯出');return}
+  const years=[...new Set(all.map(c=>(c.date||'').slice(0,4)).filter(Boolean))].sort().reverse(),ly=$(px+'lyr').value,lm=$(px+'lmo').value;
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="box" role="dialog" aria-modal="true" aria-label="匯出報表"><b>匯出報表（Excel）</b><p class="sub" style="margin:4px 0 12px">${kind}依「${kind==='客訴'?'客訴日期':'發現日期'}」選擇要匯出的期間；所有狀態都會匯出，不含「最近刪除」。</p>
+<div class="exg"><select id="exY" aria-label="年份"><option value="">全部年份</option>${years.map(y=>`<option value="${y}"${ly===y?' selected':''}>${y} 年</option>`).join('')}</select>
+<select id="exM" aria-label="月份"><option value="">全部月份</option>${Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')).map(v=>`<option value="${v}"${lm===v?' selected':''}>${+v} 月</option>`).join('')}</select></div>
+<div class="status" id="exN" style="margin:8px 0 14px"></div><div class="row" style="justify-content:flex-end;margin:0"><button type="button" id="exNo">取消</button><button type="button" class="pri" id="exGo">下載</button></div></div>`;
+  document.body.append(m);
+  const pick=()=>{const y=$('exY').value,mo=$('exM').value;return all.filter(c=>(!y||c.date.slice(0,4)===y)&&(!mo||c.date.slice(5,7)===mo)).sort((a,b)=>a.date.localeCompare(b.date)||a.no.localeCompare(b.no))};
+  const upd=()=>{const n=pick().length;$('exN').textContent=`符合的案件：${n} 件`;$('exGo').disabled=!n};
+  m.querySelectorAll('select').forEach(x=>x.onchange=upd);upd();
+  const close=()=>{m.remove();$('cx').focus()};
+  $('exNo').onclick=close;m.onclick=e=>{if(e.target===m)close()};m.onkeydown=e=>{if(e.key==='Escape')close()};
+  $('exGo').onclick=()=>{const y=$('exY').value,mo=$('exM').value,rows=pick();m.remove();
+    exportCsv(rows,`${kind}_報表_${y?y+'年':'全部年份'}${mo?+mo+'月':y?'全年':''}_${todayLocal()}.csv`,cmsg)};
+  $('exY').focus()};
 // ---- 案件列表（先查詢，按「新增案件」才進入客訴分析頁）----
 // 狀態膠囊（比照衛生缺失）：未結案／各階段／已結案／全部，件數跟著其他篩選
 const stOk=(c,fs)=>!fs||(fs==='__open'?c.status!=='已結案':c.status===fs);
