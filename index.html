@@ -80,6 +80,15 @@ h2{letter-spacing:.02em}
 .seg button{border:0;border-radius:999px;background:none;color:var(--mu);padding:6px 20px;font-weight:600}
 .seg button:hover:not(:disabled){background:#efe6d5;color:var(--tx)}
 .seg button.on,.seg button.on:hover:not(:disabled){background:var(--ac);color:var(--acx)}
+.aiw-h{font-size:14px;color:var(--mu);margin:14px 0 8px}
+.aiw{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.aiw-c{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;border:1px solid var(--bd);border-radius:10px;background:var(--card);padding:14px 10px 12px}
+.aiw-c.ai{border-color:var(--gold);box-shadow:0 0 0 1px rgba(184,149,90,.25) inset}.aiw-c.off{opacity:.7}
+.aiw-ic{font-size:28px;line-height:1}.aiw-t{font-weight:700;font-size:15px}
+.aiw-tag{font-size:12px;padding:1px 9px;border-radius:999px;background:#e6f5ec;color:#167a3e}.aiw-tag.cl{background:#e8f0fb;color:#1d4f9c}
+.aiw-d{font-size:13px;color:var(--mu);line-height:1.55;flex:1}.aiw-c button{width:100%;margin-top:2px}
+@media(max-width:599px){.aiw{grid-template-columns:1fr}.aiw-c{display:grid;grid-template-columns:44px 1fr;column-gap:10px;row-gap:4px;text-align:left;align-items:start;padding:12px}.aiw-ic{grid-row:1/4;align-self:center;text-align:center}.aiw-tag{justify-self:start}.aiw-c button{grid-column:1/3}}
+.pbox{border:1px solid var(--bd);border-radius:10px;background:var(--bg);padding:10px 12px;margin-top:10px}.pstep{font-size:13px;line-height:1.6}
 .ainote{font-size:12.5px;line-height:1.6;color:var(--warnt);background:var(--warn);border-left:3px solid var(--gold);border-radius:6px;padding:8px 12px;margin:10px 0 0}
 .trbar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;margin:4px 0}
 .trall,.trrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -330,16 +339,25 @@ label b,.fsec b{color:#b42318}
 <textarea id="eff" placeholder="例：改善後以哪個檢查點、哪幾批抽檢或紀錄確認，結果是否仍有同類異常，確認日期…"></textarea>
 <label>負責人確認／改善確認人</label>
 <input id="conf" maxlength="60" placeholder="確認改善已完成的人員">
-<div class="row">
-<button class="pri" id="go">產生分析</button>
-<button id="blank">僅整理資料（不做 AI 分析）</button>
-<span class="status" id="st"></span>
+<div class="aiw-h">三種整理方式，<b>選一種用就好</b></div>
+<div class="aiw">
+<div class="aiw-c"><div class="aiw-ic">📝</div><div class="aiw-t">範本整理</div><span class="aiw-tag">兩版都能用・不是 AI</span><div class="aiw-d">依固定格式，<b>只用你填寫的資料</b>整理到右邊，不會推測原因或結果。</div><button type="button" id="blank">範本整理</button></div>
+<div class="aiw-c"><div class="aiw-ic">📋</div><div class="aiw-t">複製 AI 提示詞</div><span class="aiw-tag">兩版都能用</span><div class="aiw-d">按下複製 → 貼到你慣用的 AI 工具 → 把 AI 的回覆貼回來，按「套用到右邊」。</div><button type="button" id="cpp">複製 AI 提示詞</button></div>
+<div class="aiw-c ai aigo"><div class="aiw-ic">✨</div><div class="aiw-t">產生分析</div><span class="aiw-tag cl">僅限 claude.ai 版</span><div class="aiw-d">像品保主管一樣整理客訴：分出已確認事實、可能原因、待確認事項，並擬好回函草稿。</div><button type="button" class="pri" id="go">產生分析</button></div>
 </div>
-<p class="ainote">AI 分析需在 claude.ai 開啟本工具，每位使用者須使用<b>自己的 Claude 帳號登入</b>，用量計入各自的帳號。<br>請勿在描述中填寫消費者或員工的<b>姓名、電話、地址、身分證字號</b>等個人資料，請改用「消費者 A」「品管人員」等代稱。</p>
+<div class="status" id="st" role="status"></div>
+<div class="pbox" id="pbox" hidden>
+<div class="pstep">提示詞已產生並嘗試複製。① 貼到你慣用的 AI 工具　② 把 AI 的回覆整段複製　③ 貼到下面的框，按「套用到右邊」。<b>套用後請檢查內容是否正確。</b></div>
+<label>提示詞</label><textarea id="ptext" readonly style="min-height:110px"></textarea>
+<div class="row"><button type="button" id="pcopy">再複製一次</button><span class="status" id="pmsg" role="status"></span></div>
+<label>貼上 AI 的回覆</label><textarea id="pback" placeholder="把 AI 回覆的整段文字貼在這裡（以 { 開頭、} 結尾的那一段）"></textarea>
+<div class="row"><button type="button" class="pri" id="papply">套用到右邊</button><button type="button" id="pclose">關閉</button></div>
+</div>
+<p class="ainote">AI 分析需在 claude.ai 開啟本工具，每位使用者須使用<b>自己的 Claude 帳號登入</b>，用量計入各自的帳號。<br>請勿在描述中填寫消費者或員工的<b>姓名、電話、地址、身分證字號</b>等個人資料，請改用「消費者 A」「品管人員」等代稱。<br>「複製 AI 提示詞」會把案件內容交給你另外選用的 AI 工具，照片不會包含在提示詞裡。</p>
 </div>
 
 </div><div class="rcol">
-<div class="card aiwait"><h2>② AI 分析建議</h2><p class="sub">填好左側資料後，按「產生分析」，AI 建議會顯示在這裡。</p><p class="sub"><b>AI 建議不會儲存到案件裡</b>，案件只保存左側由品管人員填寫的內容。</p><div class="note">分析結果為輔助整理與建議，僅依您提供的資料推論；<b>可能原因不等於真因，也不判定責任歸屬</b>。請由品管/品保人員查證、修改後再定稿。</div></div>
+<div class="card aiwait"><h2>② AI 分析建議</h2><p class="sub">填好左側資料後，按「範本整理」或「產生分析」，整理結果會顯示在這裡。</p><p class="sub"><b>AI 建議不會儲存到案件裡</b>，案件只保存左側由品管人員填寫的內容。</p><div class="note">分析結果為輔助整理與建議，僅依您提供的資料推論；<b>可能原因不等於真因，也不判定責任歸屬</b>。請由品管/品保人員查證、修改後再定稿。</div></div>
 <div class="card sec" id="out" hidden>
 <h2>② AI 分析建議（可修改，不會儲存）</h2>
 <div class="note">分析結果為輔助整理與建議，僅依您提供的資料推論；<b>可能原因不等於真因，也不判定責任歸屬</b>。請由品管/品保人員查證、修改後再定稿。</div><p class="aikeep">AI 建議不會存進案件。需要保留時，請按「複製全文」或下方「匯出此案件 Word」。</p>
@@ -433,16 +451,25 @@ label b,.fsec b{color:#b42318}
 <textarea id="vdone" aria-label="處置、改善及預防再發" placeholder="例：已隔離、暫停使用、退貨／換貨、通知供應商；後續調整的進料驗收或檢查方式…"></textarea>
 <h3 class="fsec">五、後續確認及追蹤紀錄</h3>
 <textarea id="vfol" aria-label="後續確認及追蹤紀錄" placeholder="例：供應商回覆日期、改善後進料抽檢結果、確認人、結案日期…"></textarea>
-<div class="row">
-<button class="pri" id="vgo">產生供應商客訴紀錄</button>
-<button id="vblank">僅整理資料（不做 AI 分析）</button>
-<span class="status" id="vst"></span>
+<div class="aiw-h">三種整理方式，<b>選一種用就好</b></div>
+<div class="aiw">
+<div class="aiw-c"><div class="aiw-ic">📝</div><div class="aiw-t">範本整理</div><span class="aiw-tag">兩版都能用・不是 AI</span><div class="aiw-d">依固定格式，<b>只用你填寫的資料</b>整理到右邊，不會推測原因或結果。</div><button type="button" id="vblank">範本整理</button></div>
+<div class="aiw-c"><div class="aiw-ic">📋</div><div class="aiw-t">複製 AI 提示詞</div><span class="aiw-tag">兩版都能用</span><div class="aiw-d">按下複製 → 貼到你慣用的 AI 工具 → 把 AI 的回覆貼回來，按「套用到右邊」。</div><button type="button" id="vcpp">複製 AI 提示詞</button></div>
+<div class="aiw-c ai aigo"><div class="aiw-ic">✨</div><div class="aiw-t">產生分析</div><span class="aiw-tag cl">僅限 claude.ai 版</span><div class="aiw-d">整理事實與可能原因（供應商端、運輸、本廠端），並擬好給供應商的通知函草稿。</div><button type="button" class="pri" id="vgo">產生分析</button></div>
 </div>
-<p class="ainote">AI 分析需在 claude.ai 開啟本工具，每位使用者須使用<b>自己的 Claude 帳號登入</b>，用量計入各自的帳號。<br>請勿在描述中填寫消費者或員工的<b>姓名、電話、地址、身分證字號</b>等個人資料，請改用「消費者 A」「品管人員」等代稱。</p>
+<div class="status" id="vst" role="status"></div>
+<div class="pbox" id="vpbox" hidden>
+<div class="pstep">提示詞已產生並嘗試複製。① 貼到你慣用的 AI 工具　② 把 AI 的回覆整段複製　③ 貼到下面的框，按「套用到右邊」。<b>套用後請檢查內容是否正確。</b></div>
+<label>提示詞</label><textarea id="vptext" readonly style="min-height:110px"></textarea>
+<div class="row"><button type="button" id="vpcopy">再複製一次</button><span class="status" id="vpmsg" role="status"></span></div>
+<label>貼上 AI 的回覆</label><textarea id="vpback" placeholder="把 AI 回覆的整段文字貼在這裡（以 { 開頭、} 結尾的那一段）"></textarea>
+<div class="row"><button type="button" class="pri" id="vpapply">套用到右邊</button><button type="button" id="vpclose">關閉</button></div>
+</div>
+<p class="ainote">AI 分析需在 claude.ai 開啟本工具，每位使用者須使用<b>自己的 Claude 帳號登入</b>，用量計入各自的帳號。<br>請勿在描述中填寫消費者或員工的<b>姓名、電話、地址、身分證字號</b>等個人資料，請改用「消費者 A」「品管人員」等代稱。<br>「複製 AI 提示詞」會把案件內容交給你另外選用的 AI 工具，照片不會包含在提示詞裡。</p>
 </div>
 
 </div><div class="rcol">
-<div class="card aiwait"><h2>AI 分析建議</h2><p class="sub">填好左側資料後，按「產生供應商客訴紀錄」，AI 建議與通知函草稿會顯示在這裡。</p><p class="sub"><b>AI 建議不會儲存到案件裡</b>，案件只保存左側由品管人員填寫的內容。</p><div class="note">分析結果為輔助整理與建議，僅依您提供的資料推論；<b>可能原因不等於真因，也不判定責任歸屬</b>。請由品管/品保人員查證、修改後再定稿。</div></div>
+<div class="card aiwait"><h2>AI 分析建議</h2><p class="sub">填好左側資料後，按「範本整理」或「產生分析」，整理結果與通知函草稿會顯示在這裡。</p><p class="sub"><b>AI 建議不會儲存到案件裡</b>，案件只保存左側由品管人員填寫的內容。</p><div class="note">分析結果為輔助整理與建議，僅依您提供的資料推論；<b>可能原因不等於真因，也不判定責任歸屬</b>。請由品管/品保人員查證、修改後再定稿。</div></div>
 <div class="card sec" id="vout" hidden>
 <h2>AI 分析建議（可修改，不會儲存）</h2>
 <div class="note">分析結果為輔助整理與建議，僅依您提供的資料推論；<b>可能原因不等於真因，也不判定責任歸屬</b>。請由品管/品保人員查證、修改後再定稿。</div><p class="aikeep">AI 建議不會存進案件。需要保留時，請按「複製全文」或下方「匯出此案件 Word」。</p>
@@ -505,7 +532,7 @@ label b,.fsec b{color:#b42318}
 <h4 class="gh">操作步驟</h4>
 <ol>
 <li>按「＋ 新增案件」，填寫客訴日期、產品名稱、批號、異常描述，必要時上傳照片（每件最多 4 張）。</li>
-<li>claude.ai 版可按「產生分析」，AI 建議會顯示在右欄。<b>AI 建議不會儲存</b>，請查證後再自己修改左欄內容。</li>
+<li>整理有三種方式，選一種用就好：「範本整理」只用你填的資料整理；「複製 AI 提示詞」可貼到你慣用的 AI 工具，再把回覆貼回來套用；claude.ai 版還能直接按「產生分析」。結果都顯示在右欄，<b>不會儲存</b>，請查證後再自己修改左欄內容。</li>
 <li>按「儲存」。之後可從清單點「編輯」或小照片，繼續更新案件內容。</li>
 <li>處理狀態依序是：原因查證 → 改善執行 → 效果確認 → 已結案（供應商客訴多一個「通知供應商改善」）。可在清單上直接切換。</li>
 <li>清單上方可以用狀態膠囊、搜尋、類別、年月篩選；勾選案件後可刪除，或只匯出這幾件的 Word 報告。</li>
@@ -624,22 +651,22 @@ const SYS=`你是食品工廠品管/品保的客訴分析輔助。以繁體中�
 {"facts":["...（出處）"],"photo":["..."],"causes":[{"cause":"...","basis":"...","missing":"..."}],"pending":[{"item":"...","why":"...","how":"..."}],"immediate":["..."],"corrective":["..."],"preventive":["..."],"followup":["..."],"reply":"..."}
 photo 若無照片請輸出空陣列。causes 建議 3–6 項，依與現有資料之關聯性排序；資料不足時可少於 3 項或為空陣列。`;
 
+const parseAI=t=>{const j=JSON.parse(String(t).replace(/```json|```/g,'').trim().replace(/^[^{]*/,'').replace(/[^}]*$/,''));if(!j||typeof j!=='object'||Array.isArray(j))throw 0;return j};
+const cTxt=(d,useImg)=>`【產品名稱】${v(d.prod)}\n【批號／有效日期】${v(d.lot)}\n【客訴異常描述】${v(d.desc)}\n【相關單位（相關製程／檢查紀錄／調查結果）】${v(d.proc)}\n【單位改善措施】${v(d.done)}\n【改善確效】${v(d.eff)}\n【照片】${photos.length?photos.length+' 張'+(useImg?'（已附圖）':'（系統無法傳送圖片，請勿描述照片）'):'無'}`;
 let busy=false;
 $('go').onclick=async()=>{
   const d=need();if(!d||busy)return;
   const sample=typeof claude!=='undefined'?await claude.use('sample'):null;
-  if(!sample){$('st').textContent=typeof claude==='undefined'?'AI 分析目前僅限 claude.ai 使用；此版本請按「僅整理資料」，依引導欄位手動填寫。':'目前無法使用 AI 分析（尚未授權或離線）。可改按「僅整理資料」手動填寫。';return}
+  if(!sample){$('st').textContent=typeof claude==='undefined'?'AI 分析目前僅限 claude.ai 使用；此版本請改用「範本整理」或「複製 AI 提示詞」。':'目前無法使用 AI 分析（尚未授權或離線）。可改用「範本整理」或「複製 AI 提示詞」。';return}
   busy=true;$('go').disabled=true;$('st').textContent='分析中，請稍候…';
   try{
     const lim=await sample.limits?.();
     const useImg=photos.length&&lim&&lim.images;
-    const txt=`【產品名稱】${v(d.prod)}\n【批號／有效日期】${v(d.lot)}\n【客訴異常描述】${v(d.desc)}\n【相關單位（相關製程／檢查紀錄／調查結果）】${v(d.proc)}\n【單位改善措施】${v(d.done)}\n【改善確效】${v(d.eff)}\n【照片】${photos.length?photos.length+' 張'+(useImg?'（已附圖）':'（系統無法傳送圖片，請勿描述照片）'):'無'}`;
-    const r=await sample(SYS+'\n\n'+txt,useImg?{images:photos.map(p=>p.blob),cache:false}:{cache:false});
-    const j=JSON.parse(r.text.replace(/```json|```/g,'').trim().replace(/^[^{]*/,'').replace(/[^}]*$/,''));
-    render(d,j,useImg);
+    const r=await sample(SYS+'\n\n'+cTxt(d,useImg),useImg?{images:photos.map(p=>p.blob),cache:false}:{cache:false});
+    render(d,parseAI(r.text),useImg);
     $('st').textContent='';
   }catch(e){
-    $('st').textContent='分析失敗（'+(e.message||e.code||'格式錯誤')+'），請重試，或改按「僅整理資料」。';
+    $('st').textContent='分析失敗（'+(e.message||e.code||'格式錯誤')+'），請重試，或改用「範本整理」。';
   }
   busy=false;$('go').disabled=false;
 };
@@ -680,7 +707,7 @@ async function restore(text){
   try{
     const o=JSON.parse(text);
     if(!o||o.app!=='food-complaint-assistant'||!o.inputs)throw 0;
-    for(const k of ['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','eff','conf'])$(k).value=o.inputs[k]||'';syncResp();
+    for(const k of ['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','eff','conf'])$(k).value=o.inputs[k]||'';syncResp();syncCombos();
     photos.forEach(p=>URL.revokeObjectURL(p.url));photos=[];
     for(const p of (o.photos||[]).slice(0,4)){const blob=d2b(p.data);photos.push({blob,url:URL.createObjectURL(blob),name:p.name||'photo.jpg'})}
     drawThumbs();
@@ -746,20 +773,33 @@ const VSYS=`你是食品工廠品管/品保的「供應商客訴」分析輔助�
 只輸出 JSON，不要其他文字或 markdown：
 {"facts":["...（出處）"],"causes":[{"side":"供應商端|運輸|本廠端|待查","cause":"...","basis":"...","missing":"..."}],"pending_supplier":["..."],"pending_internal":["..."],"immediate":["..."],"corrective":["..."],"preventive":["..."],"followup":["..."],"notice":"..."}
 causes 建議 3–6 項。`;
+const vTxt=d=>`【供應商】${v(d.sup)}（聯絡人：${v(d.con)}）\n【原料／包材】${v(d.mat)}\n【批號／有效日期】${v(d.lot)}\n【進貨日期／數量／受影響數量】${v(d.qty)}\n【原物料規格】${v(d.spec)}\n【發現日期】${v(d.date)}\n【異常描述】${v(d.desc)}\n【處置、改善及預防再發】${v(d.done)}\n【尚待確認事項及需供應商提供之資料】${v(d.req)}\n【後續確認及追蹤紀錄】${v(d.fol)}`;
 let vbusy=false;
 $('vgo').onclick=async()=>{
   const d=vneed();if(!d||vbusy)return;
   const sample=typeof claude!=='undefined'?await claude.use('sample'):null;
-  if(!sample){$('vst').textContent=typeof claude==='undefined'?'AI 分析目前僅限 claude.ai 使用；此版本請按「僅整理資料」，依引導欄位手動填寫。':'目前無法使用 AI 分析（尚未授權或離線）。可改按「僅整理資料」。';return}
+  if(!sample){$('vst').textContent=typeof claude==='undefined'?'AI 分析目前僅限 claude.ai 使用；此版本請改用「範本整理」或「複製 AI 提示詞」。':'目前無法使用 AI 分析（尚未授權或離線）。可改改用「範本整理」或「複製 AI 提示詞」。';return}
   vbusy=true;$('vgo').disabled=true;$('vst').textContent='分析中，請稍候…';
   try{
-    const txt=`【供應商】${v(d.sup)}（聯絡人：${v(d.con)}）\n【原料／包材】${v(d.mat)}\n【批號／有效日期】${v(d.lot)}\n【進貨日期／數量／受影響數量】${v(d.qty)}\n【原物料規格】${v(d.spec)}\n【發現日期】${v(d.date)}\n【異常描述】${v(d.desc)}\n【處置、改善及預防再發】${v(d.done)}\n【尚待確認事項及需供應商提供之資料】${v(d.req)}\n【後續確認及追蹤紀錄】${v(d.fol)}`;
+    const txt=vTxt(d);
     const r=await sample(VSYS+'\n\n'+txt,{cache:false});
-    const j=JSON.parse(r.text.replace(/```json|```/g,'').trim().replace(/^[^{]*/,'').replace(/[^}]*$/,''));
-    vrender(d,j);$('vst').textContent='';
-  }catch(e){$('vst').textContent='分析失敗（'+(e.message||e.code||'格式錯誤')+'），請重試，或改按「僅整理資料」。'}
+    vrender(d,parseAI(r.text));$('vst').textContent='';
+  }catch(e){$('vst').textContent='分析失敗（'+(e.message||e.code||'格式錯誤')+'），請重試，或改用「範本整理」。'}
   vbusy=false;$('vgo').disabled=false;
 };
+// ---- 複製 AI 提示詞：貼到使用者自己選的 AI 工具，再把回覆貼回來套用（不呼叫任何 API）----
+function copyText(ta,msg){const ok=()=>msg.textContent='已複製到剪貼簿';
+  const fb=()=>{ta.select();try{msg.textContent=document.execCommand('copy')?'已複製到剪貼簿':'請手動全選複製'}catch(_){msg.textContent='請手動全選複製'}};
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(ta.value).then(ok,fb);else fb()}
+[['',()=>{const d=need();return d&&SYS+'\n\n'+cTxt(d,false)},t=>{const d=need();if(d)render(d,parseAI(t),false)}],
+ ['v',()=>{const d=vneed();return d&&VSYS+'\n\n'+vTxt(d)},t=>{const d=vneed();if(d)vrender(d,parseAI(t))}]].forEach(([px,make,apply])=>{
+  const box=$(px+'pbox'),msg=$(px+'pmsg');
+  $(px+'cpp').onclick=()=>{const t=make();if(!t)return;$(px+'ptext').value=t;$(px+'pback').value='';box.hidden=false;copyText($(px+'ptext'),msg);box.scrollIntoView({behavior:'smooth',block:'nearest'})};
+  $(px+'pcopy').onclick=()=>copyText($(px+'ptext'),msg);
+  $(px+'pclose').onclick=()=>{box.hidden=true};
+  $(px+'papply').onclick=()=>{const t=$(px+'pback').value.trim();if(!t){msg.textContent='請先把 AI 的回覆貼到框裡。';return}
+    try{apply(t);msg.textContent='已套用到右邊，請檢查內容。'}catch(_){msg.textContent='看不懂這段回覆：請把 AI 回覆的整段貼上（以 { 開頭、以 } 結尾）；若 AI 沒照格式回覆，請請它「只輸出 JSON」再試一次。'}}});
+if(typeof claude==='undefined')document.querySelectorAll('.aigo').forEach(c=>c.classList.add('off'));
 function vrender(d,j){
   vfill({
     s2:`【事實】（來自您提供之資料）\n${L(j.facts)}\n\n【處置、改善及預防再發】\n${d.done||'（未提供）'}`,
