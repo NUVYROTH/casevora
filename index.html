@@ -497,7 +497,7 @@ label b,.fsec b{color:#b42318}
 <div id="tabS" hidden>
 <div class="hcard"><div class="hc-top"><div class="ptitle"><h1>統計分析</h1><div class="eyebrow">QUALITY ANALYTICS</div><span>客訴依月／季／年統計，只呈現件數分布，不代表原因或責任判定。</span></div><span class="lbadge">● 本機資料模式</span></div>
 <div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
-<div class="hc-bot"><div class="hcrumb">Casevoras / <b>統計分析</b></div><div class="pact"><span class="status" id="sPrintMsg" role="status"></span><button type="button" id="sPrint">列印／存成 PDF</button></div></div></div>
+<div class="hc-bot"><div class="hcrumb">Casevoras / <b>統計分析</b></div><div class="pact"><span class="status" id="sPrintMsg" role="status"></span><button type="button" class="pri" id="srepTop">⬇ 下載統計報告（Word）</button><button type="button" id="sPrint">列印／存成 PDF</button></div></div></div>
 
 <div class="kpis" id="kpiS"></div>
 <div class="dgrid2"><div class="card">
@@ -505,7 +505,7 @@ label b,.fsec b{color:#b42318}
 <div class="seg" role="group" aria-label="統計期間"><button type="button" data-m="Y">年度</button><button type="button" data-m="Q">每季</button><button type="button" data-m="M" class="on">每月</button></div>
 <div id="sctl"></div>
 <div id="sbody"></div>
-<div class="row" style="margin-top:12px"><button class="pri" id="srep">匯出統計報告（Word）</button><span class="status" id="srepmsg" role="status"></span></div>
+<div class="row" style="margin-top:12px"><button class="pri" id="srep">⬇ 下載統計報告（Word）</button><span class="status" id="srepmsg" role="status"></span></div>
 <p class="sub" style="margin:6px 0 0">報告內容依目前選擇的分析類型、期間與客訴種類產生，包含趨勢圖、摘要與統計表，適合每月品質會議使用。</p>
 <p class="sub" style="margin-top:10px">統計自動從案件算出，客訴與供應商客訴分開計算。件數少時趨勢僅供參考；統計只呈現件數分布，不代表原因或責任判定。</p>
 </div>
@@ -536,7 +536,7 @@ label b,.fsec b{color:#b42318}
 <li>按「儲存」。之後可從清單點「編輯」或小照片，繼續更新案件內容。</li>
 <li>處理狀態依序是：原因查證 → 改善執行 → 效果確認 → 已結案（供應商客訴多一個「通知供應商改善」）。可在清單上直接切換。</li>
 <li>清單上方可以用狀態膠囊、搜尋、類別、年月篩選；勾選案件後可刪除，或只匯出這幾件的 Word 報告。</li>
-<li>「匯出全部報表（Excel 可開）」會匯出這一頁的全部案件；左側「統計分析」可看年度、每季、每月統計，並匯出統計報告。</li>
+<li>「匯出全部報表（Excel 可開）」會匯出這一頁的全部案件；左側「統計分析」可看年度、每季、每月統計，並按「下載統計報告（Word）」下載。</li>
 <li>換電腦時，在舊電腦按「下載備份」，再到新電腦按「從備份還原」。</li>
 </ol>
 </div>
@@ -1088,7 +1088,7 @@ let lastList='A';document.querySelectorAll('.tabs button[data-t]').forEach(b=>b.
 const toList=()=>document.querySelector(`.tabs button[data-t="${lastList}"]`).click();
 if(typeof claude!=='undefined')$('sPrint').hidden=true;
 $('sPrint').onclick=()=>{
-  if(typeof claude!=='undefined'){$('sPrintMsg').textContent='claude.ai 版無法開啟列印視窗。請到網址版按「列印／存成 PDF」，或改用「匯出統計報告（Word）」。';return}
+  if(typeof claude!=='undefined'){$('sPrintMsg').textContent='claude.ai 版無法開啟列印視窗。請到網址版按「列印／存成 PDF」，或改用「下載統計報告（Word）」。';return}
   $('sPrintMsg').textContent='';const pv=$('printView'),P=statPeriod();
   pv.innerHTML=`<h1 class="pvh">Casevoras ${esc(stK)}統計${MN[mode]}</h1><p class="pvs">${esc(P.label)}　列印日期：${todayLocal()}</p><div class="kpis">${$('kpiS').innerHTML}</div><h2 class="pvs2">${esc($('stitle').textContent)}</h2>${$('sbody').innerHTML}<div class="pvg">${$('sideS').innerHTML}</div><p class="pvs">統計只呈現件數分布，不代表原因或責任判定。</p>`;
   pv.classList.add('pvhtml');window.print();pv.classList.remove('pvhtml')};
@@ -1514,10 +1514,11 @@ $('sbody').addEventListener('click',async e=>{
   setTimeout(()=>{b.disabled=false;b.textContent=old},2500);
 });
 $('srep').onclick=async()=>{
-  const say=t=>$('srepmsg').textContent=t,btn=$('srep');btn.disabled=true;say('報告產生中，請稍候…');
+  const say=t=>{$('srepmsg').textContent=t;$('sPrintMsg').textContent=t},bs=[$('srep'),$('srepTop')];bs.forEach(b=>b.disabled=true);say('報告產生中，請稍候…');
   try{const o=await buildReport();await saveDocx(o.blob,o.name,say)}catch(err){say('報告產生失敗：'+(err.message||err)+'，請重試')}
-  btn.disabled=false;
+  bs.forEach(b=>b.disabled=false);
 };
+$('srepTop').onclick=()=>$('srep').click();
 
 // ---- Word 備份：隱藏資料區（匯出）與驗證（匯入）----
 function backupXml(phMap){
