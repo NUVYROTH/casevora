@@ -561,7 +561,7 @@ label b,.fsec b{color:#b42318}
 </div>
 </details></div>
 </div>
-<div id="tools" class="tools"><button id="xin" title="把 Excel 客訴紀錄表直接匯入成客訴案件（不會刪除現有案件）">從 Excel 匯入</button><input type="file" id="xinf" accept=".xlsx,.xls" hidden><button id="cx" title="選擇年份、月份後匯出（不含最近刪除），可用 Excel 開啟">匯出報表（Excel）</button><button id="bkw" title="所有客訴與供應商客訴案件、照片、最近刪除與已占用編號整理成一份 Word 檔，換電腦時用「從備份還原」。備份檔含客訴資料，請妥善保管">下載備份</button><button id="bki" title="只能還原本工具下載的備份；還原會取代目前所有案件與照片">從備份還原</button>
+<div id="tools" class="tools"><button id="xin" title="把 Excel 客訴紀錄表直接匯入成客訴案件，可一次選多個檔案（不會刪除現有案件）">從 Excel 匯入</button><input type="file" id="xinf" accept=".xlsx,.xls" multiple hidden><button id="cx" title="選擇年份、月份後匯出（不含最近刪除），可用 Excel 開啟">匯出報表（Excel）</button><button id="bkw" title="所有客訴與供應商客訴案件、照片、最近刪除與已占用編號整理成一份 Word 檔，換電腦時用「從備份還原」。備份檔含客訴資料，請妥善保管">下載備份</button><button id="bki" title="只能還原本工具下載的備份；還原會取代目前所有案件與照片">從備份還原</button>
 <input id="bkf" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden></div>
 <div id="toolmsg" class="toolmsg"><span class="status" id="st3"></span>
 <span class="stc" id="impAsk" hidden><span id="impTxt">目前的案件會全部被取代，確定要覆蓋嗎？</span><button class="pri" id="impYes">確定覆蓋</button><button id="impNo">取消</button></span>
@@ -1203,55 +1203,75 @@ function xDate(t,y,after){if(typeof t==='number'&&t>20000&&window.XLSX){const o=
 function xRange(t,y,after){t=String(t||'').trim();const p=t.split(/\s*[~～\-－—]\s*/);if(p.length===2){const a=xDate(p[0],y,after),b=xDate(p[1],y,a||after);if(a&&b)return{a,b,txt:''}}const a=xDate(t,y,after);return a?{a,b:'',txt:''}:{a:'',b:'',txt:t}}
 const XSYN={昆蟲:/蟑螂|蒼蠅|螞蟻|昆蟲|蟲/,毛髮:/頭髮|毛髮/};
 function xGuess(t){if(/異物|石頭|塑膠|頭髮|毛髮|蟑螂|蟲|油漆|金屬|鐵|玻璃|污漬|紅點|藍點|綠點/.test(t))return'異物';if(/重量|不夠|數量|包裝|標示/.test(t))return'標示/包裝/數量有誤';
-  if(/酸|臭|異味|風味/.test(t))return'酸敗/風味';if(/血筋|血塊|肌紅/.test(t))return'血筋/血塊/肌紅素';if(/軟|硬|口感|彈|膨/.test(t))return'口感不佳';return'其它'}
+  if(/酸|臭|異味|風味|腥|油耗|苦味|香菇味/.test(t))return'酸敗/風味';if(/血筋|血塊|肌紅/.test(t))return'血筋/血塊/肌紅素';if(/軟|硬|口感|口產|彈|膨|爆|Q|黏|煮不爛|咬不動/.test(t))return'口感不佳';return'其它'}
 function xSub(t){for(const o of OPTS.fo){if((XSYN[o]||null)?XSYN[o].test(t):t.includes(o))return o}return''}
-// 讀所有工作表；合併儲存格的下一列（沒有日期也沒有內容）併回上一件；只有「立案日期＋客訴內容」都相同才算重複
-function xParse(sheets,y){const out=[],seen=new Set();let found=0;
- for(const rows of sheets){
-  let h=-1;for(let i=0;i<Math.min(rows.length,15);i++){const r=rows[i].map(nk);if(r.some(x=>x.includes('立案日期'))&&r.some(x=>x.includes('客訴內容'))){h=i;break}}
-  if(h<0)continue;found++;
-  const H=[rows[h],rows[h+1]||[]].map(r=>r.map(nk)),col=re=>{for(const r of H){const i=r.findIndex(x=>re.test(x));if(i>=0)return i}return-1};
-  const C={date:col(/立案日期/),txt:col(/客訴內容/),resp:col(/權責單位/),rpt:col(/報告書/),trk:col(/^追蹤/),end:col(/^結案/),cause:col(/^原因/),note:col(/備[註住]/)};
-  const sub=H[1].some(x=>/報告書|追蹤|結案/.test(x))?h+2:h+1;
-  const gv=(r,k)=>C[k]<0?'':r[C[k]],g=(r,k)=>{const v=gv(r,k);return typeof v==='number'?(xDate(v)||String(v)):String(v==null?'':v).trim()};
-  const cleanResp=t=>/^(NA|N\/A)$/i.test(t)?'':t,causeOf=r=>(g(r,'cause').match(/[人機料法環]/g)||[]);
-  let last=null,lastDate='';
-  for(const r of rows.slice(sub)){let txt=g(r,'txt').replace(/\s+/g,' '),date=xDate(gv(r,'date'),y);
+// 讀所有工作表。日期照 Excel 畫面上顯示的：有寫年份照原本年份；只顯示月／日的用「檔案的年份」（檔名或「統計區間」裡的年份）
+// 合併儲存格的下一列（沒有日期也沒有內容）併回上一件。重複依「立案日期＋客訴內容」出現的次數比對：表裡有兩列就匯入兩件，工具裡已有幾件就略過幾件
+// 表上「分類」欄對應到工具的異常類別；對應不到時依內容判斷，再不行就放「其它」並把原分類當原因
+function xCat(cls,txt){if(/天然異物/.test(cls))return{cat:'異物',other:''};
+  if(cls==='風味口感不良')return{cat:/酸|臭|腥|油耗|異味|苦|香菇味|味道/.test(txt)?'酸敗/風味':'口感不佳',other:''};
+  const gs=xGuess(txt);if(cls==='其它品質因素'&&gs!=='其它')return{cat:gs,other:''};
+  if(cls)return{cat:'其它',other:cls};return{cat:gs,other:''}}
+function xParse(files,fallbackY,closeOld){const out=[],cnt=new Map(),cy=new Date().getFullYear();let found=0;
+ const have=k=>CASES.filter(c=>isLive(c)&&c.kind==='客訴'&&c.date+'|'+(c.item||'').trim()===k).length;
+ for(const f of files){const y=f.year||fallbackY;
+  for(const rows of f.sheets){
+   let h=-1;for(let i=0;i<Math.min(rows.length,15);i++){const r=rows[i].map(nk);if(r.some(x=>x.includes('立案日期'))&&r.some(x=>x.includes('客訴內容'))){h=i;break}}
+   if(h<0)continue;found++;
+   const H=[rows[h],rows[h+1]||[]].map(r=>r.map(nk)),col=re=>{for(const r of H){const i=r.findIndex(x=>re.test(x));if(i>=0)return i}return-1};
+   const C={date:col(/立案日期/),txt:col(/客訴內容/),resp:col(/權責單位/),rpt:col(/報告書/),trk:col(/^追蹤/),end:col(/^結案/),cause:col(/^原因/),note:col(/備[註住]/),cls:col(/^分類/)};
+   const sub=H[1].some(x=>/報告書|追蹤|結案/.test(x))?h+2:h+1;
+   const g=(r,k)=>C[k]<0?'':String(r[C[k]]==null?'':r[C[k]]).trim();
+   const cleanResp=t=>/^(NA|N\/A)$/i.test(t)?'':t,causeOf=r=>(g(r,'cause').match(/[人機料法環]/g)||[]);
+   let last=null,lastDate='';
+   for(const r of rows.slice(sub)){if(/合計/.test(nk(r.slice(0,3).join(''))))break;
+    let txt=g(r,'txt').replace(/\s+/g,' '),date=xDate(g(r,'date'),y);
     if(nk(txt).includes('客訴內容'))continue;
-    if(!txt&&!date){if(last&&last.ok){const rs=cleanResp(g(r,'resp'));if(rs)last.resp=[...new Set(last.resp.split('、').filter(Boolean).concat(rs.split(/[、,，]/).map(x=>x.trim()).filter(Boolean)))].join('、');
+    if(!txt&&!date){if(last){const rs=cleanResp(g(r,'resp'));if(rs)last.resp=[...new Set(last.resp.split('、').filter(Boolean).concat(rs.split(/[、,，]/).map(x=>x.trim()).filter(Boolean)))].join('、');
         const cz=causeOf(r);if(cz.length)last.cause=[...new Set(last.cause.split('、').filter(Boolean).concat(cz))].join('、');const nt=g(r,'note');if(nt&&!last.note.includes(nt))last.note=[last.note,nt].filter(Boolean).join('；')}continue}
     if(!date&&txt&&lastDate)date=lastDate;
-    const rpt=xDate(gv(r,'rpt'),y,date),tr=typeof gv(r,'trk')==='number'?{a:xDate(gv(r,'trk')),b:'',txt:''}:xRange(g(r,'trk'),y,date),cd=xDate(gv(r,'end'),y,date),closed=!!cd||/已結案/.test(g(r,'trk')+g(r,'end'));
-    const resp=cleanResp(g(r,'resp')),cause=[...new Set(causeOf(r))].join('、');
-    const cat=xGuess(txt),note=[g(r,'note'),tr.txt&&!tr.a?'追蹤：'+tr.txt:''].filter(Boolean).join('；');
-    const x={ok:!!(date&&txt),date,txt,resp,rpt,trk1:tr.a,trk2:tr.b,cdate:cd,cause,note,cat,fosub:cat==='異物'?xSub(txt):'',status:closed?'已結案':'改善執行',
-      dup:CASES.some(c=>isLive(c)&&c.kind==='客訴'&&c.date===date&&(c.item||'').trim()===txt),dupIn:seen.has(date+'|'+txt)};
-    out.push(x);seen.add(date+'|'+txt);if(date)lastDate=date;last=x.dupIn?null:x}}
+    const trT=g(r,'trk'),endT=g(r,'end'),rpt=xDate(g(r,'rpt'),y,date),tr=xRange(trT,y,date),cd=xDate(endT,y,date);
+    const noTrk=/不追蹤/.test(trT),old=closeOld&&date&&+date.slice(0,4)<cy;
+    const closed=!!cd||noTrk||/已結案/.test(trT+endT)||old;
+    const resp=cleanResp(g(r,'resp')),cause=[...new Set(causeOf(r))].join('、'),cls=g(r,'cls');
+    const xc=xCat(cls,txt),cat=xc.cat,catother=xc.other;
+    const note=[g(r,'note'),tr.txt&&!tr.a&&tr.txt!=='-'?'追蹤：'+tr.txt:'',cls?'原分類：'+cls:''].filter(Boolean).join('；');
+    const k=date+'|'+txt,i=cnt.get(k)||0;cnt.set(k,i+1);
+    const x={ok:!!(date&&txt),file:f.name,date,txt,resp,rpt,trk1:tr.a,trk2:tr.b,cdate:cd,cause,note,cat,catother,fosub:cat==='異物'?xSub(txt):'',status:closed?'已結案':'改善執行',dup:i<have(k)};
+    out.push(x);if(date)lastDate=date;last=x}}}
  if(!found)throw new Error('找不到「立案日期」與「客訴內容」標題列');
  return out}
 $('xin').onclick=()=>$('xinf').click();
-$('xinf').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;cmsg('讀取 Excel 中…');
+// 可以一次選多個檔案（例如 2024、2025、2026 各一個），每個檔案用自己的年份
+$('xinf').onchange=async e=>{const fs=[...e.target.files];e.target.value='';if(!fs.length)return;cmsg('讀取 Excel 中…');
   try{await loadXlsx()}catch(_){cmsg('無法載入讀取 Excel 的程式（需要網路連線），請稍後再試');return}
-  let rows;try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});rows=wb.SheetNames.map(n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''}))}catch(_){cmsg('讀不到這個檔案，請確認是 Excel 檔（.xlsx）');return}
-  cmsg('');const cy=new Date().getFullYear();let list;
-  try{list=xParse(rows,cy)}catch(err){cmsg('匯入失敗：'+err.message+'。請確認檔案裡有客訴紀錄表');return}
+  const files=[];
+  for(const f of fs){try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});const sheets=wb.SheetNames.map(n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:''}));
+      const yt=(/(20\d{2})/.exec(f.name)||[])[1]||(/(20\d{2})\s*年/.exec(sheets.flat().slice(0,40).join(' '))||[])[1]||'';files.push({name:f.name,year:yt?+yt:0,sheets})}
+    catch(_){cmsg('讀不到「'+f.name+'」，請確認是 Excel 檔（.xlsx）');return}}
+  cmsg('');const cy=new Date().getFullYear();let list,Y=cy,old=true;
+  try{list=xParse(files,Y,old)}catch(err){cmsg('匯入失敗：'+err.message+'。請確認檔案裡有客訴紀錄表');return}
   const m=document.createElement('div');m.className='modal';document.body.append(m);
-  const draw=y=>{list=xParse(rows,y);const ok=list.filter(x=>x.ok&&!x.dup&&!x.dupIn),bad=list.filter(x=>!x.ok).length,dup=list.filter(x=>x.ok&&x.dup).length,dupIn=list.filter(x=>x.ok&&!x.dup&&x.dupIn).length,skip=list.filter(x=>!x.ok||x.dup||x.dupIn);
+  const draw=()=>{list=xParse(files,Y,old);const ok=list.filter(x=>x.ok&&!x.dup),bad=list.filter(x=>!x.ok).length,dup=list.filter(x=>x.ok&&x.dup).length,skip=list.filter(x=>!x.ok||x.dup);
     const nd=[...new Set(ok.flatMap(x=>x.resp.split(/[、,，\/／]+/).map(t=>t.trim())))].filter(t=>t&&t!=='無'&&!OPTS.dept.includes(t));
+    const per=files.map(f=>{const a=list.filter(x=>x.file===f.name);return`<li>${esc(f.name)}（${f.year?f.year+' 年':'找不到年份，用 '+Y+' 年'}）：可匯入 <b>${a.filter(x=>x.ok&&!x.dup).length}</b> 件${a.some(x=>!x.ok||x.dup)?`，略過 ${a.filter(x=>!x.ok||x.dup).length} 件`:''}</li>`}).join('');
+    const noYear=files.some(f=>!f.year);
     m.innerHTML=`<div class="box" role="dialog" aria-modal="true" aria-label="從 Excel 匯入" style="max-width:760px"><b>從 Excel 匯入客訴案件</b>
-<p class="sub" style="margin:4px 0 8px">表上有年份的日期照原本的年份；只寫月／日的（例如 1/21）用這個年份：<select id="xinY" aria-label="年份">${[cy+1,cy,cy-1,cy-2,cy-3].map(v=>`<option value="${v}"${v===y?' selected':''}>${v} 年</option>`).join('')}</select></p>
-<p class="sub" style="margin:0 0 6px">可匯入 <b>${ok.length}</b> 件${dup?`，工具裡已有相同立案日期與內容而略過 ${dup} 件`:''}${dupIn?`，表裡重複出現而略過 ${dupIn} 件`:''}${bad?`，缺日期或內容而略過 ${bad} 件`:''}。客訴內容會放到「產品名稱」；批號、異常描述先留空，之後再補。異常類別依內容自動判斷，請匯入後檢查；判斷為「其它」的，請再補上其它異常原因。${nd.length?`<br>表上的權責單位「${esc(nd.join('、'))}」會一起加進常用選項。`:''}</p>
-<div class="ximpw"><table class="ximp"><tr><th>立案日期</th><th>產品名稱</th><th>異常類別</th><th>權責單位</th><th>報告書</th><th>追蹤</th><th>結案</th><th>原因</th><th>狀態</th></tr>${ok.map(x=>`<tr><td>${x.date}</td><td>${esc(x.txt)}</td><td>${esc(x.fosub?'異物-'+x.fosub:x.cat)}</td><td>${esc(x.resp)}</td><td>${x.rpt}</td><td>${x.trk1?x.trk1+(x.trk2?' ～ '+x.trk2:''):''}</td><td>${x.cdate}</td><td>${x.cause}</td><td>${x.status}</td></tr>`).join('')}</table></div>
-${skip.length?`<details class="omu" style="margin-top:6px"><summary style="cursor:pointer">查看略過的 ${skip.length} 筆</summary><div class="ximpw"><table class="ximp"><tr><th>立案日期</th><th>客訴內容</th><th>略過原因</th></tr>${skip.map(x=>`<tr><td>${x.date||'（讀不到）'}</td><td>${esc(x.txt||'（空白）')}</td><td>${!x.ok?'缺日期或內容':x.dup?'工具裡已有相同的案件':'表裡重複出現'}</td></tr>`).join('')}</table></div></details>`:''}
+<ul class="sub" style="margin:6px 0 6px 18px;padding:0">${per}</ul>
+<p class="sub" style="margin:0 0 6px">日期有寫年份的照原本年份；只顯示月／日的用檔案的年份（看檔名或「統計區間」）。${noYear?`找不到年份的檔案用：<select id="xinY" aria-label="年份">${[cy+1,cy,cy-1,cy-2,cy-3].map(v=>`<option value="${v}"${v===Y?' selected':''}>${v} 年</option>`).join('')}</select>`:''}</p>
+<label class="sub" style="display:flex;gap:6px;align-items:center;margin:0 0 6px"><input type="checkbox" id="xinOld"${old?' checked':''} style="width:auto;margin:0">今年以前（${cy-1} 年和更早）的案件一律設為「已結案」；追蹤寫「不追蹤」的也設為已結案</label>
+<p class="sub" style="margin:0 0 6px">共可匯入 <b>${ok.length}</b> 件${dup?`，工具裡已有而略過 ${dup} 件`:''}${bad?`，缺日期或內容而略過 ${bad} 件`:''}。重複是依「立案日期＋客訴內容」的出現次數比對：表裡有兩列就匯入兩件。客訴內容會放到「產品名稱」；批號、異常描述先留空。異常類別依表上的「分類」或內容自動判斷，請匯入後檢查。${nd.length?`<br>表上的權責單位「${esc(nd.join('、'))}」會一起加進常用選項。`:''}</p>
+<div class="ximpw"><table class="ximp"><tr><th>檔案</th><th>立案日期</th><th>產品名稱</th><th>異常類別</th><th>權責單位</th><th>報告書</th><th>追蹤</th><th>結案</th><th>原因</th><th>狀態</th></tr>${ok.map(x=>`<tr><td>${esc((/(20\d{2})/.exec(x.file)||[x.file])[0])}</td><td>${x.date}</td><td>${esc(x.txt)}</td><td>${esc(x.fosub?'異物-'+x.fosub:x.catother?'其它-'+x.catother:x.cat)}</td><td>${esc(x.resp)}</td><td>${x.rpt}</td><td>${x.trk1?x.trk1+(x.trk2?' ～ '+x.trk2:''):''}</td><td>${x.cdate}</td><td>${x.cause}</td><td>${x.status}</td></tr>`).join('')}</table></div>
+${skip.length?`<details class="omu" style="margin-top:6px"><summary style="cursor:pointer">查看略過的 ${skip.length} 筆</summary><div class="ximpw"><table class="ximp"><tr><th>檔案</th><th>立案日期</th><th>客訴內容</th><th>略過原因</th></tr>${skip.map(x=>`<tr><td>${esc(x.file)}</td><td>${x.date||'（讀不到）'}</td><td>${esc(x.txt||'（空白）')}</td><td>${!x.ok?'缺日期或內容':'工具裡已有相同立案日期與內容的案件'}</td></tr>`).join('')}</table></div></details>`:''}
 <div class="row" style="justify-content:flex-end;margin:10px 0 0"><button type="button" id="xinNo">取消</button><button type="button" class="pri" id="xinGo"${ok.length?'':' disabled'}>確定匯入 ${ok.length} 件</button></div></div>`;
-    $('xinY').onchange=()=>draw(+$('xinY').value);$('xinNo').onclick=()=>m.remove();
+    if($('xinY'))$('xinY').onchange=()=>{Y=+$('xinY').value;draw()};$('xinOld').onchange=()=>{old=$('xinOld').checked;draw()};$('xinNo').onclick=()=>m.remove();
     $('xinGo').onclick=async()=>{$('xinGo').disabled=true;const used=new Set(CASES.map(c=>c.no));let n=0;
       try{for(const x of ok){let no='',k=1;const pre='CC-'+x.date.replace(/-/g,'')+'-';do no=pre+String(k++).padStart(3,'0');while(used.has(no));used.add(no);
-        const inp={no,date:x.date,src:'',rec:'',qcp:'',resp:x.resp,respx:'',prod:x.txt,lot:'',desc:'',proc:'',done:'',conf:'',eff:'',catother:'',fosub:x.fosub,rpt:x.rpt,trk1:x.trk1,trk2:x.trk2,cdate:x.cdate,cause:x.cause,note:x.note};
+        const inp={no,date:x.date,src:'',rec:'',qcp:'',resp:x.resp,respx:'',prod:x.txt,lot:'',desc:'',proc:'',done:'',conf:'',eff:'',catother:x.catother,fosub:x.fosub,rpt:x.rpt,trk1:x.trk1,trk2:x.trk2,cdate:x.cdate,cause:x.cause,note:x.note};
         await DBc.add({date:x.date,kind:'客訴',no,item:x.txt,lot:'',sup:'',cat:x.cat,status:x.status,form:{inputs:inp}});n++}
         if(nd.length){OPTS.dept.push(...nd);saveOpts();syncCombos()}m.remove();$('lyr').value='';$('lmo').value='';$('lst').value='';renderS();cmsg(`已匯入 ${n} 件客訴案件。批號、異常描述請再逐件補上`)}
       catch(err){m.remove();renderS();cmsg(`匯入到第 ${n+1} 件時失敗（${err.message||err}），前面 ${n} 件已匯入`)}}};
-  m.onkeydown=e=>{if(e.key==='Escape')m.remove()};draw(cy)};
+  m.onkeydown=e=>{if(e.key==='Escape')m.remove()};draw()};
 // 匯出報表：先選年份／月份（依日期），預設帶入清單目前的年月篩選；所有狀態都匯出，不含最近刪除
 $('cx').onclick=()=>{const kind=$('tabB').hidden?'客訴':'供應商客訴',px=kind==='客訴'?'':'v',all=CASES.filter(c=>isLive(c)&&c.kind===kind);
   if(!all.length){cmsg('目前沒有任何案件可以匯出');return}
