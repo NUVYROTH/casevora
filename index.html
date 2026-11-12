@@ -337,7 +337,7 @@ label b,.fsec b{color:#b42318}
 <div><label>報告書（對外回覆送出日期）</label><input id="rpt" type="date"><div class="status" id="rptDue" style="margin-top:4px"></div></div>
 <div><label>結案日期（總流程完成的最後一日）</label><input id="cdate" type="date"></div>
 <div><label>追蹤開始（內部總流程）</label><input id="trk1" type="date"></div>
-<div><label>追蹤完成（內部總流程）</label><input id="trk2" type="date"></div>
+<div><label>追蹤完成（內部總流程）</label><input id="trk2" type="date"><div class="status" id="trkN" style="margin-top:4px"></div></div>
 <div><label>原因（可複選）</label><div class="czb" id="causeBox">人機料法環</div><input id="cause" hidden></div>
 </div>
 <label>備註</label><textarea id="note" style="min-height:60px" placeholder="例：已開立異常矯正單，待廠商回覆"></textarea>
@@ -873,6 +873,24 @@ const respCount=rows=>{const m={};rows.forEach(c=>respKeys(c).forEach(k=>m[k]=(m
 // 報告書：對外回覆，期限＝客訴日期＋3 天（日曆天）
 const addDays=(d,n)=>{const t=new Date(d+'T00:00:00');t.setDate(t.getDate()+n);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
 const RPT_DAYS=3;
+// 追蹤天數：只算工作天（扣週六日與國定假日，頭尾都算）。內建 2025–2027 年政府行政機關辦公日曆表的平日放假日；
+// 公司另外的休假日、補班日在「常用選項」自訂。之後的年份要再補上。
+const HOL_TW={'2025-01-01':'元旦','2025-01-27':'小年夜（調整放假）','2025-01-28':'除夕','2025-01-29':'春節','2025-01-30':'春節','2025-01-31':'春節',
+ '2025-02-28':'和平紀念日','2025-04-03':'兒童節補假','2025-04-04':'兒童節／清明節','2025-05-01':'勞動節','2025-05-30':'端午節補假',
+ '2025-09-29':'教師節補假','2025-10-06':'中秋節','2025-10-10':'國慶日','2025-10-24':'光復節補假','2025-12-25':'行憲紀念日',
+ '2026-01-01':'元旦','2026-02-16':'除夕','2026-02-17':'春節','2026-02-18':'春節','2026-02-19':'春節','2026-02-20':'春節補假',
+ '2026-02-27':'和平紀念日補假','2026-04-03':'兒童節補假','2026-04-06':'清明節補假','2026-05-01':'勞動節','2026-06-19':'端午節',
+ '2026-09-25':'中秋節','2026-09-28':'教師節','2026-10-09':'國慶日補假','2026-10-26':'光復節補假','2026-12-25':'行憲紀念日',
+ '2027-01-01':'元旦','2027-02-04':'小年夜','2027-02-05':'除夕','2027-02-08':'春節','2027-02-09':'春節補假','2027-02-10':'春節補假',
+ '2027-03-01':'和平紀念日補假','2027-04-05':'清明節','2027-04-06':'兒童節補假','2027-04-30':'勞動節補假','2027-06-09':'端午節',
+ '2027-09-15':'中秋節','2027-09-28':'教師節','2027-10-11':'國慶日補假','2027-10-25':'光復節','2027-12-24':'行憲紀念日補假','2027-12-31':'元旦補假'};
+const WORK_SAT=['2025-02-08'];
+const dOf=t=>(/^(\d{4}-\d{2}-\d{2})/.exec(String(t||''))||[])[1]||'';
+function workDays(a,b){if(!a||!b||b<a)return null;const hol=new Set(OPTS.hol.map(dOf)),wk=new Set(WORK_SAT.concat(OPTS.wday.map(dOf)));let n=0;
+  for(let d=a;d<=b;d=addDays(d,1)){const w=new Date(d+'T00:00:00').getDay();if(wk.has(d)||((w>0&&w<6)&&!HOL_TW[d]&&!hol.has(d)))n++}return n}
+// 追蹤天數文字：完成→「N 個工作天」；只有開始→算到今天
+function trkDays(i){if(!i||!i.trk1)return null;if(i.trk2){const n=workDays(i.trk1,i.trk2);return n==null?null:{n,done:true,t:`追蹤 ${n} 個工作天`}}
+  const n=workDays(i.trk1,todayLocal());return n==null?null:{n,done:false,t:`追蹤中，已 ${n} 個工作天`}}
 function rptState(date,rpt){if(!/^\d{4}-\d{2}-\d{2}$/.test(date||''))return null;const due=addDays(date,RPT_DAYS),dd=(a,b)=>Math.round((new Date(a)-new Date(b))/864e5);
   if(rpt)return rpt>due?{due,late:true,t:`報告書晚 ${dd(rpt,due)} 天送出`}:{due,late:false,t:'報告書已在期限內送出'};
   const today=todayLocal();return today>due?{due,late:true,t:`報告書逾期 ${dd(today,due)} 天`}:{due,late:false,t:`報告書期限 ${due.slice(5).replace('-','/')}`}}
@@ -976,7 +994,8 @@ function renderStats(){
  const rg=stRange(mode,cur.y,cur.a),c=stCompute(rg),pv=stShift(mode,cur.y,cur.a,-1),pc=stCompute(stRange(mode,pv.y,pv.a));
  const pw=mode==='M'?'上月':mode==='Q'?'上季':'去年',tw=mode==='M'?`${cur.a} 月`:mode==='Q'?`第 ${cur.a} 季`:`${cur.y} 年`,kw=stK==='客訴'?'客訴':'供應商客訴';
  const diff=c.total-pc.total,cmp=diff>0?`比${pw}多 ${diff} 件`:diff<0?`比${pw}少 ${-diff} 件`:`與${pw}相同`;
- const sum=c.total===0&&!c.cross.length&&!c.del?`${rg.label}：尚無資料`:`${tw}新增 ${c.total} 件${kw}，已結案 ${c.done} 件、處理中 ${c.open} 件（新增件數${cmp}）；另有 ${c.cross.length} 件前期${kw}仍未結案。`;
+ const tk=stK==='客訴'?CASES.filter(x=>isLive(x)&&x.kind==='客訴'&&x.date>=rg.start&&x.date<=rg.end).map(x=>trkDays((x.form||{}).inputs)).filter(t=>t&&t.done):[],tkTxt=tk.length?`本期完成追蹤 ${tk.length} 件，平均 ${Math.round(tk.reduce((a,t)=>a+t.n,0)/tk.length*10)/10} 個工作天。`:'';
+ const sum=c.total===0&&!c.cross.length&&!c.del?`${rg.label}：尚無資料`:`${tw}新增 ${c.total} 件${kw}，已結案 ${c.done} 件、處理中 ${c.open} 件（新增件數${cmp}）；另有 ${c.cross.length} 件前期${kw}仍未結案。${tkTxt}`;
  const N=mode==='M'?12:mode==='Q'?4:5,ser=[...Array(N)].map((_,i)=>{const q=stShift(mode,cur.y,cur.a,i-(N-1)),r=stRange(mode,q.y,q.a),cc=stCompute(r);return{l:r.short,t:cc.total,o:cc.open}});
  const trend=mode==='M'?'最近 12 個月':mode==='Q'?'最近 4 季':'最近 5 年';
  const hb=rows=>{const mx=Math.max(1,...rows.map(r=>r[1]));return rows.map(([t,n])=>`<div class="hb"><span>${esc(t)}</span><span class="b"><i style="width:${n/mx*100}%"></i></span><span class="v">${n}</span></div>`).join('')};
@@ -1073,9 +1092,9 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-open]');if
 $('sideHelp').onclick=()=>$('openGuide').click();
 // ---- 常用選項（使用者自己設定的下拉清單，只存在這個瀏覽器；下載備份會一起帶走）----
 const KEY_O='casevoras_opts';
-const OPT_KINDS={people:'人員',src:'客訴來源',sup:'供應商',dept:'權責單位',fo:'異物種類'};
-const OPT_USE={people:'客訴的業務人員、品管人員（負責人）；供應商客訴的負責人、採購人員、品管人員',src:'客訴來源（客戶／通路／消費者）',sup:'供應商客訴的供應商名稱',dept:'客訴的權責單位（負責改善的部門）',fo:'異常類別選「異物」時的異物種類（客訴、供應商客訴）'};
-const OPT_PH={people:'例：品保 王小明',src:'例：全聯、消費者',sup:'例：○○食品公司',dept:'例：打漿',fo:'例：籃屑'};
+const OPT_KINDS={people:'人員',src:'客訴來源',sup:'供應商',dept:'權責單位',fo:'異物種類',hol:'休假日（自訂）',wday:'補班日（自訂）'};
+const OPT_USE={people:'客訴的業務人員、品管人員（負責人）；供應商客訴的負責人、採購人員、品管人員',src:'客訴來源（客戶／通路／消費者）',sup:'供應商客訴的供應商名稱',dept:'客訴的權責單位（負責改善的部門）',fo:'異常類別選「異物」時的異物種類（客訴、供應商客訴）',hol:'計算追蹤工作天數時要扣掉的公司休假日（國定假日已內建，不用再加）',wday:'週六、週日要上班的日子（計算追蹤工作天數時算工作天）'};
+const OPT_PH={people:'例：品保 王小明',src:'例：全聯、消費者',sup:'例：○○食品公司',dept:'例：打漿',fo:'例：籃屑',hol:'例：2026-12-31 公司休假',wday:'例：2026-12-26 補班'};
 const OPT_FIELDS={rec:'people',qcp:'people',vowner:'people',vbuyer:'people',vqcp:'people',src:'src',vsup:'sup',resp:'dept',fosub:'fo',vfosub:'fo'};
 const OPT_DEF={dept:['生產單位','倉儲單位','物流'],fo:['塑膠','金屬','毛髮','昆蟲','石頭','油漆','籃屑']};
 const optList=a=>Array.isArray(a)?[...new Set(a.map(x=>String(x==null?'':x).trim().slice(0,60)).filter(x=>x&&x!=='其它'))]:[];
@@ -1096,15 +1115,15 @@ Object.entries(OPT_FIELDS).forEach(([id,k])=>{const inp=$(id),sel=document.creat
     if(!OPTS[k].includes(v)){OPTS[k].push(v);if(!saveOpts()){OPTS[k].pop();tip('存不進去');return}}syncCombos();tip('✓ 已加入常用')}});
 syncCombos();
 function renderOpts(){
-  $('tabO').innerHTML=`<div class="hcard"><div class="hc-top"><div class="ptitle"><h1>常用選項</h1><div class="eyebrow">PRESET OPTIONS</div><span>把常用的人員、客訴來源、供應商加進來，填表時就能用下拉選單直接選。</span></div><span class="lbadge">● 本機資料模式</span></div>
+  $('tabO').innerHTML=`<div class="hcard"><div class="hc-top"><div class="ptitle"><h1>常用選項</h1><div class="eyebrow">PRESET OPTIONS</div><span>把常用的人員、客訴來源、供應商、權責單位、異物種類加進來，填表時就能用下拉選單直接選；公司休假日、補班日也在這裡設定。</span></div><span class="lbadge">● 本機資料模式</span></div>
 <div class="hc-bot"><div class="hcrumb">Casevoras / <b>常用選項</b></div><div class="pact"><button type="button" data-oback="1">← 返回清單</button></div></div></div>
 <div class="oinfo">不常用的，請在下拉選「其它（自己打字）」；打好後也可以按「＋加入常用」。<br>常用選項只存在此裝置此瀏覽器，「下載備份」會一起備份。刪除選項不會改到已經存好的案件。</div>
 <div class="status" id="omsg" role="status" style="margin-top:8px"></div>
 <div class="ogrid">${Object.keys(OPT_KINDS).map(k=>{const L=OPTS[k];return`<div class="card"><h2>${OPT_KINDS[k]}</h2><div class="omu">用在：${OPT_USE[k]}</div>
 ${L.length?`<ul class="optl">${L.map((x,i)=>`<li><span>${esc(x)}</span><button type="button" data-om="${k},${i},-1" ${i?'':'disabled'} aria-label="上移">↑</button><button type="button" data-om="${k},${i},1" ${i<L.length-1?'':'disabled'} aria-label="下移">↓</button><button type="button" class="danger" data-od="${k},${i}">刪除</button></li>`).join('')}</ul>`:'<div class="omu" style="margin:10px 0">還沒有常用選項。</div>'}
-<div class="oadd"><input id="oi_${k}" maxlength="60" placeholder="${OPT_PH[k]}"><button type="button" class="pri" data-oa="${k}">新增</button></div></div>`}).join('')}</div>`}
-function optAdd(k){const inp=$('oi_'+k),v=inp.value.trim();if(!v)return;if(v==='其它'){oMsg('「其它」不能加入常用，下拉選單最後一定會有「其它（自己打字）」。');return}if(OPTS[k].includes(v)){oMsg('「'+v+'」已經在清單裡了。');return}
-  OPTS[k].push(v);if(!saveOpts()){OPTS[k].pop();return}renderOpts();syncCombos();oMsg('已加入：'+v);$('oi_'+k).focus()}
+${k==='hol'?`<details class="omu" style="margin:0 0 8px"><summary style="cursor:pointer">查看內建的國定假日（${Object.keys(HOL_TW).length} 天，2025–2027 年）</summary>${Object.entries(HOL_TW).map(([d,n])=>`${d} ${esc(n)}`).join('<br>')}<br>補班日：${WORK_SAT.join('、')}</details>`:''}<div class="oadd"><input id="oi_${k}" maxlength="60" placeholder="${OPT_PH[k]}"><button type="button" class="pri" data-oa="${k}">新增</button></div></div>`}).join('')}</div>`}
+function optAdd(k){const inp=$('oi_'+k),v=inp.value.trim();if(!v)return;if((k==='hol'||k==='wday')&&!/^\d{4}-\d{2}-\d{2}(\s|$)/.test(v)){oMsg('日期請寫成 2026-12-31 的格式，後面可以空一格加說明。');return}if(v==='其它'){oMsg('「其它」不能加入常用，下拉選單最後一定會有「其它（自己打字）」。');return}if(OPTS[k].includes(v)){oMsg('「'+v+'」已經在清單裡了。');return}
+  OPTS[k].push(v);if(!saveOpts()){OPTS[k].pop();return}if(k==='hol'||k==='wday')OPTS[k].sort();renderOpts();syncCombos();renderS();oMsg('已加入：'+v);$('oi_'+k).focus()}
 $('tabO').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.dataset.oback)return toList();
   if(b.dataset.oa)return optAdd(b.dataset.oa);
@@ -1112,7 +1131,7 @@ $('tabO').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)
   if(b.dataset.od){const [k,i]=b.dataset.od.split(',');
     // 按兩次才刪除：第一次變成「確定刪除？」
     if(!b.dataset.arm){b.dataset.arm=1;b.textContent='確定刪除？';oMsg('再按一次「確定刪除？」就會移除「'+OPTS[k][+i]+'」（已經存好的案件不會改變）。');setTimeout(()=>{if(b.isConnected){delete b.dataset.arm;b.textContent='刪除'}},4000);return}
-    const v=OPTS[k][+i];OPTS[k].splice(+i,1);saveOpts();renderOpts();syncCombos();oMsg('已移除：'+v)}});
+    const v=OPTS[k][+i];OPTS[k].splice(+i,1);saveOpts();renderOpts();syncCombos();renderS();oMsg('已移除：'+v)}});
 $('tabO').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id&&e.target.id.startsWith('oi_'))optAdd(e.target.id.slice(3))});
 document.querySelectorAll('[data-og]').forEach(b=>b.onclick=()=>$('openGuide').click());
 document.querySelectorAll('.fguide').forEach(b=>b.onclick=()=>$('openGuide').click());
@@ -1130,7 +1149,7 @@ $('sideTrash').onclick=()=>{toList();lastList==='B'?showVView('trash'):showView(
 async function exportCsv(rows,name,cmsg){
 const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
 if(!rows.length){cmsg('目前沒有可匯出的案件');return}
-const csv='\ufeff'+[['日期','類型','編號','產品／原料','批號','供應商','異常類別','異物種類','狀態','權責單位','業務人員','品管人員','報告書','報告書期限','追蹤開始','追蹤完成','結案日期','原因','備註'].map(q).join(',')].concat(rows.map(r=>{const i=(r.form||{}).inputs||{},st=r.kind==='客訴'?rptState(r.date,i.rpt):null;return[r.date,r.kind,r.no,r.item,r.lot,r.sup,r.cat,catSub(r),r.status,respTxt(i),i.rec,i.qcp,i.rpt,st?st.due:'',i.trk1,i.trk2,i.cdate,i.cause,i.note].map(q).join(',')})).join('\r\n');
+const csv='\ufeff'+[['日期','類型','編號','產品／原料','批號','供應商','異常類別','異物種類','狀態','權責單位','業務人員','品管人員','報告書','報告書期限','追蹤開始','追蹤完成','追蹤工作天數','結案日期','原因','備註'].map(q).join(',')].concat(rows.map(r=>{const i=(r.form||{}).inputs||{},st=r.kind==='客訴'?rptState(r.date,i.rpt):null;return[r.date,r.kind,r.no,r.item,r.lot,r.sup,r.cat,catSub(r),r.status,respTxt(i),i.rec,i.qcp,i.rpt,st?st.due:'',i.trk1,i.trk2,(()=>{const t=r.kind==='客訴'?trkDays(i):null;return t&&t.done?t.n:''})(),i.cdate,i.cause,i.note].map(q).join(',')})).join('\r\n');
 try{if(typeof claude!=='undefined'&&claude&&typeof claude.use==='function'){const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data:csv});cmsg('已送出下載：'+name);return}}}catch(_){}
 try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.append(a);a.click();a.remove();cmsg('已匯出 CSV 檔：'+name)}catch(_){cmsg('匯出失敗，請改用 Chrome 直接開啟檔案')}
 }
@@ -1274,10 +1293,11 @@ const FOHINT=`<summary><span>🔍 異物判斷提示<span class="fo-c">（點此
 $('fohint').innerHTML=FOHINT.replace('FOWARN','消費者表示身體不適');
 $('vfohint').innerHTML=FOHINT.replace('FOWARN','有問題的原料已經用於生產、出貨');
 function syncCause(){const v=$('cause').value.split('、');$('causeBox').querySelectorAll('input').forEach(x=>x.checked=v.includes(x.value))}
+function trkShow(){const i={trk1:$('trk1').value,trk2:$('trk2').value},t=trkDays(i);$('trkN').textContent=t?t.t+'（扣除週六日與國定假日，頭尾都算）':(i.trk1&&i.trk2?'完成日期早於開始日期，請檢查':'')}
 function rptDue(){const st=rptState($('date').value,$('rpt').value),e=$('rptDue');e.textContent=st?`期限：收到後 ${RPT_DAYS} 日（${st.due}）。${st.t}`:`期限：客訴日期後 ${RPT_DAYS} 日`;e.classList.toggle('late',!!(st&&st.late))}
 $('causeBox').innerHTML=['人','機','料','法','環'].map(k=>`<label><input type="checkbox" value="${k}">${k}</label>`).join('');
 $('causeBox').addEventListener('change',()=>{$('cause').value=[...$('causeBox').querySelectorAll('input:checked')].map(x=>x.value).join('、')});
-['date','rpt'].forEach(id=>$(id).addEventListener('input',rptDue));
+['date','rpt'].forEach(id=>$(id).addEventListener('input',rptDue));['trk1','trk2'].forEach(id=>$(id).addEventListener('input',trkShow));
 function syncOther(){$('catotherW').hidden=$('fcat').value!=='其它';$('fosubW').hidden=$('fcat').value!=='異物';$('fohint').hidden=$('fcat').value!=='異物'}
 $('fcat').addEventListener('change',syncOther);$('resp').addEventListener('change',syncResp);
 const FK=['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','eff','conf','catother','fosub','rpt','trk1','trk2','cdate','cause','note'];
@@ -1302,7 +1322,7 @@ pendingSt=null;keepC.clear();$('photoMsg').textContent='';
   FK.forEach(k=>{let x=inp[k];if(x==null&&c)x=({no:c.no,date:c.date,prod:c.item,lot:c.lot})[k];$(k).value=x||''});syncResp();
   if(!c){$('date').value=todayLocal();updNo()}
   photos.forEach(p=>URL.revokeObjectURL(p.url));photos=[];drawThumbs();
-  $('fcat').value=(c&&c.cat)||CATS[0];$('fst').value=(c&&c.status)||'原因查證';syncOther();$('fohint').open=false;syncCombos();syncCause();rptDue();
+  $('fcat').value=(c&&c.cat)||CATS[0];$('fst').value=(c&&c.status)||'原因查證';syncOther();$('fohint').open=false;syncCombos();syncCause();rptDue();trkShow();
   const sec=f.sections;
   [1,2,3,4,5,6,7].forEach(i=>$('s'+i).value=sec?(sec['s'+i]||''):'');
   $('out').hidden=!(sec&&f.shown);
@@ -1344,7 +1364,7 @@ function renderCases(){
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
     const tu=TH.get(r.id);
     return`<div class="case"><div class="cinfo">${xBox('c',r.id)}<button type="button" class="cth" data-a="edit" data-id="${esc(r.id)}" data-th="${esc(r.id)}" aria-label="開啟案件">${tu?`<img src="${tu}" alt="客訴照片">`:'<span>無照片</span>'}</button><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(catLabel(r))}</span>`:''}${r.cat==='其它'?noteSpan(r):''}${(()=>{if(!isA)return'';const st=rptState(r.date,i.rpt);return st&&st.late?`<span class="tag late">${esc(st.t)}</span>`:''})()}</div>${stepper(r.status)}
-<div class="ti">${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
+<div class="ti">${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${(()=>{const t=r.kind==='客訴'?trkDays(i):null;return t?'　'+esc(t.t):''})()}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
 <div class="ac">${r.status!=='已結案'?`<span class="age" title="從客訴日期算起">已 ${daysSince(r.date)} 天</span>`:''}${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${isA&&r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?(fs?stEmpty(fs):ymEmpty(fy,fm)):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
   shown.filter(r=>!TH.has(r.id)).forEach(r=>{const v=THv.get(r.id);PDB.get(r.id).then(a=>{if(TH.has(r.id)||THv.get(r.id)!==v)return;TH.set(r.id,a.length?URL.createObjectURL(a[0].blob):'');const el=document.querySelector(`#lbody [data-th="${CSS.escape(r.id)}"]`);if(el&&a.length)el.innerHTML=`<img src="${TH.get(r.id)}" alt="客訴照片">`})});
@@ -1426,7 +1446,7 @@ function renderVCases(){
     const i=(r.form&&r.form.inputs)||{};
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
     return`<div class="case"><div class="cinfo">${xBox('v',r.id)}<div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(catLabel(r))}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status,VSTS)}
-<div class="ti">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
+<div class="ti">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${(()=>{const t=r.kind==='客訴'?trkDays(i):null;return t?'　'+esc(t.t):''})()}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
 <div class="ac">${r.status!=='已結案'?`<span class="age" title="從客訴日期算起">已 ${daysSince(r.date)} 天</span>`:''}${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${VSTS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?(fs?stEmpty(fs):ymEmpty(fy,fm)):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
 }
@@ -1502,7 +1522,7 @@ async function buildDocx(list,single,phMap){
     if(single&&!rows.length)return;
     body.push(wp(`${gt}（${rows.length} 件）`,{b:1,sz:30,bd:1,after:120}));
     rows.forEach((r,idx)=>{
-      any=true;const f=r.form||{},inp={...(f.inputs||{}),respT:respTxt(f.inputs),trkT:[(f.inputs||{}).trk1,(f.inputs||{}).trk2].filter(Boolean).join(' ～ ')};
+      any=true;const f=r.form||{},inp={...(f.inputs||{}),respT:respTxt(f.inputs),trkT:[(f.inputs||{}).trk1,(f.inputs||{}).trk2].filter(Boolean).join(' ～ ')+((t=>t?`（${t.t}）`:'')(trkDays(f.inputs)))};
       body.push(wp(`${idx+1}. ${kind==='客訴'?'':(r.sup||'')+'｜'}${r.item||''}　［${r.cat||'未分類'}／${r.status||''}］`,{b:1,sz:26,pb:idx>0||(gi>0&&!single)}));
       body.push(wp(`編號：${r.no||'—'}　日期：${r.date}　批號：${r.lot||'—'}`,{sz:20}));
       const info=keys.map((k,i)=>inp[k]?`${labels[i]}：${inp[k]}`:'').filter(Boolean);
