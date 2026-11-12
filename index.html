@@ -1204,27 +1204,36 @@ const XSYN={昆蟲:/蟑螂|蒼蠅|螞蟻|昆蟲|蟲/,毛髮:/頭髮|毛髮/};
 function xGuess(t){if(/異物|石頭|塑膠|頭髮|毛髮|蟑螂|蟲|油漆|金屬|鐵|玻璃|污漬|紅點|藍點|綠點/.test(t))return'異物';if(/重量|不夠|數量|包裝|標示/.test(t))return'標示/包裝/數量有誤';
   if(/酸|臭|異味|風味/.test(t))return'酸敗/風味';if(/血筋|血塊|肌紅/.test(t))return'血筋/血塊/肌紅素';if(/軟|硬|口感|彈|膨/.test(t))return'口感不佳';return'其它'}
 function xSub(t){for(const o of OPTS.fo){if((XSYN[o]||null)?XSYN[o].test(t):t.includes(o))return o}return''}
-function xParse(rows,y){
+// 讀所有工作表；合併儲存格的下一列（沒有日期也沒有內容）併回上一件；只有「立案日期＋客訴內容」都相同才算重複
+function xParse(sheets,y){const out=[],seen=new Set();let found=0;
+ for(const rows of sheets){
   let h=-1;for(let i=0;i<Math.min(rows.length,15);i++){const r=rows[i].map(nk);if(r.some(x=>x.includes('立案日期'))&&r.some(x=>x.includes('客訴內容'))){h=i;break}}
-  if(h<0)throw new Error('找不到「立案日期」與「客訴內容」標題列');
+  if(h<0)continue;found++;
   const H=[rows[h],rows[h+1]||[]].map(r=>r.map(nk)),col=re=>{for(const r of H){const i=r.findIndex(x=>re.test(x));if(i>=0)return i}return-1};
   const C={date:col(/立案日期/),txt:col(/客訴內容/),resp:col(/權責單位/),rpt:col(/報告書/),trk:col(/^追蹤/),end:col(/^結案/),cause:col(/^原因/),note:col(/備[註住]/)};
-  const sub=H[1].some(x=>/報告書|追蹤|結案/.test(x))?h+2:h+1,out=[];
-  const gv=(r,k)=>C[k]<0?'':r[C[k]],g=(r,k)=>{const v=gv(r,k);return typeof v==='number'?(xDate(v)||String(v)):String(v==null?'':v).trim()};const seen=new Set();
-  for(const r of rows.slice(sub)){const txt=g(r,'txt').replace(/\s+/g,' '),date=xDate(gv(r,'date'),y);if(!txt&&!date)continue;
+  const sub=H[1].some(x=>/報告書|追蹤|結案/.test(x))?h+2:h+1;
+  const gv=(r,k)=>C[k]<0?'':r[C[k]],g=(r,k)=>{const v=gv(r,k);return typeof v==='number'?(xDate(v)||String(v)):String(v==null?'':v).trim()};
+  const cleanResp=t=>/^(NA|N\/A)$/i.test(t)?'':t,causeOf=r=>(g(r,'cause').match(/[人機料法環]/g)||[]);
+  let last=null,lastDate='';
+  for(const r of rows.slice(sub)){let txt=g(r,'txt').replace(/\s+/g,' '),date=xDate(gv(r,'date'),y);
+    if(nk(txt).includes('客訴內容'))continue;
+    if(!txt&&!date){if(last&&last.ok){const rs=cleanResp(g(r,'resp'));if(rs)last.resp=[...new Set(last.resp.split('、').filter(Boolean).concat(rs.split(/[、,，]/).map(x=>x.trim()).filter(Boolean)))].join('、');
+        const cz=causeOf(r);if(cz.length)last.cause=[...new Set(last.cause.split('、').filter(Boolean).concat(cz))].join('、');const nt=g(r,'note');if(nt&&!last.note.includes(nt))last.note=[last.note,nt].filter(Boolean).join('；')}continue}
+    if(!date&&txt&&lastDate)date=lastDate;
     const rpt=xDate(gv(r,'rpt'),y,date),tr=typeof gv(r,'trk')==='number'?{a:xDate(gv(r,'trk')),b:'',txt:''}:xRange(g(r,'trk'),y,date),cd=xDate(gv(r,'end'),y,date),closed=!!cd||/已結案/.test(g(r,'trk')+g(r,'end'));
-    let resp=g(r,'resp');if(/^(NA|N\/A)$/i.test(resp))resp='';
-    const cause=[...new Set((g(r,'cause').match(/[人機料法環]/g)||[]))].join('、');
+    const resp=cleanResp(g(r,'resp')),cause=[...new Set(causeOf(r))].join('、');
     const cat=xGuess(txt),note=[g(r,'note'),tr.txt&&!tr.a?'追蹤：'+tr.txt:''].filter(Boolean).join('；');
-    out.push({ok:!!(date&&txt),date,txt,resp,rpt,trk1:tr.a,trk2:tr.b,cdate:cd,cause,note,cat,fosub:cat==='異物'?xSub(txt):'',status:closed?'已結案':'改善執行',
-      dup:CASES.some(c=>isLive(c)&&c.kind==='客訴'&&c.date===date&&(c.item||'').trim()===txt),dupIn:seen.has(date+'|'+txt)});seen.add(date+'|'+txt)}
-  return out}
+    const x={ok:!!(date&&txt),date,txt,resp,rpt,trk1:tr.a,trk2:tr.b,cdate:cd,cause,note,cat,fosub:cat==='異物'?xSub(txt):'',status:closed?'已結案':'改善執行',
+      dup:CASES.some(c=>isLive(c)&&c.kind==='客訴'&&c.date===date&&(c.item||'').trim()===txt),dupIn:seen.has(date+'|'+txt)};
+    out.push(x);seen.add(date+'|'+txt);if(date)lastDate=date;last=x.dupIn?null:x}}
+ if(!found)throw new Error('找不到「立案日期」與「客訴內容」標題列');
+ return out}
 $('xin').onclick=()=>$('xinf').click();
 $('xinf').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;cmsg('讀取 Excel 中…');
   try{await loadXlsx()}catch(_){cmsg('無法載入讀取 Excel 的程式（需要網路連線），請稍後再試');return}
-  let rows;try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''})}catch(_){cmsg('讀不到這個檔案，請確認是 Excel 檔（.xlsx）');return}
+  let rows;try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});rows=wb.SheetNames.map(n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''}))}catch(_){cmsg('讀不到這個檔案，請確認是 Excel 檔（.xlsx）');return}
   cmsg('');const cy=new Date().getFullYear();let list;
-  try{list=xParse(rows,cy)}catch(err){cmsg('匯入失敗：'+err.message+'。請確認第一個工作表是客訴紀錄表');return}
+  try{list=xParse(rows,cy)}catch(err){cmsg('匯入失敗：'+err.message+'。請確認檔案裡有客訴紀錄表');return}
   const m=document.createElement('div');m.className='modal';document.body.append(m);
   const draw=y=>{list=xParse(rows,y);const ok=list.filter(x=>x.ok&&!x.dup&&!x.dupIn),bad=list.filter(x=>!x.ok).length,dup=list.filter(x=>x.ok&&x.dup).length,dupIn=list.filter(x=>x.ok&&!x.dup&&x.dupIn).length,skip=list.filter(x=>!x.ok||x.dup||x.dupIn);
     const nd=[...new Set(ok.flatMap(x=>x.resp.split(/[、,，\/／]+/).map(t=>t.trim())))].filter(t=>t&&t!=='無'&&!OPTS.dept.includes(t));
