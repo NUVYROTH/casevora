@@ -853,9 +853,10 @@ const ymOf=c=>String(c.date||'');
 function fillYM(yid,mid,all){
   const cur=String(new Date().getFullYear()),sel=$(yid);
   const ys=[...new Set(all.map(c=>ymOf(c).slice(0,4)).filter(y=>/^\d{4}$/.test(y)).concat(cur))].sort().reverse();
-  const v=sel.dataset.init?sel.value:cur;
+  // 預設看今年；今年還沒有案件（例如剛匯入往年資料）就預設「全部年份」
+  const v=sel.dataset.init?sel.value:(!all.length||all.some(c=>ymOf(c).startsWith(cur))?cur:'');
   sel.innerHTML='<option value="">全部年份</option>'+ys.map(y=>`<option value="${y}">${y} 年</option>`).join('');
-  sel.value=(v===''||ys.includes(v))?v:cur;sel.dataset.init='1';
+  sel.value=(v===''||ys.includes(v))?v:cur;if(all.length)sel.dataset.init='1';
   if(!$(mid).options.length)$(mid).innerHTML='<option value="">全部月份</option>'+[...Array(12)].map((_,i)=>`<option value="${String(i+1).padStart(2,'0')}">${i+1} 月</option>`).join('');
 }
 function pager(pages,cur,k,total){return total?`<button data-pg="${cur-1}" data-k="${k}"${cur<=1?' disabled':''}>上一頁</button><span>第 ${cur}／${pages} 頁（共 ${total} 件）</span><button data-pg="${cur+1}" data-k="${k}"${cur>=pages?' disabled':''}>下一頁</button><span class="pgsp"></span><label class="pgsz">每頁 <select data-pgsz aria-label="每頁件數">${PAGE_SIZES.map(n=>`<option${n===PG?' selected':''}>${n}</option>`).join('')}</select> 件</label>`:''}
@@ -1070,7 +1071,7 @@ function dashData(kind){
   return{kind,all,yr,open,closed:yr.filter(c=>c.status==='已結案').length,cats:Object.entries(cc).sort((a,b)=>b[1]-a[1]),nm:all.filter(c=>c.date.slice(0,7)===ym).length,pm:all.filter(c=>c.date.slice(0,7)===pm).length}}
 function kpiHtml(D){const rate=D.yr.length?Math.round(D.closed/D.yr.length*100):null,top=D.cats[0];
   return `<div class="kpi"><span class="kic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><div class="l">本月新增</div><div class="n">${D.nm}<small>件</small></div><div class="d">上月 ${D.pm} 件</div></div>`+
-  `<div class="kpi warn"><span class="kic kw" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div class="l">未結案</div><div class="n">${D.open.length}<small>件</small></div><div class="d">${D.open.length?'最久已 '+daysSince(D.open[0].date)+' 天':'目前沒有未結案'}</div></div>`+
+  `<div class="kpi warn"><span class="kic kw" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div class="l">未結案（全部年份）</div><div class="n">${D.open.length}<small>件</small></div><div class="d">${D.open.length?'最久已 '+daysSince(D.open[0].date)+' 天':'目前沒有未結案'}</div></div>`+
   `<div class="kpi k-ok"><span class="kic ko" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="l">今年結案率</div><div class="n">${rate==null?'—':rate+'<small>%</small>'}</div><div class="d">${D.yr.length?`${D.yr.length} 件中 ${D.closed} 件已結案`:'今年還沒有案件'}</div></div>`+
   `<div class="kpi k-top"><span class="kic kt" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8" r="1.5" fill="currentColor"/></svg></span><div class="l">最多的異常類別</div><div class="n nt">${top?esc(top[0]):'—'}</div><div class="d">${top?`今年 ${top[1]} 件（${Math.round(top[1]/D.yr.length*100)}%）`:'今年還沒有案件'}</div></div>`}
 // 處理狀態：每個階段一個彩色標籤＋件數（比照衛生缺失）
@@ -1248,7 +1249,7 @@ ${skip.length?`<details class="omu" style="margin-top:6px"><summary style="curso
       try{for(const x of ok){let no='',k=1;const pre='CC-'+x.date.replace(/-/g,'')+'-';do no=pre+String(k++).padStart(3,'0');while(used.has(no));used.add(no);
         const inp={no,date:x.date,src:'',rec:'',qcp:'',resp:x.resp,respx:'',prod:x.txt,lot:'',desc:'',proc:'',done:'',conf:'',eff:'',catother:'',fosub:x.fosub,rpt:x.rpt,trk1:x.trk1,trk2:x.trk2,cdate:x.cdate,cause:x.cause,note:x.note};
         await DBc.add({date:x.date,kind:'客訴',no,item:x.txt,lot:'',sup:'',cat:x.cat,status:x.status,form:{inputs:inp}});n++}
-        if(nd.length){OPTS.dept.push(...nd);saveOpts();syncCombos()}m.remove();renderS();cmsg(`已匯入 ${n} 件客訴案件。批號、異常描述請再逐件補上`)}
+        if(nd.length){OPTS.dept.push(...nd);saveOpts();syncCombos()}m.remove();$('lyr').value='';$('lmo').value='';$('lst').value='';renderS();cmsg(`已匯入 ${n} 件客訴案件。批號、異常描述請再逐件補上`)}
       catch(err){m.remove();renderS();cmsg(`匯入到第 ${n+1} 件時失敗（${err.message||err}），前面 ${n} 件已匯入`)}}};
   m.onkeydown=e=>{if(e.key==='Escape')m.remove()};draw(cy)};
 // 匯出報表：先選年份／月份（依日期），預設帶入清單目前的年月篩選；所有狀態都匯出，不含最近刪除
