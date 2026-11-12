@@ -1197,7 +1197,7 @@ const loadXlsx=()=>window.XLSX?Promise.resolve():new Promise((ok,no)=>{const sc=
 const nk=t=>String(t==null?'':t).replace(/\s+/g,'');
 const pad2=n=>String(n).padStart(2,'0');
 // 「1/2」「2026/1/2」「2026-01-02」→ 日期；沒有年份時用選的年份，月份比立案日早就算隔年
-function xDate(t,y,after){t=String(t||'').trim();let m=/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})/.exec(t);if(m)return m[1]+'-'+pad2(m[2])+'-'+pad2(m[3]);
+function xDate(t,y,after){if(typeof t==='number'&&t>20000&&window.XLSX){const o=XLSX.SSF.parse_date_code(t);return o?o.y+'-'+pad2(o.m)+'-'+pad2(o.d):''}if(t instanceof Date)t=t.getFullYear()+'/'+(t.getMonth()+1)+'/'+t.getDate();t=String(t||'').trim();let m=/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})/.exec(t);if(m)return m[1]+'-'+pad2(m[2])+'-'+pad2(m[3]);
   m=/^(\d{1,2})[\/.](\d{1,2})$/.exec(t);if(!m)return '';let yy=y;if(after&&+m[1]<+after.slice(5,7))yy=+after.slice(0,4)+1;else if(after)yy=+after.slice(0,4);return yy+'-'+pad2(m[1])+'-'+pad2(m[2])}
 function xRange(t,y,after){t=String(t||'').trim();const p=t.split(/\s*[~～\-－—]\s*/);if(p.length===2){const a=xDate(p[0],y,after),b=xDate(p[1],y,a||after);if(a&&b)return{a,b,txt:''}}const a=xDate(t,y,after);return a?{a,b:'',txt:''}:{a:'',b:'',txt:t}}
 const XSYN={昆蟲:/蟑螂|蒼蠅|螞蟻|昆蟲|蟲/,毛髮:/頭髮|毛髮/};
@@ -1210,28 +1210,29 @@ function xParse(rows,y){
   const H=[rows[h],rows[h+1]||[]].map(r=>r.map(nk)),col=re=>{for(const r of H){const i=r.findIndex(x=>re.test(x));if(i>=0)return i}return-1};
   const C={date:col(/立案日期/),txt:col(/客訴內容/),resp:col(/權責單位/),rpt:col(/報告書/),trk:col(/^追蹤/),end:col(/^結案/),cause:col(/^原因/),note:col(/備[註住]/)};
   const sub=H[1].some(x=>/報告書|追蹤|結案/.test(x))?h+2:h+1,out=[];
-  const g=(r,k)=>C[k]<0?'':String(r[C[k]]==null?'':r[C[k]]).trim();
-  for(const r of rows.slice(sub)){const txt=g(r,'txt').replace(/\s+/g,' '),date=xDate(g(r,'date'),y);if(!txt&&!date)continue;
-    const rpt=xDate(g(r,'rpt'),y,date),tr=xRange(g(r,'trk'),y,date),cd=xDate(g(r,'end'),y,date);
+  const gv=(r,k)=>C[k]<0?'':r[C[k]],g=(r,k)=>{const v=gv(r,k);return typeof v==='number'?(xDate(v)||String(v)):String(v==null?'':v).trim()};const seen=new Set();
+  for(const r of rows.slice(sub)){const txt=g(r,'txt').replace(/\s+/g,' '),date=xDate(gv(r,'date'),y);if(!txt&&!date)continue;
+    const rpt=xDate(gv(r,'rpt'),y,date),tr=typeof gv(r,'trk')==='number'?{a:xDate(gv(r,'trk')),b:'',txt:''}:xRange(g(r,'trk'),y,date),cd=xDate(gv(r,'end'),y,date),closed=!!cd||/已結案/.test(g(r,'trk')+g(r,'end'));
     let resp=g(r,'resp');if(/^(NA|N\/A)$/i.test(resp))resp='';
     const cause=[...new Set((g(r,'cause').match(/[人機料法環]/g)||[]))].join('、');
     const cat=xGuess(txt),note=[g(r,'note'),tr.txt&&!tr.a?'追蹤：'+tr.txt:''].filter(Boolean).join('；');
-    out.push({ok:!!(date&&txt),date,txt,resp,rpt,trk1:tr.a,trk2:tr.b,cdate:cd,cause,note,cat,fosub:cat==='異物'?xSub(txt):'',status:cd?'已結案':'改善執行',
-      dup:CASES.some(c=>isLive(c)&&c.kind==='客訴'&&c.date===date&&(c.item||'').trim()===txt)})}
+    out.push({ok:!!(date&&txt),date,txt,resp,rpt,trk1:tr.a,trk2:tr.b,cdate:cd,cause,note,cat,fosub:cat==='異物'?xSub(txt):'',status:closed?'已結案':'改善執行',
+      dup:CASES.some(c=>isLive(c)&&c.kind==='客訴'&&c.date===date&&(c.item||'').trim()===txt),dupIn:seen.has(date+'|'+txt)});seen.add(date+'|'+txt)}
   return out}
 $('xin').onclick=()=>$('xinf').click();
 $('xinf').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;cmsg('讀取 Excel 中…');
   try{await loadXlsx()}catch(_){cmsg('無法載入讀取 Excel 的程式（需要網路連線），請稍後再試');return}
-  let rows;try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:''})}catch(_){cmsg('讀不到這個檔案，請確認是 Excel 檔（.xlsx）');return}
+  let rows;try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''})}catch(_){cmsg('讀不到這個檔案，請確認是 Excel 檔（.xlsx）');return}
   cmsg('');const cy=new Date().getFullYear();let list;
   try{list=xParse(rows,cy)}catch(err){cmsg('匯入失敗：'+err.message+'。請確認第一個工作表是客訴紀錄表');return}
   const m=document.createElement('div');m.className='modal';document.body.append(m);
-  const draw=y=>{list=xParse(rows,y);const ok=list.filter(x=>x.ok&&!x.dup),bad=list.filter(x=>!x.ok).length,dup=list.filter(x=>x.ok&&x.dup).length;
+  const draw=y=>{list=xParse(rows,y);const ok=list.filter(x=>x.ok&&!x.dup&&!x.dupIn),bad=list.filter(x=>!x.ok).length,dup=list.filter(x=>x.ok&&x.dup).length,dupIn=list.filter(x=>x.ok&&!x.dup&&x.dupIn).length,skip=list.filter(x=>!x.ok||x.dup||x.dupIn);
     const nd=[...new Set(ok.flatMap(x=>x.resp.split(/[、,，\/／]+/).map(t=>t.trim())))].filter(t=>t&&t!=='無'&&!OPTS.dept.includes(t));
     m.innerHTML=`<div class="box" role="dialog" aria-modal="true" aria-label="從 Excel 匯入" style="max-width:760px"><b>從 Excel 匯入客訴案件</b>
-<p class="sub" style="margin:4px 0 8px">表上的日期沒有年份，請選這批案件的年份：<select id="xinY" aria-label="年份">${[cy+1,cy,cy-1,cy-2,cy-3].map(v=>`<option value="${v}"${v===y?' selected':''}>${v} 年</option>`).join('')}</select></p>
-<p class="sub" style="margin:0 0 6px">可匯入 <b>${ok.length}</b> 件${dup?`，已存在而略過 ${dup} 件`:''}${bad?`，缺日期或內容而略過 ${bad} 件`:''}。客訴內容會放到「產品名稱」；批號、異常描述先留空，之後再補。異常類別依內容自動判斷，請匯入後檢查；判斷為「其它」的，請再補上其它異常原因。${nd.length?`<br>表上的權責單位「${esc(nd.join('、'))}」會一起加進常用選項。`:''}</p>
+<p class="sub" style="margin:4px 0 8px">表上有年份的日期照原本的年份；只寫月／日的（例如 1/21）用這個年份：<select id="xinY" aria-label="年份">${[cy+1,cy,cy-1,cy-2,cy-3].map(v=>`<option value="${v}"${v===y?' selected':''}>${v} 年</option>`).join('')}</select></p>
+<p class="sub" style="margin:0 0 6px">可匯入 <b>${ok.length}</b> 件${dup?`，工具裡已有相同立案日期與內容而略過 ${dup} 件`:''}${dupIn?`，表裡重複出現而略過 ${dupIn} 件`:''}${bad?`，缺日期或內容而略過 ${bad} 件`:''}。客訴內容會放到「產品名稱」；批號、異常描述先留空，之後再補。異常類別依內容自動判斷，請匯入後檢查；判斷為「其它」的，請再補上其它異常原因。${nd.length?`<br>表上的權責單位「${esc(nd.join('、'))}」會一起加進常用選項。`:''}</p>
 <div class="ximpw"><table class="ximp"><tr><th>立案日期</th><th>產品名稱</th><th>異常類別</th><th>權責單位</th><th>報告書</th><th>追蹤</th><th>結案</th><th>原因</th><th>狀態</th></tr>${ok.map(x=>`<tr><td>${x.date}</td><td>${esc(x.txt)}</td><td>${esc(x.fosub?'異物-'+x.fosub:x.cat)}</td><td>${esc(x.resp)}</td><td>${x.rpt}</td><td>${x.trk1?x.trk1+(x.trk2?' ～ '+x.trk2:''):''}</td><td>${x.cdate}</td><td>${x.cause}</td><td>${x.status}</td></tr>`).join('')}</table></div>
+${skip.length?`<details class="omu" style="margin-top:6px"><summary style="cursor:pointer">查看略過的 ${skip.length} 筆</summary><div class="ximpw"><table class="ximp"><tr><th>立案日期</th><th>客訴內容</th><th>略過原因</th></tr>${skip.map(x=>`<tr><td>${x.date||'（讀不到）'}</td><td>${esc(x.txt||'（空白）')}</td><td>${!x.ok?'缺日期或內容':x.dup?'工具裡已有相同的案件':'表裡重複出現'}</td></tr>`).join('')}</table></div></details>`:''}
 <div class="row" style="justify-content:flex-end;margin:10px 0 0"><button type="button" id="xinNo">取消</button><button type="button" class="pri" id="xinGo"${ok.length?'':' disabled'}>確定匯入 ${ok.length} 件</button></div></div>`;
     $('xinY').onchange=()=>draw(+$('xinY').value);$('xinNo').onclick=()=>m.remove();
     $('xinGo').onclick=async()=>{$('xinGo').disabled=true;const used=new Set(CASES.map(c=>c.no));let n=0;
