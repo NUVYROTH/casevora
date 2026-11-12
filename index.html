@@ -120,6 +120,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .tip{background:var(--bg);border:1px solid var(--bd);border-left:4px solid var(--ac);border-radius:8px;padding:8px 12px;font-size:13px;margin:0 0 12px}
 .tip b{display:block;margin-bottom:2px}
 .tip ul{margin:2px 0 0 18px;padding:0}
+.pzone{border:1.5px dashed var(--bd);border-radius:10px;padding:8px 10px}.pzone.drag{border-color:var(--gold);background:#fdf8ee}.pzone input{margin-bottom:4px}
 .czb{display:flex;flex-wrap:wrap;gap:6px}.czb label{display:inline-flex;align-items:center;gap:4px;margin:0;border:1px solid var(--bd);border-radius:999px;padding:5px 12px;background:var(--card);font-size:14px;cursor:pointer}.czb input{width:auto;margin:0}
 .late{color:#b42318;font-weight:700}.tag.late{background:#fdecec;border-color:#f3b8b2}
 .ximp{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0}.ximp th,.ximp td{border:1px solid var(--bd);padding:3px 6px;text-align:left;white-space:nowrap}.ximpw{max-height:260px;overflow:auto}
@@ -344,7 +345,7 @@ label b,.fsec b{color:#b42318}
 <label>客訴異常情況描述 <b>*</b>（誰、何時、何處發現、什麼異常、數量）</label>
 <textarea id="desc" placeholder="例：誰、何時、在哪個位置發現（包裝內／封口處／產品中）、異常外觀、數量…（只寫看到的情況，不寫推測的來源）"></textarea>
 <label>異常產品／異物照片（最多 4 張）</label>
-<input id="photo" type="file" accept="image/*" multiple>
+<div id="photoZone" class="pzone"><input id="photo" type="file" accept="image/*" multiple><div class="status">也可以複製圖片後，在這頁按 Ctrl+V（Mac 按 ⌘+V）直接貼上，或把圖片拖到這個框裡。</div></div>
 <div class="thumbs" id="thumbs"></div>
 <div class="status" id="photoMsg" role="status"></div>
 <label>相關單位（相關製程／檢查紀錄／調查結果）</label>
@@ -587,9 +588,10 @@ const PDB=(()=>{let dbp=null;
 })();
 
 // ---- 照片：縮圖壓縮 ----
-$('photo').addEventListener('change',async e=>{
-const msgs=new Set();$('photoMsg').textContent='';
-for(const f of e.target.files){
+// 選檔、貼上（Ctrl+V）、拖曳都走同一個流程
+async function addPhotos(files){
+const msgs=new Set();$('photoMsg').textContent='';let k=0;
+for(const f of files){
 if(!(f.type||'').startsWith('image/')){msgs.add('請上傳圖檔');continue}
 if(photos.length>=4){msgs.add('最多 4 張');continue}
 try{
@@ -598,11 +600,17 @@ const r=Math.min(1,1600/Math.max(bmp.width,bmp.height));
 const c=document.createElement('canvas');c.width=bmp.width*r;c.height=bmp.height*r;
 c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
 const blob=await new Promise(res=>c.toBlob(res,'image/jpeg',.82));
-photos.push({blob,url:URL.createObjectURL(blob),name:f.name});
+photos.push({blob,url:URL.createObjectURL(blob),name:f.name&&!/^image\.\w+$/i.test(f.name)?f.name:`貼上的圖片-${photos.length+1}.jpg`});k++;
 }catch(_){msgs.add('這張圖片無法讀取，請改傳 JPG 或 PNG')}
 }
-e.target.value='';drawThumbs();$('photoMsg').textContent=[...msgs].join('；');
-});
+drawThumbs();if(k&&!msgs.size)msgs.add(`已加入 ${k} 張照片`);$('photoMsg').textContent=[...msgs].join('；');requestAnimationFrame(()=>typeof dirtyMark==='function'&&dirtyMark());
+}
+$('photo').addEventListener('change',async e=>{await addPhotos([...e.target.files]);e.target.value=''});
+// 在客訴表單任何地方按 Ctrl+V 貼上圖片（剪貼簿沒有圖片時，照常貼上文字）
+document.addEventListener('paste',e=>{if($('formView').hidden||$('tabA').hidden)return;const fs=[...(e.clipboardData&&e.clipboardData.files)||[]].filter(f=>(f.type||'').startsWith('image/'));if(!fs.length)return;e.preventDefault();addPhotos(fs)});
+// 把圖片拖到照片區
+{const z=$('photoZone');z.addEventListener('dragover',e=>{if([...e.dataTransfer.items].some(i=>i.kind==='file')){e.preventDefault();z.classList.add('drag')}});
+ z.addEventListener('dragleave',()=>z.classList.remove('drag'));z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag');addPhotos([...e.dataTransfer.files])})}
 function drawThumbs(){
   const t=$('thumbs');t.innerHTML='';
   photos.forEach((p,i)=>{
