@@ -327,11 +327,11 @@ label b,.fsec b{color:#b42318}
 <div><label>批號／有效日期 <b>*</b></label><input id="lot"></div>
 <div><label>異常類別</label><select id="fcat"></select></div>
 <div id="fosubW" hidden><label>異物種類</label><input id="fosub" maxlength="60" placeholder="例：籃屑"></div>
+<div id="catotherW" hidden><label>其它異常原因 <b>*</b></label><input id="catother" maxlength="200" placeholder="例：形狀不良"></div>
 <div><label>處理狀態</label><select id="fst"><option>原因查證</option><option>改善執行</option><option>效果確認</option><option>已結案</option></select></div>
 <div><label>權責單位（負責改善的部門；多個請用「、」分開）</label><input id="resp" maxlength="60" placeholder="例：蒸煮、打漿"><input id="respx" maxlength="60" hidden style="margin-top:6px" aria-label="權責單位補充（舊資料）"></div>
 </div>
 <details class="tip fohint" id="fohint" hidden></details>
-<div id="catotherW" hidden><label>其它異常說明 <b>*</b>（請寫清楚是什麼異常）</label><input id="catother" maxlength="200"></div>
 <h3 class="fsec">處理時程與原因</h3>
 <div class="grid">
 <div><label>報告書（對外回覆送出日期）</label><input id="rpt" type="date"><div class="status" id="rptDue" style="margin-top:4px"></div></div>
@@ -453,12 +453,12 @@ label b,.fsec b{color:#b42318}
 <div><label>負責人</label><input id="vowner"></div>
 <div><label>異常類別</label><select id="vcat"></select></div>
 <div id="vfosubW" hidden><label>異物種類</label><input id="vfosub" maxlength="60" placeholder="例：籃屑"></div>
+<div id="vcatotherW" hidden><label>其它異常原因 <b>*</b></label><input id="vcatother" maxlength="200" placeholder="例：形狀不良"></div>
 <div><label>處理狀態</label><select id="vstat"><option>原因查證</option><option>通知供應商改善</option><option>改善執行</option><option>效果確認</option><option>已結案</option></select></div>
 <div><label>採購人員</label><input id="vbuyer"></div>
 <div><label>品管人員</label><input id="vqcp"></div>
 </div>
 <details class="tip fohint" id="vfohint" hidden></details>
-<div id="vcatotherW" hidden><label>其它異常說明 <b>*</b>（請寫清楚是什麼異常）</label><input id="vcatother" maxlength="200"></div>
 <h3 class="fsec">二、異常情況描述 <b>*</b></h3>
 <div class="hint">何時、何處發現、什麼異常、數量</div>
 <textarea id="vdesc" aria-label="異常情況描述"></textarea>
@@ -864,15 +864,18 @@ function stEmpty(fs){return `目前「${fs==='__open'?'未結案':fs}」沒有�
 function ymEmpty(fy,fm){return fy||fm?`${fy?fy+' 年':''}${fm?(+fm)+' 月':''}沒有符合條件的案件，可把年份改成「全部年份」或月份改成「全部月份」查看。`:'沒有符合條件的案件。'}
 const CATS=['異物','標示/包裝/數量有誤','口感不佳','酸敗/風味','血筋/血塊/肌紅素','其它'];
 // 異物再細分：統計時拆成「異物-籃屑」等各自一列（細分存在 form.inputs.fosub）
-const catSub=c=>c&&c.cat==='異物'?(((c.form||{}).inputs||{}).fosub||'').trim():'';
-const catKey=c=>c.cat==='異物'?'異物-'+(catSub(c)||'未細分'):(c.cat||'未分類');
-const catLabel=c=>catSub(c)?'異物-'+catSub(c):(c.cat||'');
+const catSub=c=>{const i=(c&&c.form||{}).inputs||{};return c&&c.cat==='異物'?String(i.fosub||'').trim():c&&c.cat==='其它'?String(i.catother||'').trim():''};
+const catKey=c=>c.cat==='異物'||c.cat==='其它'?c.cat+'-'+(catSub(c)||(c.cat==='異物'?'未細分':'未說明')):(c.cat||'未分類');
+const catLabel=c=>catSub(c)?c.cat+'-'+catSub(c):(c.cat||'');
 // 權責單位可多個（「、」分開），統計時各自計數
 const respKeys=c=>{const i=(c.form||{}).inputs||{},a=String(i.resp||'').split(/[、,，\/／]+/).map(x=>x.trim()).filter(Boolean);return a.length?a:['尚未指定']};
 const respCount=rows=>{const m={};rows.forEach(c=>respKeys(c).forEach(k=>m[k]=(m[k]||0)+1));return Object.entries(m).sort((a,b)=>(a[0]==='尚未指定')-(b[0]==='尚未指定')||b[1]-a[1])};
 // 報告書：對外回覆，期限＝客訴日期＋3 天（日曆天）
 const addDays=(d,n)=>{const t=new Date(d+'T00:00:00');t.setDate(t.getDate()+n);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
 const RPT_DAYS=3;
+// 各異常類別的平均處理天數：只算追蹤開始、完成都有填的客訴（工作天）
+function catDays(cases){const m=new Map();cases.forEach(c=>{const t=trkDays((c.form||{}).inputs);if(!t||!t.done)return;const k=c.cat||'未分類',o=m.get(k)||{name:k,n:0,sum:0,max:0};o.n++;o.sum+=t.n;o.max=Math.max(o.max,t.n);m.set(k,o)});
+  const ord=k=>{const i=CATS.indexOf(k);return i<0?99:i};return[...m.values()].map(o=>({...o,avg:Math.round(o.sum/o.n*10)/10})).sort((a,b)=>ord(a.name)-ord(b.name))}
 // 追蹤天數：只算工作天（扣週六日與國定假日，頭尾都算）。內建 2025–2027 年政府行政機關辦公日曆表的平日放假日；
 // 公司另外的休假日、補班日在「常用選項」自訂。之後的年份要再補上。
 const HOL_TW={'2025-01-01':'元旦','2025-01-27':'小年夜（調整放假）','2025-01-28':'除夕','2025-01-29':'春節','2025-01-30':'春節','2025-01-31':'春節',
@@ -1013,6 +1016,7 @@ function renderStats(){
   <div class="st-sec">${stK==='客訴'?'哪個產品客訴最多':'哪個供應商最多'}（${esc(tw)}新增）</div>${c.who.length?hb(c.who):'<p class="sub">尚無資料</p>'}
   <div class="st-sec">異常類別排行（${esc(tw)}新增，由多到少）</div>
   ${c.cats.length?`<table class="st-table"><thead><tr><th>異常類別</th><th>件數</th><th>其中處理中</th></tr></thead><tbody>${c.cats.map(x=>`<tr><td>${esc(x.name)}</td><td><b>${x.n}</b></td><td>${x.open?`<b style="color:#b42318">${x.open}</b>`:'0'}</td></tr>`).join('')}</tbody></table>`:'<p class="sub">尚無資料</p>'}
+  ${stK==='客訴'?(()=>{const cd=catDays(CASES.filter(x=>isLive(x)&&x.kind==='客訴'&&x.date>=rg.start&&x.date<=rg.end));return`<div class="st-sec">各異常類別平均處理天數（${esc(tw)}新增，追蹤工作天）</div>${cd.length?`<table class="st-table"><thead><tr><th>異常類別</th><th>完成追蹤件數</th><th>平均處理天數</th><th>最長</th></tr></thead><tbody>${cd.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.n}</td><td><b>${x.avg}</b> 天</td><td>${x.max} 天</td></tr>`).join('')}</tbody></table><div class="st-note">只算「追蹤開始」與「追蹤完成」都有填的案件；扣除週六日與國定假日，頭尾都算。</div>`:'<p class="sub">本期還沒有填好追蹤開始與完成日期的案件。</p>'}`})():''}
   <div class="st-sec">處理階段（${esc(tw)}新增）</div>
   <table class="st-table"><thead><tr><th>處理階段</th><th>件數</th></tr></thead><tbody>${c.stages.map(([k,n])=>`<tr><td>${esc(k)}</td><td><b>${n}</b></td></tr>`).join('')}</tbody></table>
   <p class="sh st-sec">趨勢（${trend}）</p>${lineSvg([{name:'新增件數',vals:ser.map(x=>x.t),c:'#16213a'},{name:'其中未結案',vals:ser.map(x=>x.o),c:'#c0392b',d:'7 4'}],ser.map(x=>x.l))}`;
@@ -1021,7 +1025,6 @@ function renderStats(){
 $('sctl').addEventListener('change',e=>{const t=e.target,v=+t.value;if(t.id==='sY')stYear=v;else if(t.id==='sMon')stMon=v;else if(t.id==='sQY')stQY=v;else if(t.id==='sQ')stQ=v;else if(t.id==='sMY')stMY=v;else if(t.id==='sM')stM=v;renderStats()});
 $('sctl').addEventListener('click',e=>{const k=e.target.closest('button[data-k]');if(k){stK=k.dataset.k;renderStats();renderDash();return}const b=e.target.closest('button[data-ch]');if(b){stChart=b.dataset.ch;renderStats()}});
 function clip15(t){t=String(t||'').trim();const g=typeof Intl!=='undefined'&&Intl.Segmenter?[...new Intl.Segmenter('zh',{granularity:'grapheme'}).segment(t)].map(x=>x.segment):Array.from(t);return g.length>15?g.slice(0,15).join('')+'…':t}
-function noteSpan(r){const t=((r.form&&r.form.inputs)||{}).catother;return t&&String(t).trim()?`<span class="mt" style="align-self:center">${esc(clip15(t))}</span>`:''}
 function renderTrash(kind,elId){
   const el=$(elId),rows=CASES.filter(c=>c.deleted&&!c.purged&&c.kind===kind).sort((a,b)=>String(b.deletedAt||'').localeCompare(String(a.deletedAt||'')));
     el.innerHTML=`<button data-a="opentrash">最近刪除（${rows.length}）</button>`;
@@ -1076,7 +1079,7 @@ function donutHtml(D){const L=D.kind==='客訴'?STS:VSTS;
   return '<ul class="stl">'+L.map(x=>`<li><span class="stb ${STC[x]||'s1'}">${x}</span><b>${D.yr.filter(c=>c.status===x).length}</b></li>`).join('')+'</ul>'}
 function hbarHtml(rows,empty){const mx=Math.max(1,...rows.map(r=>r[1]));return rows.length?rows.map(([t,n])=>`<div class="hb"><span>${esc(t)}</span><span class="b"><i style="width:${n/mx*100}%"></i></span><span class="v">${n}</span></div>`).join(''):`<p class="sub">${empty}</p>`}
 function openHtml(D,n,rows){const a=D.open.slice(0,n);if(!a.length)return '<p class="sub">目前沒有未結案的案件。</p>';
-  return rows?a.map(r=>`<button type="button" class="orow" data-open="${esc(r.id)}"><span class="tag">${esc(r.status||'')}</span>${r.cat?`<span class="tag cat">${esc(catLabel(r))}</span>`:''}<b>${esc(D.kind==='客訴'?r.item:(r.sup||'（未填供應商）')+'｜'+r.item)}</b><span class="mt">${esc(r.no||'')}　${esc(r.date)}</span><span class="age">已 ${daysSince(r.date)} 天</span></button>`).join('')
+  return rows?a.map(r=>`<button type="button" class="orow" data-open="${esc(r.id)}"><span class="tag">${esc(r.status||'')}</span>${r.cat?`<span class="tag cat">${esc(clip15(catLabel(r)))}</span>`:''}<b>${esc(D.kind==='客訴'?r.item:(r.sup||'（未填供應商）')+'｜'+r.item)}</b><span class="mt">${esc(r.no||'')}　${esc(r.date)}</span><span class="age">已 ${daysSince(r.date)} 天</span></button>`).join('')
     :'<ul class="mini">'+a.map(r=>`<li><button type="button" class="olink" data-open="${esc(r.id)}">${esc(r.no||'')} ${esc(r.item||'')}</button><span class="age">已 ${daysSince(r.date)} 天</span></li>`).join('')+'</ul>'}
 function sideHtml(D){return `<div class="card"><h2>處理狀態<span class="r">今年</span></h2>${donutHtml(D)}</div><div class="card"><h2>異常類別 前 3 名<span class="r">今年</span></h2>${hbarHtml(D.cats.slice(0,3),'今年還沒有案件。')}</div><div class="card"><h2>需要注意<span class="r">最久沒結案</span></h2>${openHtml(D,3)}</div>`}
 function renderDash(){
@@ -1092,11 +1095,11 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-open]');if
 $('sideHelp').onclick=()=>$('openGuide').click();
 // ---- 常用選項（使用者自己設定的下拉清單，只存在這個瀏覽器；下載備份會一起帶走）----
 const KEY_O='casevoras_opts';
-const OPT_KINDS={people:'人員',src:'客訴來源',sup:'供應商',dept:'權責單位',fo:'異物種類',hol:'休假日（自訂）',wday:'補班日（自訂）'};
-const OPT_USE={people:'客訴的業務人員、品管人員（負責人）；供應商客訴的負責人、採購人員、品管人員',src:'客訴來源（客戶／通路／消費者）',sup:'供應商客訴的供應商名稱',dept:'客訴的權責單位（負責改善的部門）',fo:'異常類別選「異物」時的異物種類（客訴、供應商客訴）',hol:'計算追蹤工作天數時要扣掉的公司休假日（國定假日已內建，不用再加）',wday:'週六、週日要上班的日子（計算追蹤工作天數時算工作天）'};
-const OPT_PH={people:'例：品保 王小明',src:'例：全聯、消費者',sup:'例：○○食品公司',dept:'例：打漿',fo:'例：籃屑',hol:'例：2026-12-31 公司休假',wday:'例：2026-12-26 補班'};
-const OPT_FIELDS={rec:'people',qcp:'people',vowner:'people',vbuyer:'people',vqcp:'people',src:'src',vsup:'sup',resp:'dept',fosub:'fo',vfosub:'fo'};
-const OPT_DEF={dept:['生產單位','倉儲單位','物流'],fo:['塑膠','金屬','毛髮','昆蟲','石頭','油漆','籃屑']};
+const OPT_KINDS={people:'人員',src:'客訴來源',sup:'供應商',dept:'權責單位',fo:'異物種類',oth:'其它異常原因',hol:'休假日（自訂）',wday:'補班日（自訂）'};
+const OPT_USE={people:'客訴的業務人員、品管人員（負責人）；供應商客訴的負責人、採購人員、品管人員',src:'客訴來源（客戶／通路／消費者）',sup:'供應商客訴的供應商名稱',dept:'客訴的權責單位（負責改善的部門）',fo:'異常類別選「異物」時的異物種類（客訴、供應商客訴）',oth:'異常類別選「其它」時的原因（客訴、供應商客訴）',hol:'計算追蹤工作天數時要扣掉的公司休假日（國定假日已內建，不用再加）',wday:'週六、週日要上班的日子（計算追蹤工作天數時算工作天）'};
+const OPT_PH={people:'例：品保 王小明',src:'例：全聯、消費者',sup:'例：○○食品公司',dept:'例：打漿',fo:'例：籃屑',oth:'例：形狀不良',hol:'例：2026-12-31 公司休假',wday:'例：2026-12-26 補班'};
+const OPT_FIELDS={rec:'people',qcp:'people',vowner:'people',vbuyer:'people',vqcp:'people',src:'src',vsup:'sup',resp:'dept',fosub:'fo',vfosub:'fo',catother:'oth',vcatother:'oth'};
+const OPT_DEF={dept:['生產單位','倉儲單位','物流'],fo:['塑膠','金屬','毛髮','昆蟲','石頭','油漆','籃屑'],oth:['外觀／賣相不佳','形狀不良','顏色異常','膨包']};
 const optList=a=>Array.isArray(a)?[...new Set(a.map(x=>String(x==null?'':x).trim().slice(0,60)).filter(x=>x&&x!=='其它'))]:[];
 let OPTS=(()=>{let o={};try{o=JSON.parse(localStorage.getItem(KEY_O)||'{}')||{}}catch(_){}const r={};Object.keys(OPT_KINDS).forEach(k=>r[k]=Array.isArray(o[k])||!OPT_DEF[k]?optList(o[k]):OPT_DEF[k].slice());return r})();
 function saveOpts(){try{localStorage.setItem(KEY_O,JSON.stringify(OPTS));return true}catch(_){oMsg('常用選項存不進去，瀏覽器的儲存空間可能已滿。');return false}}
@@ -1227,13 +1230,13 @@ $('xinf').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)r
     const nd=[...new Set(ok.flatMap(x=>x.resp.split(/[、,，\/／]+/).map(t=>t.trim())))].filter(t=>t&&t!=='無'&&!OPTS.dept.includes(t));
     m.innerHTML=`<div class="box" role="dialog" aria-modal="true" aria-label="從 Excel 匯入" style="max-width:760px"><b>從 Excel 匯入客訴案件</b>
 <p class="sub" style="margin:4px 0 8px">表上的日期沒有年份，請選這批案件的年份：<select id="xinY" aria-label="年份">${[cy+1,cy,cy-1,cy-2,cy-3].map(v=>`<option value="${v}"${v===y?' selected':''}>${v} 年</option>`).join('')}</select></p>
-<p class="sub" style="margin:0 0 6px">可匯入 <b>${ok.length}</b> 件${dup?`，已存在而略過 ${dup} 件`:''}${bad?`，缺日期或內容而略過 ${bad} 件`:''}。客訴內容會放到「產品名稱」；批號、異常描述先留空，之後再補。異常類別依內容自動判斷，請匯入後檢查。${nd.length?`<br>表上的權責單位「${esc(nd.join('、'))}」會一起加進常用選項。`:''}</p>
+<p class="sub" style="margin:0 0 6px">可匯入 <b>${ok.length}</b> 件${dup?`，已存在而略過 ${dup} 件`:''}${bad?`，缺日期或內容而略過 ${bad} 件`:''}。客訴內容會放到「產品名稱」；批號、異常描述先留空，之後再補。異常類別依內容自動判斷，請匯入後檢查；判斷為「其它」的，請再補上其它異常原因。${nd.length?`<br>表上的權責單位「${esc(nd.join('、'))}」會一起加進常用選項。`:''}</p>
 <div class="ximpw"><table class="ximp"><tr><th>立案日期</th><th>產品名稱</th><th>異常類別</th><th>權責單位</th><th>報告書</th><th>追蹤</th><th>結案</th><th>原因</th><th>狀態</th></tr>${ok.map(x=>`<tr><td>${x.date}</td><td>${esc(x.txt)}</td><td>${esc(x.fosub?'異物-'+x.fosub:x.cat)}</td><td>${esc(x.resp)}</td><td>${x.rpt}</td><td>${x.trk1?x.trk1+(x.trk2?' ～ '+x.trk2:''):''}</td><td>${x.cdate}</td><td>${x.cause}</td><td>${x.status}</td></tr>`).join('')}</table></div>
 <div class="row" style="justify-content:flex-end;margin:10px 0 0"><button type="button" id="xinNo">取消</button><button type="button" class="pri" id="xinGo"${ok.length?'':' disabled'}>確定匯入 ${ok.length} 件</button></div></div>`;
     $('xinY').onchange=()=>draw(+$('xinY').value);$('xinNo').onclick=()=>m.remove();
     $('xinGo').onclick=async()=>{$('xinGo').disabled=true;const used=new Set(CASES.map(c=>c.no));let n=0;
       try{for(const x of ok){let no='',k=1;const pre='CC-'+x.date.replace(/-/g,'')+'-';do no=pre+String(k++).padStart(3,'0');while(used.has(no));used.add(no);
-        const inp={no,date:x.date,src:'',rec:'',qcp:'',resp:x.resp,respx:'',prod:x.txt,lot:'',desc:'',proc:'',done:'',conf:'',eff:'',catother:x.cat==='其它'?x.txt:'',fosub:x.fosub,rpt:x.rpt,trk1:x.trk1,trk2:x.trk2,cdate:x.cdate,cause:x.cause,note:x.note};
+        const inp={no,date:x.date,src:'',rec:'',qcp:'',resp:x.resp,respx:'',prod:x.txt,lot:'',desc:'',proc:'',done:'',conf:'',eff:'',catother:'',fosub:x.fosub,rpt:x.rpt,trk1:x.trk1,trk2:x.trk2,cdate:x.cdate,cause:x.cause,note:x.note};
         await DBc.add({date:x.date,kind:'客訴',no,item:x.txt,lot:'',sup:'',cat:x.cat,status:x.status,form:{inputs:inp}});n++}
         if(nd.length){OPTS.dept.push(...nd);saveOpts();syncCombos()}m.remove();renderS();cmsg(`已匯入 ${n} 件客訴案件。批號、異常描述請再逐件補上`)}
       catch(err){m.remove();renderS();cmsg(`匯入到第 ${n+1} 件時失敗（${err.message||err}），前面 ${n} 件已匯入`)}}};
@@ -1363,7 +1366,7 @@ function renderCases(){
     const i=(r.form&&r.form.inputs)||{},isA=r.kind==='客訴';
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
     const tu=TH.get(r.id);
-    return`<div class="case"><div class="cinfo">${xBox('c',r.id)}<button type="button" class="cth" data-a="edit" data-id="${esc(r.id)}" data-th="${esc(r.id)}" aria-label="開啟案件">${tu?`<img src="${tu}" alt="客訴照片">`:'<span>無照片</span>'}</button><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(catLabel(r))}</span>`:''}${r.cat==='其它'?noteSpan(r):''}${(()=>{if(!isA)return'';const st=rptState(r.date,i.rpt);return st&&st.late?`<span class="tag late">${esc(st.t)}</span>`:''})()}</div>${stepper(r.status)}
+    return`<div class="case"><div class="cinfo">${xBox('c',r.id)}<button type="button" class="cth" data-a="edit" data-id="${esc(r.id)}" data-th="${esc(r.id)}" aria-label="開啟案件">${tu?`<img src="${tu}" alt="客訴照片">`:'<span>無照片</span>'}</button><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(clip15(catLabel(r)))}</span>`:''}${(()=>{if(!isA)return'';const st=rptState(r.date,i.rpt);return st&&st.late?`<span class="tag late">${esc(st.t)}</span>`:''})()}</div>${stepper(r.status)}
 <div class="ti">${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${(()=>{const t=r.kind==='客訴'?trkDays(i):null;return t?'　'+esc(t.t):''})()}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
 <div class="ac">${r.status!=='已結案'?`<span class="age" title="從客訴日期算起">已 ${daysSince(r.date)} 天</span>`:''}${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${isA&&r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?(fs?stEmpty(fs):ymEmpty(fy,fm)):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
@@ -1391,7 +1394,7 @@ $('fsave').onclick=async()=>{
   const d=inputs();
   if(!d.date){$('fmsg').textContent='請填日期';$('date').focus();return}
 if(!d.prod){$('fmsg').textContent='請填寫產品名稱';return}
-if($('fcat').value==='其它'&&!d.catother){$('fmsg').textContent='請填寫異常說明';$('catother').focus();return}
+if($('fcat').value==='其它'&&!d.catother){$('fmsg').textContent='請填寫其它異常原因';$('catother').focus();return}
   if(!DBc){$('fmsg').textContent='資料庫無法使用，無法儲存';return}
 if(!editId&&CASES.some(c=>c.kind==='客訴'&&c.no===d.no)){d.no=calcNo(d.date,'客訴','CC');$('no').value=d.no}
   const sec={};[1,2,3,4,5,6,7].forEach(i=>sec['s'+i]=$('s'+i).value);
@@ -1445,7 +1448,7 @@ function renderVCases(){
   $('vlbody').innerHTML=rows.length?shown.map(r=>{
     const i=(r.form&&r.form.inputs)||{};
     const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
-    return`<div class="case"><div class="cinfo">${xBox('v',r.id)}<div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(catLabel(r))}</span>`:''}${r.cat==='其它'?noteSpan(r):''}</div>${stepper(r.status,VSTS)}
+    return`<div class="case"><div class="cinfo">${xBox('v',r.id)}<div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(clip15(catLabel(r)))}</span>`:''}</div>${stepper(r.status,VSTS)}
 <div class="ti">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${(()=>{const t=r.kind==='客訴'?trkDays(i):null;return t?'　'+esc(t.t):''})()}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
 <div class="ac">${r.status!=='已結案'?`<span class="age" title="從客訴日期算起">已 ${daysSince(r.date)} 天</span>`:''}${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${VSTS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?(fs?stEmpty(fs):ymEmpty(fy,fm)):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
@@ -1475,7 +1478,7 @@ $('vfsave').onclick=async()=>{
   const d=vin();
   if(!d.date){$('vfmsg').textContent='請填日期';$('vdate').focus();return}
 if(!d.sup||!d.mat){$('vfmsg').textContent='請填寫供應商名稱與原料／包材名稱';return}
-if($('vcat').value==='其它'&&!d.catother){$('vfmsg').textContent='請填寫異常說明';$('vcatother').focus();return}
+if($('vcat').value==='其它'&&!d.catother){$('vfmsg').textContent='請填寫其它異常原因';$('vcatother').focus();return}
   if(!DBc){$('vfmsg').textContent='資料庫無法使用，無法儲存';return}
 if(!editVId&&CASES.some(c=>c.kind==='供應商客訴'&&c.no===d.no)){d.no=calcNo(d.date,'供應商客訴','QC');$('vno').value=d.no}
   const sec={};[1,2,3,4,5,6,7].forEach(i=>sec['s'+i]=$('v'+i).value);
@@ -1612,6 +1615,8 @@ async function buildReport(){
   body.push(wp('三、各異常類別件數',{b:1,sz:28,bd:1,after:120}));
   const ckOrd=k=>{const i=CATS.indexOf(k.split('-')[0]);return i<0?99:i},ckeys=[...new Set(CATS.filter(k=>k!=='異物'||!Object.keys(byCat).some(x=>x.startsWith('異物-'))).concat(Object.keys(byCat)))].sort((a,b)=>ckOrd(a)-ckOrd(b)||(byCat[b]||0)-(byCat[a]||0));
   body.push(wtbl(['異常類別','件數','占比'],ckeys.map(k=>[k,String(byCat[k]||0),cur.length?Math.round((byCat[k]||0)*100/cur.length)+'%':'—']),[5200,2200,2238]));
+  if(isC){const cd=catDays(cur);body.push(wp('各異常類別平均處理天數（追蹤工作天，扣除週六日與國定假日）',{b:1,sz:24,after:80}));
+    body.push(cd.length?wtbl(['異常類別','完成追蹤件數','平均處理天數','最長'],cd.map(x=>[x.name,String(x.n),x.avg+' 天',x.max+' 天']),[3600,2000,2200,1838]):wp('（本期還沒有填好追蹤開始與完成日期的案件）',{sz:20}))}
   body.push(wp('四、各處理階段件數',{b:1,sz:28,bd:1,after:120}));
   body.push(wtbl(['處理階段','件數'],stages.map(k=>[k,String(bySt[k]||0)]),[6400,3238]));
   let n=5;const cn=['五','六'];
@@ -1728,7 +1733,7 @@ $('fword').onclick=async()=>{
   const d=inputs(),say=t=>$('fmsg').textContent=t;
   if(!d.date){say('請填日期');$('date').focus();return}
 if(!d.prod){say('請先填寫產品名稱');return}
-if($('fcat').value==='其它'&&!d.catother){say('請填寫異常說明');$('catother').focus();return}
+if($('fcat').value==='其它'&&!d.catother){say('請填寫其它異常原因');$('catother').focus();return}
   const sec={};[1,2,3,4,5,6,7].forEach(i=>sec['s'+i]=$('s'+i).value);
   const r={date:d.date,kind:'客訴',no:d.no,item:d.prod,lot:d.lot,sup:'',cat:$('fcat').value,status:$('fst').value,form:{inputs:d,sections:sec,shown:!$('out').hidden}};
   saveDocx(await buildDocx([r],true,{'__cur':photos.map(p=>({name:p.name,blob:p.blob}))}),`客訴案件_${fnm(d.no||d.prod)}.docx`,say);
@@ -1737,7 +1742,7 @@ $('vfword').onclick=async()=>{
   const d=vin(),say=t=>$('vfmsg').textContent=t;
   if(!d.date){say('請填日期');$('vdate').focus();return}
 if(!d.sup||!d.mat){say('請先填寫供應商名稱與原料／包材名稱');return}
-if($('vcat').value==='其它'&&!d.catother){say('請填寫異常說明');$('vcatother').focus();return}
+if($('vcat').value==='其它'&&!d.catother){say('請填寫其它異常原因');$('vcatother').focus();return}
   const sec={};[1,2,3,4,5,6,7].forEach(i=>sec['s'+i]=$('v'+i).value);
   const r={date:d.date,kind:'供應商客訴',no:d.no,item:d.mat,lot:d.lot,sup:d.sup,cat:$('vcat').value,status:$('vstat').value,form:{inputs:d,sections:sec,shown:!$('vout').hidden}};
   saveDocx(await buildDocx([r],true),`供應商客訴_${fnm(d.no||d.sup)}.docx`,say);
