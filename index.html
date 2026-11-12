@@ -242,7 +242,7 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .tag.cat{color:var(--ac);border-color:var(--ac)}
 .tag.wip{background:var(--warn);color:var(--warnt);border-color:transparent}
 .case .ti{font-weight:600;font-size:16px}.tlink{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;text-decoration:none}.tlink:hover:not(:disabled),.tlink:focus-visible{background:none;color:var(--navy2)}
-.case .mt{font-size:13px;color:var(--mu)}
+.case .mt{font-size:13px;color:var(--mu)}.case .cl{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px;margin:2px 0 3px}.case .cl b{font-weight:600;color:var(--mu);margin-right:4px}
 .trbtn{cursor:pointer;display:inline-block;border:1px solid var(--ac);color:var(--ac);border-radius:8px;padding:6px 14px;font-size:14px;list-style:none}.trbtn::-webkit-details-marker{display:none}
 .case .ac{display:flex;gap:6px;flex-wrap:wrap}
 .case .ac button{padding:5px 12px;font-size:13px}
@@ -867,6 +867,9 @@ const CATS=['異物','標示/包裝/數量有誤','口感不佳','酸敗/風味'
 // 異物再細分：統計時拆成「異物-籃屑」等各自一列（細分存在 form.inputs.fosub）
 const catSub=c=>{const i=(c&&c.form||{}).inputs||{};return c&&c.cat==='異物'?String(i.fosub||'').trim():c&&c.cat==='其它'?String(i.catother||'').trim():''};
 const catKey=c=>c.cat==='異物'||c.cat==='其它'?c.cat+'-'+(catSub(c)||(c.cat==='異物'?'未細分':'未說明')):(c.cat||'未分類');
+// 清單上名稱下面那一行：異常類別、異物種類或其它異常原因、簡略描述
+function caseLine(r){const i=(r.form&&r.form.inputs)||{},sub=catSub(r),d=String(i.desc||'').trim().replace(/\s+/g,' ');
+  return `<div class="cl"><span><b>異常類別</b>${esc(r.cat||'未分類')}</span>${sub?`<span><b>${r.cat==='異物'?'異物種類':'其它異常原因'}</b>${esc(sub)}</span>`:''}<span><b>描述</b>${d?esc(d.length>40?d.slice(0,40)+'…':d):'（未填）'}</span></div>`}
 const catLabel=c=>catSub(c)?c.cat+'-'+catSub(c):(c.cat||'');
 // 權責單位可多個（「、」分開），統計時各自計數
 const respKeys=c=>{const i=(c.form||{}).inputs||{},a=String(i.resp||'').split(/[、,，\/／]+/).map(x=>x.trim()).filter(Boolean);return a.length?a:['尚未指定']};
@@ -1402,10 +1405,10 @@ function renderCases(){
   {const rc=respCount(rows);$('lresp').textContent=rows.length?'依權責單位：'+rc.map(([k,n])=>`${k} ${n} 件`).join('・'):'';}
   $('lbody').innerHTML=rows.length?shown.map(r=>{
     const i=(r.form&&r.form.inputs)||{},isA=r.kind==='客訴';
-    const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
+    const desc='';
     const tu=TH.get(r.id);
     return`<div class="case"><div class="cinfo">${xBox('c',r.id)}<button type="button" class="cth" data-a="edit" data-id="${esc(r.id)}" data-th="${esc(r.id)}" aria-label="開啟案件">${tu?`<img src="${tu}" alt="客訴照片">`:'<span>無照片</span>'}</button><div><div class="tg"><span class="tag">${esc(r.kind==='客訴'?'客訴案件':r.kind)}</span>${r.cat?`<span class="tag cat">${esc(clip15(catLabel(r)))}</span>`:''}${(()=>{if(!isA)return'';const st=rptState(r.date,i.rpt);return st&&st.late?`<span class="tag late">${esc(st.t)}</span>`:''})()}</div>${stepper(r.status)}
-<div class="ti"><button type="button" class="tlink" data-a="edit" data-id="${esc(r.id)}" title="點一下進入編輯">${esc(r.item)}</button></div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${(()=>{const t=r.kind==='客訴'?trkDays(i):null;return t?'　'+esc(t.t):''})()}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
+<div class="ti"><button type="button" class="tlink" data-a="edit" data-id="${esc(r.id)}" title="點一下進入編輯">${esc(r.item)}</button></div>${caseLine(r)}<div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　${r.sup?'廠商：'+esc(r.sup)+'　':''}建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${(()=>{const t=r.kind==='客訴'?trkDays(i):null;return t?'　'+esc(t.t):''})()}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
 <div class="ac">${r.status!=='已結案'?`<span class="age" title="從客訴日期算起">已 ${daysSince(r.date)} 天</span>`:''}${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${STS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${isA&&r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?(fs?stEmpty(fs):ymEmpty(fy,fm)):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
   shown.filter(r=>!TH.has(r.id)).forEach(r=>{const v=THv.get(r.id);PDB.get(r.id).then(a=>{if(TH.has(r.id)||THv.get(r.id)!==v)return;TH.set(r.id,a.length?URL.createObjectURL(a[0].blob):'');const el=document.querySelector(`#lbody [data-th="${CSS.escape(r.id)}"]`);if(el&&a.length)el.innerHTML=`<img src="${TH.get(r.id)}" alt="客訴照片">`})});
@@ -1485,9 +1488,9 @@ function renderVCases(){
   $('vlpager').innerHTML=pager(pages,pgS.v,'v',rows.length);
   $('vlbody').innerHTML=rows.length?shown.map(r=>{
     const i=(r.form&&r.form.inputs)||{};
-    const desc=i.desc?'　說明：'+esc(i.desc.length>24?i.desc.slice(0,24)+'…':i.desc):'';
+    const desc='';
     return`<div class="case"><div class="cinfo">${xBox('v',r.id)}<div><div class="tg"><span class="tag">供應商客訴</span>${r.cat?`<span class="tag cat">${esc(clip15(catLabel(r)))}</span>`:''}</div>${stepper(r.status,VSTS)}
-<div class="ti"><button type="button" class="tlink" data-a="edit" data-id="${esc(r.id)}" title="點一下進入編輯">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</button></div><div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${(()=>{const t=r.kind==='客訴'?trkDays(i):null;return t?'　'+esc(t.t):''})()}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
+<div class="ti"><button type="button" class="tlink" data-a="edit" data-id="${esc(r.id)}" title="點一下進入編輯">${esc(r.sup||'（未填供應商）')}｜${esc(r.item)}</button></div>${caseLine(r)}<div class="mt">${r.no?'編號：'+esc(r.no)+'　':''}批號：${esc(r.lot||'—')}${desc}　建立：${esc(r.date)}${r.kind==='客訴'&&i.resp?'　權責：'+esc(respTxt(i)):''}${(()=>{const t=r.kind==='客訴'?trkDays(i):null;return t?'　'+esc(t.t):''})()}${r.kind==='客訴'&&i.qcp?'　品管：'+esc(i.qcp):''}</div></div></div>
 <div class="ac">${r.status!=='已結案'?`<span class="age" title="從客訴日期算起">已 ${daysSince(r.date)} 天</span>`:''}${pendingSt&&pendingSt.id===r.id?`<span class="stc">確定要改成「${esc(pendingSt.to)}」嗎？<button class="pri" data-a="stok" data-id="${esc(r.id)}">確定</button><button data-a="stno" data-id="${esc(r.id)}">取消</button></span>`:`<select class="stsel" data-a="st" data-id="${esc(r.id)}" title="變更處理狀態">${VSTS.map(x=>`<option${r.status===x?' selected':''}>${x}</option>`).join('')}</select>`}${r.form&&r.form.shown?`<button data-a="res" data-id="${esc(r.id)}">分析結果</button>`:''}<button data-a="edit" data-id="${esc(r.id)}">編輯</button>${pendingDel===r.id?`<span class="stc">確定要刪除嗎？可在「最近刪除」還原<button class="pri" data-a="delok" data-id="${esc(r.id)}">確定</button><button data-a="delno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="del" data-id="${esc(r.id)}">刪除</button>`}</div></div>`}).join('')
   :`<p class="sub" style="margin-top:12px">${all.length?(fs?stEmpty(fs):ymEmpty(fy,fm)):'尚無案件，請按右上角「＋ 新增案件」。'}</p>`;
 }
