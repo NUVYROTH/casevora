@@ -90,7 +90,7 @@ h2{letter-spacing:.02em}
 @media(max-width:599px){.aiw{grid-template-columns:1fr}.aiw-c{display:grid;grid-template-columns:44px 1fr;column-gap:10px;row-gap:4px;text-align:left;align-items:start;padding:12px}.aiw-ic{grid-row:1/4;align-self:center;text-align:center}.aiw-tag{justify-self:start}.aiw-c button{grid-column:1/3}}
 .pbox{border:1px solid var(--bd);border-radius:10px;background:var(--bg);padding:10px 12px;margin-top:10px}.pstep{font-size:13px;line-height:1.6}
 .ainote{font-size:12.5px;line-height:1.6;color:var(--warnt);background:var(--warn);border-left:3px solid var(--gold);border-radius:6px;padding:8px 12px;margin:10px 0 0}
-.trbar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;margin:4px 0}
+.trbar{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify-content:flex-start;margin:4px 0}.hc-bot.hcl{justify-content:flex-start;gap:14px}
 .trall,.trrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .trall{font-size:14px;color:var(--tx);cursor:pointer}
 input[type=checkbox]{width:18px;height:18px;margin:0;flex:none;accent-color:var(--ac);cursor:pointer}
@@ -301,7 +301,7 @@ label b,.fsec b{color:#b42318}
 <div id="trashView" hidden>
 <div class="hcard"><div class="hc-top"><div class="ptitle"><h1>最近刪除</h1><div class="eyebrow">RECENTLY DELETED</div><span>刪除的客訴案件會先放在這裡，可以還原，或確認後永久刪除。</span></div><span class="lbadge">● 本機資料模式</span></div>
 <div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
-<div class="hc-bot"><div class="hcrumb">Casevoras / 客訴清單 / <b>最近刪除</b></div><div class="pact"><button id="trBack">← 返回清單</button></div></div></div>
+<div class="hc-bot hcl"><div class="pact"><button id="trBack">← 返回清單</button></div><div class="hcrumb">Casevoras / 客訴清單 / <b>最近刪除</b></div></div></div>
 <div class="card"><h2>最近刪除（客訴案件）</h2><div id="ctrashBody"></div></div>
 </div>
 <div id="formView" hidden>
@@ -428,7 +428,7 @@ label b,.fsec b{color:#b42318}
 <div id="vtrashView" hidden>
 <div class="hcard"><div class="hc-top"><div class="ptitle"><h1>最近刪除</h1><div class="eyebrow">RECENTLY DELETED</div><span>刪除的供應商客訴會先放在這裡，可以還原，或確認後永久刪除。</span></div><span class="lbadge">● 本機資料模式</span></div>
 <div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
-<div class="hc-bot"><div class="hcrumb">Casevoras / 供應商客訴清單 / <b>最近刪除</b></div><div class="pact"><button id="vtrBack">← 返回清單</button></div></div></div>
+<div class="hc-bot hcl"><div class="pact"><button id="vtrBack">← 返回清單</button></div><div class="hcrumb">Casevoras / 供應商客訴清單 / <b>最近刪除</b></div></div></div>
 <div class="card"><h2>最近刪除（供應商客訴）</h2><div id="vtrashBody"></div></div>
 </div>
 <div id="vformView" hidden>
@@ -1044,7 +1044,7 @@ function renderTrash(kind,elId){
     el.innerHTML=`<button data-a="opentrash">最近刪除（${rows.length}）</button>`;
   const sel=trSel[kind],ids=new Set(rows.map(r=>r.id));[...sel].forEach(x=>{if(!ids.has(x))sel.delete(x)});
   const n=sel.size,allOn=rows.length>0&&n===rows.length,k=esc(kind);
-  const bar=rows.length?`<div class="trbar"><span class="status">共 ${rows.length} 件${n?`，已選 ${n} 件`:''}</span><label class="trall"><input type="checkbox" data-a="selall" data-k="${k}"${allOn?' checked':''}> 全選</label></div>
+  const bar=rows.length?`<div class="trbar"><label class="trall"><input type="checkbox" data-a="selall" data-k="${k}"${allOn?' checked':''}> 全選</label><span class="status">共 ${rows.length} 件${n?`，已選 ${n} 件`:''}</span></div>
 <div class="row" style="margin:4px 0 8px">${pendingBulk===kind&&n?`<span class="stc">確定要永久刪除 ${n} 件嗎？刪除後無法救回。<button class="pri" data-a="bulkok" data-k="${k}">確定</button><button data-a="bulkno" data-k="${k}">取消</button></span>`:`<button data-a="bulkrest" data-k="${k}"${n?'':' disabled'}>還原勾選（${n}）</button><button data-a="bulkpurge" data-k="${k}"${n?'':' disabled'}>永久刪除勾選（${n}）</button>`}</div>`:'<div class="status">共 0 件</div>';
   $(elId+'Body').innerHTML=bar+(trMsg[kind]?`<div class="status" role="status" style="color:var(--tx);font-weight:600">${esc(trMsg[kind])}</div>`:'')+(rows.length?'':'<div class="mt" style="padding:8px 0">目前沒有已刪除的案件</div>')+rows.map(r=>`<div class="mt trrow" style="padding:8px 0;border-bottom:1px solid var(--bd)"><input type="checkbox" data-a="sel" data-k="${k}" data-id="${esc(r.id)}"${sel.has(r.id)?' checked':''} aria-label="勾選 ${esc(r.no||r.item)}">${esc(r.no||'（無編號）')}｜${esc(r.item)}　批號：${esc(r.lot||'—')}　`+(pendingPurge===r.id?`<span class="stc">永久刪除後無法救回，確定嗎？<button class="pri" data-a="purgeok" data-id="${esc(r.id)}">確定</button><button data-a="purgeno" data-id="${esc(r.id)}">取消</button></span>`:`<button data-a="rest" data-id="${esc(r.id)}">還原</button> <button data-a="purge" data-id="${esc(r.id)}">永久刪除</button>`)+`</div>`).join('');
 }
