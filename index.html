@@ -120,6 +120,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .tip{background:var(--bg);border:1px solid var(--bd);border-left:4px solid var(--ac);border-radius:8px;padding:8px 12px;font-size:13px;margin:0 0 12px}
 .tip b{display:block;margin-bottom:2px}
 .tip ul{margin:2px 0 0 18px;padding:0}
+.drill{cursor:pointer}.hb.drill:hover,.stl li.drill:hover{background:rgba(184,149,90,.12);border-radius:6px}.st-tile.drill:hover{border-color:var(--gold)}.drt tr.click{cursor:pointer}.drt tr.click:hover td{background:#fdf8ee}.drill:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .st-secr{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px 10px}.st-secr>span:last-child{display:flex;align-items:center;flex-wrap:wrap;gap:6px}.topsel{width:auto;padding:3px 8px;font-size:13px}.seg-sm button{padding:3px 10px;font-size:13px}
 .czrow{display:grid;grid-template-columns:1fr;gap:10px 24px;align-items:start}.czh{font-size:14px;font-weight:600;color:var(--mu);margin:4px 0}@media(min-width:900px){.czrow{grid-template-columns:auto minmax(0,1fr)}.czrow .pie{flex-direction:column;align-items:flex-start}}
 .pie{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:6px 0}.pleg{display:grid;grid-template-columns:auto auto auto auto;gap:4px 8px;align-items:center;font-size:14px}.pleg .pl{display:contents}.pleg i{width:12px;height:12px;border-radius:3px;display:inline-block}
@@ -1004,7 +1005,7 @@ function stCompute(rg){const inP=d=>d&&d>=rg.start&&d<=rg.end,live=CASES.filter(
   const stages=(stK==='客訴'?STS:VSTS).map(k=>[k,cases.filter(c=>c.status===k).length]);
   const cm2=new Map();cases.forEach(c=>{const k=c.cat||'未分類',o=cm2.get(k)||{name:k,n:0,open:0};o.n++;if(openSet.has(c.id))o.open++;cm2.set(k,o)});const catsM=[...cm2.values()].sort((a,b)=>b.n-a.n||b.open-a.open);
   const causes={};CZ.forEach(k=>causes[k]=0);causes['未填']=0;cases.forEach(c=>{const v=String(((c.form||{}).inputs||{}).cause||'').split('、').filter(k=>CZ.includes(k));if(!v.length)causes['未填']++;v.forEach(k=>causes[k]++)});
-  return{total:cases.length,done:done.length,open:open.length,cross,del,who,cats,catsM,stages,causes,resp:respCount(cases)}}
+  return{total:cases.length,done:done.length,open:open.length,cs:cases,ds:done,os:open,cross,del,who,cats,catsM,stages,causes,resp:respCount(cases)}}
 // 人機料法環：固定顏色（已用色盲檢查通過的色盤），折線再加虛線樣式
 const CZ=['人','機','料','法','環'],CZC={人:'#2f6fbf',機:'#c0392b',料:'#1e8a6e',法:'#b9770e',環:'#8e44ad',未填:'#a3a3a3'},CZD={人:'',機:'7 4',料:'2 3',法:'9 3 2 3',環:'1 4'};
 let stTop={p:3,c:3,r:3},stCatMode='merge';
@@ -1031,23 +1032,23 @@ function renderStats(){
  const sum=c.total===0&&!c.cross.length&&!c.del?`${rg.label}：尚無資料`:`${tw}新增 ${c.total} 件${kw}，已結案 ${c.done} 件、處理中 ${c.open} 件（新增件數${cmp}）；另有 ${c.cross.length} 件前期${kw}仍未結案。${tkTxt}`;
  const N=mode==='M'?12:mode==='Q'?4:5,ser=[...Array(N)].map((_,i)=>{const q=stShift(mode,cur.y,cur.a,i-(N-1)),r=stRange(mode,q.y,q.a),cc=stCompute(r);return{l:r.short,t:cc.total,o:cc.open,cz:cc.causes}});
  const trend=mode==='M'?'最近 12 個月':mode==='Q'?'最近 4 季':'最近 5 年';
- const hb=rows=>{const mx=Math.max(1,...rows.map(r=>r[1]));return rows.map(([t,n])=>`<div class="hb"><span>${esc(t)}</span><span class="b"><i style="width:${n/mx*100}%"></i></span><span class="v">${n}</span></div>`).join('')};
+ const hb=(rows,pick,ttl)=>hbarHtml(rows,'',pick,rg.label+'・'+(ttl||''));
  const h=`<h3 class="st-title">${esc(rg.label)}</h3>
   <div class="st-sum ${c.cross.length?'warn':'ok'}">${esc(sum)}</div>
-  <div class="st-tiles"><div class="st-tile"><div class="n">${c.total}</div><div class="l">新增</div><div class="d">${stK==='客訴'?'客訴':'發現'}日期在本期</div></div>
-   <div class="st-tile t-done"><div class="n">${c.done}</div><div class="l">已結案</div><div class="d">處理狀態為已結案</div></div>
-   <div class="st-tile t-open"><div class="n">${c.open}</div><div class="l">處理中</div><div class="d">還沒結案</div></div>
+  <div class="st-tiles"><div class="st-tile drill"${drill(rg.label+'・新增',c.cs)}><div class="n">${c.total}</div><div class="l">新增</div><div class="d">${stK==='客訴'?'客訴':'發現'}日期在本期</div></div>
+   <div class="st-tile t-done drill"${drill(rg.label+'・已結案',c.ds)}><div class="n">${c.done}</div><div class="l">已結案</div><div class="d">處理狀態為已結案</div></div>
+   <div class="st-tile t-open drill"${drill(rg.label+'・處理中',c.os)}><div class="n">${c.open}</div><div class="l">處理中</div><div class="d">還沒結案</div></div>
    <div class="st-tile ${diff>0?'t-over':''}"><div class="n">${diff>0?'+':''}${diff}</div><div class="l">與${pw}比較</div><div class="d">${pw} ${pc.total} 件</div></div></div>
   <div class="st-note">新增 ＝ 已結案 ＋ 處理中（${c.done} ＋ ${c.open} ＝ ${c.total}）。統計只呈現件數分布，不代表原因或責任判定。</div>
   <div class="st-extra"><div class="box"><div class="n">${c.cross.length}</div><div class="l">前期未結案（不含在上面四項）</div><div class="st-note" style="margin:0">本期之前建立、到現在還沒結案的案件（累計）</div></div>
    <div class="box del"><div class="n">${c.del}</div><div class="l">刪除件數（不立案）</div><div class="st-note" style="margin:0">本期日期、已移到「最近刪除」未列入新增的案件。新增 ${c.total} ＋ 刪除 ${c.del} ＝ ${c.total+c.del}</div></div></div>
   <div class="st-sec">前期未結案明細（需追蹤）</div>
   ${c.cross.length?`<div class="st-scroll"><table class="st-table"><thead><tr><th>編號</th><th>${stK==='客訴'?'客訴':'發現'}日期</th><th>${stK==='客訴'?'產品名稱':'供應商｜原料'}</th><th>處理狀態</th><th>已經過</th></tr></thead><tbody>${c.cross.map(r=>`<tr class="click" data-open="${esc(r.id)}"><td>${esc(r.no||'—')}</td><td>${esc(r.date)}</td><td>${esc(stK==='客訴'?r.item:(r.sup||'')+'｜'+(r.item||''))}</td><td>${esc(r.status||'')}</td><td>${daysSince(r.date)} 天</td></tr>`).join('')}</tbody></table></div>`:'<p class="sub">沒有前期未結案的案件。</p>'}
-  <div class="st-sec st-secr"><span>${stK==='客訴'?'哪個產品客訴最多':'哪個供應商最多'}（${esc(tw)}新增）</span><span>${topSel('p',c.who.length)}</span></div>${c.who.length?hb(c.who.slice(0,stTop.p)):'<p class="sub">尚無資料</p>'}
+  <div class="st-sec st-secr"><span>${stK==='客訴'?'哪個產品客訴最多':'哪個供應商最多'}（${esc(tw)}新增）</span><span>${topSel('p',c.who.length)}</span></div>${c.who.length?hb(c.who.slice(0,stTop.p),t=>c.cs.filter(x=>(stK==='客訴'?((x.item||'').trim()||'（未填）'):((x.sup||'').trim()||'（未填供應商）'))===t)):'<p class="sub">尚無資料</p>'}
   <div class="st-sec st-secr"><span>異常類別排行（${esc(tw)}新增，由多到少）</span><span><span class="seg seg-sm" role="group" aria-label="異物顯示方式"><button type="button" data-cm="merge" class="${stCatMode==='merge'?'on':''}">異物合併</button><button type="button" data-cm="detail" class="${stCatMode==='detail'?'on':''}">細分</button></span>${topSel('c',(stCatMode==='merge'?c.catsM:c.cats).length)}</span></div>
-  ${c.cats.length?`<table class="st-table"><thead><tr><th>異常類別</th><th>件數</th><th>其中處理中</th></tr></thead><tbody>${(stCatMode==='merge'?c.catsM:c.cats).slice(0,stTop.c).map(x=>`<tr><td>${esc(x.name)}</td><td><b>${x.n}</b></td><td>${x.open?`<b style="color:#b42318">${x.open}</b>`:'0'}</td></tr>`).join('')}</tbody></table>`:'<p class="sub">尚無資料</p>'}
+  ${c.cats.length?`<table class="st-table"><thead><tr><th>異常類別</th><th>件數</th><th>其中處理中</th></tr></thead><tbody>${(stCatMode==='merge'?c.catsM:c.cats).slice(0,stTop.c).map(x=>`<tr class="click drill"${drill(rg.label+'・'+x.name,c.cs.filter(y=>(stCatMode==='merge'?(y.cat||'未分類'):catKey(y))===x.name))}><td>${esc(x.name)}</td><td><b>${x.n}</b></td><td>${x.open?`<b style="color:#b42318">${x.open}</b>`:'0'}</td></tr>`).join('')}</tbody></table>`:'<p class="sub">尚無資料</p>'}
   ${stK==='客訴'?(()=>{const cd=catDays(CASES.filter(x=>isLive(x)&&x.kind==='客訴'&&x.date>=rg.start&&x.date<=rg.end));return`<div class="st-sec">各異常類別平均處理天數（${esc(tw)}新增，追蹤工作天）</div>${cd.length?`<table class="st-table"><thead><tr><th>異常類別</th><th>完成追蹤件數</th><th>平均處理天數</th><th>最長</th></tr></thead><tbody>${cd.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.n}</td><td><b>${x.avg}</b> 天</td><td>${x.max} 天</td></tr>`).join('')}</tbody></table><div class="st-note">只算「追蹤開始」與「追蹤完成」都有填的案件；扣除週六日與國定假日，頭尾都算。</div>`:'<p class="sub">本期還沒有填好追蹤開始與完成日期的案件。</p>'}`})():''}
-  ${stK==='客訴'?`<div class="st-sec st-secr"><span>權責單位件數（${esc(tw)}新增）</span><span>${topSel('r',c.resp.length)}</span></div>${c.resp.length?hb(c.resp.slice(0,stTop.r)):'<p class="sub">尚無資料</p>'}<div class="st-note">一件有多個權責單位時，每個單位各算一次。</div>
+  ${stK==='客訴'?`<div class="st-sec st-secr"><span>權責單位件數（${esc(tw)}新增）</span><span>${topSel('r',c.resp.length)}</span></div>${c.resp.length?hb(c.resp.slice(0,stTop.r),t=>c.cs.filter(x=>respHas(x,t)),'權責單位：'):'<p class="sub">尚無資料</p>'}<div class="st-note">一件有多個權責單位時，每個單位各算一次。</div>
   <div class="st-sec">人、機、料、法、環</div><div class="czrow"><div><div class="czh">原因分布（${esc(tw)}新增）</div>${pieSvg(CZ.concat('未填').map(k=>[k,c.causes[k]]))}</div><div><div class="czh">趨勢（${trend}）</div>${lineSvg(CZ.map(k=>({name:k,vals:ser.map(x=>x.cz[k]),c:CZC[k],d:CZD[k]})),ser.map(x=>x.l))}</div></div><div class="st-note">一件勾選多個原因時，每個原因各算一次。</div>`:''}
   <div class="st-sec">處理階段（${esc(tw)}新增）</div>
   <table class="st-table"><thead><tr><th>處理階段</th><th>件數</th></tr></thead><tbody>${c.stages.map(([k,n])=>`<tr><td>${esc(k)}</td><td><b>${n}</b></td></tr>`).join('')}</tbody></table>
@@ -1110,19 +1111,30 @@ function kpiHtml(D){const rate=D.yr.length?Math.round(D.closed/D.yr.length*100):
 // 處理狀態：每個階段一個彩色標籤＋件數（比照衛生缺失）
 const STC={'原因查證':'s1','通知供應商改善':'s2','改善執行':'s3','效果確認':'s4','已結案':'s5'};
 function donutHtml(D){const L=D.kind==='客訴'?STS:VSTS;
-  return '<ul class="stl">'+L.map(x=>`<li><span class="stb ${STC[x]||'s1'}">${x}</span><b>${D.yr.filter(c=>c.status===x).length}</b></li>`).join('')+'</ul>'}
-function hbarHtml(rows,empty){const mx=Math.max(1,...rows.map(r=>r[1]));return rows.length?rows.map(([t,n])=>`<div class="hb"><span>${esc(t)}</span><span class="b"><i style="width:${n/mx*100}%"></i></span><span class="v">${n}</span></div>`).join(''):`<p class="sub">${empty}</p>`}
+  return '<ul class="stl">'+L.map(x=>`<li class="drill"${drill(`今年・${x}`,D.yr.filter(c=>c.status===x))}><span class="stb ${STC[x]||'s1'}">${x}</span><b>${D.yr.filter(c=>c.status===x).length}</b></li>`).join('')+'</ul>'}
+// 點統計數字看是哪幾件：畫面上每個可點的數字登記一組案件，點了跳出清單，再點一件就打開
+const DRL=new Map();let DRn=0;
+const drill=(title,rows)=>{const k='d'+(++DRn);DRL.set(k,{title,rows});if(DRL.size>400)DRL.delete(DRL.keys().next().value);return` data-drill="${k}" role="button" tabindex="0" title="點一下看是哪幾件"`};
+function showDrill(k){const d=DRL.get(k);if(!d)return;const rows=d.rows.slice().sort((a,b)=>b.date.localeCompare(a.date)),m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="box" role="dialog" aria-modal="true" aria-label="${esc(d.title)}" style="max-width:760px"><b>${esc(d.title)}</b><p class="sub" style="margin:4px 0 8px">共 ${rows.length} 件，點一件就打開編輯。</p>
+<div class="ximpw" style="max-height:60vh"><table class="ximp drt"><tr><th>編號</th><th>日期</th><th>產品／原料</th><th>異常類別</th><th>權責單位</th><th>狀態</th></tr>${rows.map(r=>{const i=(r.form||{}).inputs||{};return`<tr class="click" data-open="${esc(r.id)}" tabindex="0"><td>${esc(r.no||'—')}</td><td>${esc(r.date)}</td><td>${esc(r.kind==='客訴'?r.item:(r.sup||'')+'｜'+(r.item||''))}</td><td>${esc(catLabel(r)||'')}</td><td>${esc(r.kind==='客訴'?respTxt(i)||'尚未指定':'')}</td><td>${esc(r.status||'')}</td></tr>`}).join('')||'<tr><td colspan="6">沒有案件</td></tr>'}</table></div>
+<div class="row" style="justify-content:flex-end;margin:10px 0 0"><button type="button" class="pri" data-x="1">關閉</button></div></div>`;
+  document.body.append(m);m.addEventListener('click',e=>{if(e.target===m||e.target.closest('[data-x]')||e.target.closest('[data-open]'))m.remove()});m.addEventListener('keydown',e=>{if(e.key==='Escape')m.remove();if(e.key==='Enter'&&e.target.dataset.open){e.target.click()}});m.querySelector('[data-x]').focus()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-drill]');if(b)showDrill(b.dataset.drill)});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.dataset&&e.target.dataset.drill){e.preventDefault();showDrill(e.target.dataset.drill)}});
+const respHas=(c,k)=>respKeys(c).includes(k);
+function hbarHtml(rows,empty,pick,ttl){const mx=Math.max(1,...rows.map(r=>r[1]));return rows.length?rows.map(([t,n])=>`<div class="hb${pick?' drill':''}"${pick?drill((ttl||'')+t,pick(t)):''}><span>${esc(t)}</span><span class="b"><i style="width:${n/mx*100}%"></i></span><span class="v">${n}</span></div>`).join(''):`<p class="sub">${empty}</p>`}
 function openHtml(D,n,rows){const a=D.open.slice(0,n);if(!a.length)return '<p class="sub">目前沒有未結案的案件。</p>';
   return rows?a.map(r=>`<button type="button" class="orow" data-open="${esc(r.id)}"><span class="tag">${esc(r.status||'')}</span>${r.cat?`<span class="tag cat">${esc(clip15(catLabel(r)))}</span>`:''}<b>${esc(D.kind==='客訴'?r.item:(r.sup||'（未填供應商）')+'｜'+r.item)}</b><span class="mt">${esc(r.no||'')}　${esc(r.date)}</span><span class="age">已 ${daysSince(r.date)} 天</span></button>`).join('')
     :'<ul class="mini">'+a.map(r=>`<li><button type="button" class="olink" data-open="${esc(r.id)}">${esc(r.no||'')} ${esc(r.item||'')}</button><span class="age">已 ${daysSince(r.date)} 天</span></li>`).join('')+'</ul>'}
-function sideHtml(D){return `<div class="card"><h2>處理狀態<span class="r">今年</span></h2>${donutHtml(D)}</div><div class="card"><h2>異常類別 前 3 名<span class="r">今年</span></h2>${hbarHtml(D.cats.slice(0,3),'今年還沒有案件。')}</div><div class="card"><h2>需要注意<span class="r">最久沒結案</span></h2>${openHtml(D,3)}</div>`}
+function sideHtml(D){return `<div class="card"><h2>處理狀態<span class="r">今年</span></h2>${donutHtml(D)}</div><div class="card"><h2>異常類別 前 3 名<span class="r">今年</span></h2>${hbarHtml(D.cats.slice(0,3),'今年還沒有案件。',t=>D.yr.filter(c=>catKey(c)===t),'今年・')}</div><div class="card"><h2>需要注意<span class="r">最久沒結案</span></h2>${openHtml(D,3)}</div>`}
 function renderDash(){
   const A=dashData('客訴'),B=dashData('供應商客訴'),S=stK==='客訴'?A:B;
   $('kpiA').innerHTML=kpiHtml(A);$('sideA').innerHTML=sideHtml(A);$('kpiB').innerHTML=kpiHtml(B);$('sideB').innerHTML=sideHtml(B);
   $('kpiS').innerHTML=kpiHtml(S);
   let who;if(S.kind==='客訴'){who=respCount(S.yr)}
   else{const cnt={};S.yr.forEach(c=>{const v=c.sup||'（未填供應商）';cnt[v]=(cnt[v]||0)+1});who=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,6)}
-  $('sideS').innerHTML=`<div class="card"><h2>處理狀態<span class="r">今年</span></h2>${donutHtml(S)}</div><div class="card"><h2>異常類別<span class="r">今年</span></h2>${hbarHtml(S.cats,'今年還沒有案件。')}</div><div class="card"><h2>${S.kind==='客訴'?'權責單位件數':'供應商件數 前 6 名'}<span class="r">今年</span></h2>${hbarHtml(who,'今年還沒有案件。')}<p class="note">只呈現件數分布，不代表原因或責任判定。</p></div>`;
+  $('sideS').innerHTML=`<div class="card"><h2>處理狀態<span class="r">今年</span></h2>${donutHtml(S)}</div><div class="card"><h2>異常類別<span class="r">今年</span></h2>${hbarHtml(S.cats,'今年還沒有案件。',t=>S.yr.filter(c=>catKey(c)===t),'今年・')}</div><div class="card"><h2>${S.kind==='客訴'?'權責單位件數':'供應商件數 前 6 名'}<span class="r">今年</span></h2>${hbarHtml(who,'今年還沒有案件。',S.kind==='客訴'?t=>S.yr.filter(c=>respHas(c,t)):t=>S.yr.filter(c=>(c.sup||'（未填供應商）')===t),'今年・權責單位：')}<p class="note">只呈現件數分布，不代表原因或責任判定。</p></div>`;
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-open]');if(!b)return;const r=CASES.find(c=>c.id===b.dataset.open);if(!r)return;
   const isA=r.kind==='客訴';document.querySelector(`.tabs button[data-t="${isA?'A':'B'}"]`).click();isA?openForm(r):openVForm(r)});
