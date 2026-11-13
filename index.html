@@ -1648,6 +1648,12 @@ async function saveDocx(blob,name,say,kind){
 
 
 // ---- 統計：圖表轉圖片、統計報告（Word）----
+// Word 報告用的圓餅圖（畫在畫布上轉成圖片）
+async function piePng(rows,title){const tot=rows.reduce((a,r)=>a+r[1],0),S=2,W=600,H=270,cv=document.createElement('canvas');cv.width=W*S;cv.height=H*S;const g=cv.getContext('2d');g.scale(S,S);
+  const F='Microsoft JhengHei,PingFang TC,Noto Sans TC,sans-serif';g.fillStyle='#fff';g.fillRect(0,0,W,H);g.fillStyle='#16213a';g.font=`bold 15px ${F}`;g.fillText(title,14,24);
+  let a0=-Math.PI/2;const cx=135,cy=150,R=100;rows.filter(r=>r[1]>0).forEach(([k,n])=>{const a1=a0+n/tot*2*Math.PI;g.beginPath();g.moveTo(cx,cy);g.arc(cx,cy,R,a0,a1);g.closePath();g.fillStyle=CZC[k];g.fill();g.lineWidth=2;g.strokeStyle='#fff';g.stroke();a0=a1});
+  g.font=`14px ${F}`;rows.forEach(([k,n],i)=>{const y=70+i*30;g.fillStyle=CZC[k];g.fillRect(290,y-11,13,13);g.fillStyle='#16213a';g.fillText(`${k}　${n} 件　${tot?Math.round(n/tot*100):0}%`,312,y)});
+  const blob=await new Promise(r=>cv.toBlob(r,'image/png'));return{blob,w:W,h:H}}
 async function chartPng(fig,title){
   const sv=fig.querySelector('svg[role=img]'),leg=JSON.parse(decodeURIComponent(fig.dataset.legend||'%5B%5D'));
   const cs=getComputedStyle(document.documentElement),cv=v=>cs.getPropertyValue(v).trim()||'#888';
@@ -1663,7 +1669,7 @@ async function chartPng(fig,title){
   const blob=await new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(new Error('圖片產生失敗')),'image/png'));
   return{blob,w:W+24,h:H};
 }
-const chartTitle=fig=>{const p=fig.previousElementSibling;return p&&p.classList.contains('sh')?p.textContent.trim():''};
+const chartTitle=fig=>{const p=fig.previousElementSibling;return p&&p.classList.contains('sh')?p.textContent.trim():p&&p.classList.contains('czh')?'人、機、料、法、環'+p.textContent.trim():''};
 function statPeriod(){
   const cy=now.getFullYear(),p2=n=>String(n).padStart(2,'0'),ym=c=>String(c.date||'').slice(0,7);
   if(mode==='Y')return{label:stYear+' 年',tag:String(stYear),inP:c=>String(c.date||'').slice(0,4)===String(stYear),pLabel:(stYear-1)+' 年',inPrev:c=>String(c.date||'').slice(0,4)===String(stYear-1),unit:'年'};
@@ -1684,8 +1690,12 @@ function wimg(i,w,h){
 }
 async function buildReport(){
   const P=statPeriod(),isC=stK==='客訴',all=CASES.filter(c=>isLive(c)&&c.kind===stK),cur=all.filter(P.inP).sort((a,b)=>String(a.date).localeCompare(String(b.date))),prev=all.filter(P.inPrev);
-  const figs=[...$('sbody').querySelectorAll('figure.chart')],imgs=[];
+  // 件數趨勢放前面，人機料法環趨勢放後面
+  const figs=[...$('sbody').querySelectorAll('figure.chart')].sort((a,b)=>!!a.closest('.czrow')-!!b.closest('.czrow')),imgs=[];
   for(const f of figs){const t=chartTitle(f),o=await chartPng(f,t);imgs.push({...o,bytes:new Uint8Array(await o.blob.arrayBuffer())})}
+  const nFig=imgs.length,czc={};CZ.concat('未填').forEach(k=>czc[k]=0);cur.forEach(c=>{const v=String(((c.form||{}).inputs||{}).cause||'').split('、').filter(k=>CZ.includes(k));if(!v.length)czc['未填']++;v.forEach(k=>czc[k]++)});
+  const czRows=CZ.concat('未填').map(k=>[k,czc[k]]),czTot=czRows.reduce((a,r)=>a+r[1],0);let pieIdx=0;
+  if(isC&&czTot){const o=await piePng(czRows,'原因分布（人、機、料、法、環）');imgs.push({...o,bytes:new Uint8Array(await o.blob.arrayBuffer())});pieIdx=imgs.length}
   const diff=cur.length-prev.length,cnt=(arr,f)=>{const m={};arr.forEach(c=>{const k=f(c);m[k]=(m[k]||0)+1});return m};
   const byCat=cnt(cur,catKey),stages=isC?STS:VSTS,bySt=cnt(cur,c=>c.status||'未設定'),byResp=respCount(cur);
   const open=cur.filter(c=>c.status!=='已結案').length;
@@ -1694,7 +1704,7 @@ async function buildReport(){
   body.push(wp('一、重點摘要',{b:1,sz:28,bd:1,after:120}));
   body.push(wp([`本期件數：${cur.length} 件`,`上一${P.unit}（${P.pLabel}）：${prev.length} 件，${diff>0?'增加 '+diff+' 件':diff<0?'減少 '+(-diff)+' 件':'持平'}`,`尚未結案：${open} 件`,top?`件數最多的異常類別：${top[0]}（${top[1]} 件）`:'本期無案件'].join('\n'),{after:200}));
   body.push(wp('二、趨勢圖',{b:1,sz:28,bd:1,after:120}));
-  if(imgs.length)imgs.forEach((m,i)=>body.push(wimg(i+1,m.w,m.h)));else body.push(wp('（目前顯示的是長條圖或沒有圖表；切換成折線圖後再匯出，即可附上趨勢圖。）',{sz:20}));
+  if(nFig)imgs.slice(0,nFig).forEach((m,i)=>body.push(wimg(i+1,m.w,m.h)));else body.push(wp('（目前顯示的是長條圖或沒有圖表；切換成折線圖後再匯出，即可附上趨勢圖。）',{sz:20}));
   body.push(wp('三、各異常類別件數',{b:1,sz:28,bd:1,after:120}));
   const ckOrd=k=>{const i=CATS.indexOf(k.split('-')[0]);return i<0?99:i},ckeys=[...new Set(CATS.filter(k=>k!=='異物'||!Object.keys(byCat).some(x=>x.startsWith('異物-'))).concat(Object.keys(byCat)))].sort((a,b)=>ckOrd(a)-ckOrd(b)||(byCat[b]||0)-(byCat[a]||0));
   body.push(wtbl(['異常類別','件數','占比'],ckeys.map(k=>[k,String(byCat[k]||0),cur.length?Math.round((byCat[k]||0)*100/cur.length)+'%':'—']),[5200,2200,2238]));
@@ -1702,9 +1712,22 @@ async function buildReport(){
     body.push(cd.length?wtbl(['異常類別','完成追蹤件數','平均處理天數','最長'],cd.map(x=>[x.name,String(x.n),x.avg+' 天',x.max+' 天']),[3600,2000,2200,1838]):wp('（本期還沒有填好追蹤開始與完成日期的案件）',{sz:20}))}
   body.push(wp('四、各處理階段件數',{b:1,sz:28,bd:1,after:120}));
   body.push(wtbl(['處理階段','件數'],stages.map(k=>[k,String(bySt[k]||0)]),[6400,3238]));
-  let n=5;const cn=['五','六'];
-  if(isC){body.push(wp(cn[0]+'、依權責單位件數',{b:1,sz:28,bd:1,after:120}));body.push(wtbl(['權責單位（負責改善的部門）','件數'],(byResp.length?byResp:[['尚未指定',0]]).map(([k,v])=>[k,String(v)]),[6400,3238]));n=6}
-  body.push(wp((isC?cn[1]:cn[0])+'、本期案件清單',{b:1,sz:28,bd:1,after:120}));
+  // 排行：依統計頁目前選的「前幾名」與「異物合併／細分」
+  const cn=['五','六','七'];let ci=0;const rank=(rows,k)=>rows.slice(0,stTop[k]).map(([t,v],i)=>[String(i+1),t,String(v),cur.length?Math.round(v*100/cur.length)+'%':'—']);
+  body.push(wp(cn[ci++]+'、排行（依統計頁目前的設定）',{b:1,sz:28,bd:1,after:120}));
+  const whoR=Object.entries(cnt(cur,c=>isC?((c.item||'').trim()||'（未填）'):((c.sup||'').trim()||'（未填供應商）'))).sort((a,b)=>b[1]-a[1]);
+  body.push(wp(`${isC?'哪個產品客訴最多':'哪個供應商最多'}（前 ${stTop.p} 名，共 ${whoR.length} 項）`,{b:1,sz:24,after:80}));
+  body.push(whoR.length?wtbl(['名次',isC?'產品名稱':'供應商','件數','占比'],rank(whoR,'p'),[1000,5200,1600,1838]):wp('（本期無案件）',{sz:20}));
+  const catR=Object.entries(cnt(cur,c=>stCatMode==='merge'?(c.cat||'未分類'):catKey(c))).sort((a,b)=>b[1]-a[1]);
+  body.push(wp(`異常類別排行（${stCatMode==='merge'?'異物合併':'細分'}，前 ${stTop.c} 名，共 ${catR.length} 項）`,{b:1,sz:24,after:80}));
+  body.push(catR.length?wtbl(['名次','異常類別','件數','占比'],rank(catR,'c'),[1000,5200,1600,1838]):wp('（本期無案件）',{sz:20}));
+  if(isC){body.push(wp(`權責單位件數（前 ${stTop.r} 名，共 ${byResp.length} 項；一件有多個單位時各算一次）`,{b:1,sz:24,after:80}));
+    body.push(byResp.length?wtbl(['名次','權責單位（負責改善的部門）','件數','占比'],rank(byResp,'r'),[1000,5200,1600,1838]):wp('（本期無案件）',{sz:20}));
+    body.push(wp(cn[ci++]+'、人、機、料、法、環',{b:1,sz:28,bd:1,after:120}));
+    body.push(wtbl(['原因','件數','占比'],czRows.map(([k,v])=>[k,String(v),czTot?Math.round(v*100/czTot)+'%':'—']),[5200,2200,2238]));
+    if(pieIdx)body.push(wimg(pieIdx,imgs[pieIdx-1].w,imgs[pieIdx-1].h));
+    body.push(wp('一件勾選多個原因時，每個原因各算一次；占比以原因次數合計計算。人、機、料、法、環的趨勢折線圖見「二、趨勢圖」。',{sz:18,after:160}))}
+  body.push(wp(cn[ci++]+'、本期案件清單',{b:1,sz:28,bd:1,after:120}));
   if(cur.length)body.push(isC?wtbl(['編號','日期','產品名稱','異常類別','處理階段','權責單位'],cur.map(c=>[c.no||'—',c.date,c.item||'',catLabel(c),c.status||'',respTxt((c.form||{}).inputs)||'尚未指定']),[1700,1250,2000,1600,1400,1688])
     :wtbl(['編號','日期','供應商｜原料','異常類別','處理階段'],cur.map(c=>[c.no||'—',c.date,(c.sup||'')+'｜'+(c.item||''),catLabel(c),c.status||'']),[1800,1300,3100,1800,1638]));
   else body.push(wp('（本期無案件）',{sz:20}));
