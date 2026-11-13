@@ -627,7 +627,7 @@ function drawThumbs(){
 
 // ---- 基本資料 / 輸入 ----
 const RX=['生產單位','其他'];
-const respTxt=i=>i&&i.resp?i.resp+(i.respx?'（'+i.respx+'）':''):'';
+const respTxt=i=>i&&i.resp?String(i.resp).trim().replace(/(^|[、,，\s])(NA|N\/A)(?=$|[、,，\s])/gi,'$1無')+(i.respx?'（'+i.respx+'）':''):'';
 // 權責單位改為可自訂（常用選項）；舊資料的補充說明 respx 有內容才顯示，原樣保留
 function syncResp(){$('respx').hidden=!$('respx').value.trim()}
 function inputs(){return{no:$('no').value.trim(),date:$('date').value,src:$('src').value.trim(),rec:$('rec').value.trim(),qcp:$('qcp').value.trim(),resp:$('resp').value.trim(),respx:$('respx').value.trim(),prod:$('prod').value.trim(),lot:$('lot').value.trim(),desc:$('desc').value.trim(),proc:$('proc').value.trim(),done:$('done').value.trim(),conf:$('conf').value.trim(),eff:$('eff').value.trim(),catother:$('fcat').value==='其它'?$('catother').value.trim():'',fosub:$('fcat').value==='異物'?$('fosub').value.trim():'',rpt:$('rpt').value,trk1:$('trk1').value,trk2:$('trk2').value,cdate:$('cdate').value,cause:$('cause').value,note:$('note').value.trim()}}
@@ -886,7 +886,9 @@ function caseLine(r){const i=(r.form&&r.form.inputs)||{},sub=catSub(r),d=String(
   return `<div class="cl"><span><b>異常類別</b>${esc(r.cat||'未分類')}</span>${sub?`<span><b>${r.cat==='異物'?'異物種類':'其它異常原因'}</b>${esc(sub)}</span>`:''}<span><b>描述</b>${d?esc(d.length>40?d.slice(0,40)+'…':d):'（未填）'}</span></div>`}
 const catLabel=c=>catSub(c)?c.cat+'-'+catSub(c):(c.cat||'');
 // 權責單位可多個（「、」分開），統計時各自計數
-const respKeys=c=>{const i=(c.form||{}).inputs||{},a=String(i.resp||'').split(/[、,，\/／]+/).map(x=>x.trim()).filter(Boolean);return a.length?a:['尚未指定']};
+// 權責單位寫 NA／N/A 的，一律當作「無」（原資料不改）
+const isNA=t=>/^(NA|N\/A)$/i.test(String(t).trim());
+const respKeys=c=>{const i=(c.form||{}).inputs||{},a=String(i.resp||'').replace(/N\/A/gi,'NA').split(/[、,，\/／]+/).map(x=>x.trim()).filter(Boolean).map(x=>isNA(x)?'無':x);return a.length?[...new Set(a)]:['尚未指定']};
 const respCount=rows=>{const m={};rows.forEach(c=>respKeys(c).forEach(k=>m[k]=(m[k]||0)+1));return Object.entries(m).sort((a,b)=>(a[0]==='尚未指定')-(b[0]==='尚未指定')||b[1]-a[1])};
 // 報告書：對外回覆，期限＝客訴日期＋3 天（日曆天）
 const addDays=(d,n)=>{const t=new Date(d+'T00:00:00');t.setDate(t.getDate()+n);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
@@ -1267,7 +1269,7 @@ function xParse(files,fallbackY,closeOld){const out=[],cnt=new Map(),cy=new Date
    const C={date:col(/立案日期/),txt:col(/客訴內容/),resp:col(/權責單位/),rpt:col(/報告書/),trk:col(/^追蹤/),end:col(/^結案/),cause:col(/^原因/),note:col(/備[註住]/),cls:col(/^分類/)};
    const sub=H[1].some(x=>/報告書|追蹤|結案/.test(x))?h+2:h+1;
    const g=(r,k)=>C[k]<0?'':String(r[C[k]]==null?'':r[C[k]]).trim();
-   const cleanResp=t=>/^(NA|N\/A)$/i.test(t)?'':t,causeOf=r=>(g(r,'cause').match(/[人機料法環]/g)||[]);
+   const cleanResp=t=>/^(NA|N\/A)$/i.test(t)?'無':t,causeOf=r=>(g(r,'cause').match(/[人機料法環]/g)||[]);
    let last=null,lastDate='';
    for(const r of rows.slice(sub)){if(/合計/.test(nk(r.slice(0,3).join(''))))break;
     let txt=g(r,'txt').replace(/\s+/g,' '),date=xDate(g(r,'date'),y);
@@ -1706,8 +1708,9 @@ async function buildReport(){
   body.push(wp('二、趨勢圖',{b:1,sz:28,bd:1,after:120}));
   if(nFig)imgs.slice(0,nFig).forEach((m,i)=>body.push(wimg(i+1,m.w,m.h)));else body.push(wp('（目前顯示的是長條圖或沒有圖表；切換成折線圖後再匯出，即可附上趨勢圖。）',{sz:20}));
   body.push(wp('三、各異常類別件數',{b:1,sz:28,bd:1,after:120}));
-  const ckOrd=k=>{const i=CATS.indexOf(k.split('-')[0]);return i<0?99:i},ckeys=[...new Set(CATS.filter(k=>k!=='異物'||!Object.keys(byCat).some(x=>x.startsWith('異物-'))).concat(Object.keys(byCat)))].sort((a,b)=>ckOrd(a)-ckOrd(b)||(byCat[b]||0)-(byCat[a]||0));
-  body.push(wtbl(['異常類別','件數','占比'],ckeys.map(k=>[k,String(byCat[k]||0),cur.length?Math.round((byCat[k]||0)*100/cur.length)+'%':'—']),[5200,2200,2238]));
+  // 由多到少，0 件的不列；件數相同時照類別順序
+  const ckOrd=k=>{const i=CATS.indexOf(k.split('-')[0]);return i<0?99:i},ckeys=Object.keys(byCat).filter(k=>byCat[k]>0).sort((a,b)=>byCat[b]-byCat[a]||ckOrd(a)-ckOrd(b)||a.localeCompare(b));
+  body.push(ckeys.length?wtbl(['異常類別','件數','占比'],ckeys.map(k=>[k,String(byCat[k]||0),cur.length?Math.round((byCat[k]||0)*100/cur.length)+'%':'—']),[5200,2200,2238]):wp('（本期無案件）',{sz:20}));
   if(isC){const cd=catDays(cur);body.push(wp('各異常類別平均處理天數（追蹤工作天，扣除週六日與國定假日）',{b:1,sz:24,after:80}));
     body.push(cd.length?wtbl(['異常類別','完成追蹤件數','平均處理天數','最長'],cd.map(x=>[x.name,String(x.n),x.avg+' 天',x.max+' 天']),[3600,2000,2200,1838]):wp('（本期還沒有填好追蹤開始與完成日期的案件）',{sz:20}))}
   body.push(wp('四、各處理階段件數',{b:1,sz:28,bd:1,after:120}));
