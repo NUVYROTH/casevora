@@ -135,7 +135,7 @@ th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:left}
 .ogrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}.ogrid .card{margin:0}@media(max-width:899px){.ogrid{grid-template-columns:1fr}}
 .oinfo{background:#e8f0fb;color:#1d3f72;border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.7;margin-top:14px}
 .omu{color:var(--mu);font-size:12.5px;line-height:1.6}
-.optl{list-style:none;margin:8px 0 10px;padding:0}.optl li{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--bd)}.optl li span{flex:1;min-width:0;overflow-wrap:anywhere}.optl li button{padding:2px 9px;font-size:13px}
+.optl{list-style:none;margin:8px 0 10px;padding:0}.optl li{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--bd)}.optl li span{flex:1;min-width:0;overflow-wrap:anywhere}.optl li button{padding:2px 9px;font-size:13px}.optl li.oed input{flex:1;min-width:0;padding:4px 8px}
 .oadd{display:flex;gap:6px}.oadd input{flex:1;min-width:0}
 .fohint{border:1px solid var(--gold);border-radius:10px;padding:0;overflow:hidden;background:#fdf8ee;margin:4px 0 14px;line-height:1.65;box-shadow:0 2px 6px rgba(26,42,68,.12)}
 .fohint summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;background:#1a2a44;color:#f3dfb2;font-weight:700;font-size:14px;padding:11px 14px}.fohint summary::-webkit-details-marker{display:none}
@@ -1171,19 +1171,28 @@ function renderOpts(){
 <div class="oinfo">不常用的，請在下拉選「其它（自己打字）」；打好後也可以按「＋加入常用」。<br>常用選項只存在此裝置此瀏覽器，「下載備份」會一起備份。刪除選項不會改到已經存好的案件。</div>
 <div class="status" id="omsg" role="status" style="margin-top:8px"></div>
 <div class="ogrid">${Object.keys(OPT_KINDS).map(k=>{const L=OPTS[k];return`<div class="card"><h2>${OPT_KINDS[k]}</h2><div class="omu">用在：${OPT_USE[k]}</div>
-${L.length?`<ul class="optl">${L.map((x,i)=>`<li><span>${esc(x)}</span><button type="button" data-om="${k},${i},-1" ${i?'':'disabled'} aria-label="上移">↑</button><button type="button" data-om="${k},${i},1" ${i<L.length-1?'':'disabled'} aria-label="下移">↓</button><button type="button" class="danger" data-od="${k},${i}">刪除</button></li>`).join('')}</ul>`:'<div class="omu" style="margin:10px 0">還沒有常用選項。</div>'}
+${L.length?`<ul class="optl">${L.map((x,i)=>oEdit&&oEdit.k===k&&oEdit.i===i?`<li class="oed"><input id="oe_in" maxlength="60" value="${esc(x)}" aria-label="修改常用選項"><button type="button" class="pri" data-osave="${k},${i}">儲存</button><button type="button" data-ocancel="1">取消</button></li>`:`<li><span>${esc(x)}</span><button type="button" data-oe="${k},${i}">編輯</button><button type="button" data-om="${k},${i},-1" ${i?'':'disabled'} aria-label="上移">↑</button><button type="button" data-om="${k},${i},1" ${i<L.length-1?'':'disabled'} aria-label="下移">↓</button><button type="button" class="danger" data-od="${k},${i}">刪除</button></li>`).join('')}</ul>`:'<div class="omu" style="margin:10px 0">還沒有常用選項。</div>'}
 ${k==='hol'?`<details class="omu" style="margin:0 0 8px"><summary style="cursor:pointer">查看內建的國定假日（${Object.keys(HOL_TW).length} 天，2025–2027 年）</summary>${Object.entries(HOL_TW).map(([d,n])=>`${d} ${esc(n)}`).join('<br>')}<br>補班日：${WORK_SAT.join('、')}</details>`:''}<div class="oadd"><input id="oi_${k}" maxlength="60" placeholder="${OPT_PH[k]}"><button type="button" class="pri" data-oa="${k}">新增</button></div></div>`}).join('')}</div>`}
+// 編輯常用選項：只改清單裡的文字，已經存好的案件不會改變
+let oEdit=null;
+function optVal(k,v,skip){if(!v)return'請輸入內容。';if((k==='hol'||k==='wday')&&!/^\d{4}-\d{2}-\d{2}(\s|$)/.test(v))return'日期請寫成 2026-12-31 的格式，後面可以空一格加說明。';if(v==='其它')return'「其它」不能加入常用，下拉選單最後一定會有「其它（自己打字）」。';if(OPTS[k].some((x,j)=>x===v&&j!==skip))return'「'+v+'」已經在清單裡了。';return''}
+function optSave(k,i){const v=$('oe_in').value.trim(),err=optVal(k,v,i);if(err){oMsg(err);$('oe_in').focus();return}
+  const old=OPTS[k][i];if(v===old){oEdit=null;renderOpts();return}OPTS[k][i]=v;if(!saveOpts()){OPTS[k][i]=old;return}if(k==='hol'||k==='wday')OPTS[k].sort();
+  oEdit=null;renderOpts();syncCombos();renderS();oMsg(`已修改：「${old}」→「${v}」（已經存好的案件不會改變）`)}
 function optAdd(k){const inp=$('oi_'+k),v=inp.value.trim();if(!v)return;if((k==='hol'||k==='wday')&&!/^\d{4}-\d{2}-\d{2}(\s|$)/.test(v)){oMsg('日期請寫成 2026-12-31 的格式，後面可以空一格加說明。');return}if(v==='其它'){oMsg('「其它」不能加入常用，下拉選單最後一定會有「其它（自己打字）」。');return}if(OPTS[k].includes(v)){oMsg('「'+v+'」已經在清單裡了。');return}
   OPTS[k].push(v);if(!saveOpts()){OPTS[k].pop();return}if(k==='hol'||k==='wday')OPTS[k].sort();renderOpts();syncCombos();renderS();oMsg('已加入：'+v);$('oi_'+k).focus()}
 $('tabO').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.dataset.oback)return toList();
   if(b.dataset.oa)return optAdd(b.dataset.oa);
+  if(b.dataset.oe){const [k,i]=b.dataset.oe.split(',');oEdit={k,i:+i};renderOpts();const t=$('oe_in');t.focus();t.select();return}
+  if(b.dataset.osave){const [k,i]=b.dataset.osave.split(',');return optSave(k,+i)}
+  if(b.dataset.ocancel){oEdit=null;renderOpts();return}
   if(b.dataset.om){const [k,i,d]=b.dataset.om.split(','),L=OPTS[k],a=+i,c=a+(+d);[L[a],L[c]]=[L[c],L[a]];saveOpts();renderOpts();syncCombos();return}
   if(b.dataset.od){const [k,i]=b.dataset.od.split(',');
     // 按兩次才刪除：第一次變成「確定刪除？」
     if(!b.dataset.arm){b.dataset.arm=1;b.textContent='確定刪除？';oMsg('再按一次「確定刪除？」就會移除「'+OPTS[k][+i]+'」（已經存好的案件不會改變）。');setTimeout(()=>{if(b.isConnected){delete b.dataset.arm;b.textContent='刪除'}},4000);return}
     const v=OPTS[k][+i];OPTS[k].splice(+i,1);saveOpts();renderOpts();syncCombos();renderS();oMsg('已移除：'+v)}});
-$('tabO').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id&&e.target.id.startsWith('oi_'))optAdd(e.target.id.slice(3))});
+$('tabO').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id&&e.target.id.startsWith('oi_'))optAdd(e.target.id.slice(3));if(e.target.id==='oe_in'&&oEdit){if(e.key==='Enter')optSave(oEdit.k,oEdit.i);if(e.key==='Escape'){oEdit=null;renderOpts()}}});
 document.querySelectorAll('[data-og]').forEach(b=>b.onclick=()=>$('openGuide').click());
 document.querySelectorAll('.fguide').forEach(b=>b.onclick=()=>$('openGuide').click());
 $('sideLogo').src=document.querySelector('.topbar .logo').src;
