@@ -223,7 +223,7 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .st-extra{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}.st-extra .box{flex:1 1 220px;border:2px dashed #e7b4ae;border-radius:10px;padding:10px 14px;background:#fff}.st-extra .box.del{border-color:var(--bd)}.st-extra .n{font-size:26px;font-weight:800;color:#b42318}.st-extra .del .n{color:var(--tx)}.st-extra .l{font-weight:700}
 .st-sec{margin:18px 0 6px;font-size:15.5px;font-weight:700;border-left:4px solid var(--ac);padding-left:8px}p.st-sec{margin:18px 0 6px}
 .st-scroll{overflow-x:auto}.st-table{width:100%;border-collapse:collapse;font-size:14px}.st-table th,.st-table td{border-bottom:1px solid var(--bd);padding:7px 8px;text-align:left}.st-table th{background:#f7f1e6;color:var(--mu);font-weight:600;white-space:nowrap}.st-table tr.click{cursor:pointer}.st-table tr.click:hover{background:#f7f1e6}
-@media(max-width:600px){.st-tiles{grid-template-columns:1fr 1fr}.st-tile .n{font-size:28px}}
+@media(max-width:600px){.st-tiles{grid-template-columns:1fr 1fr}.cdt th,.cdt td{padding:7px 5px;font-size:13px}.cdt th{white-space:normal}.st-tile .n{font-size:28px}}
 @media(min-width:900px){.dl .case .cinfo{flex-basis:100%}.dl .case .ac{margin-left:auto}}
 #sideHelp,#sideTrash,.sbrand,.slab,.sfoot{display:none}
 .flowh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--bd)}.flowh h2{margin:0}.flowh span{font-size:13px;color:var(--mu)}
@@ -1057,6 +1057,9 @@ const topSel=(k,total)=>`<select class="topsel" data-top="${k}" aria-label="顯�
 // 與上期比較：▲ 上升（紅）、▼ 下降（綠）；上期 0 件無法算百分比，標「新出現」
 function chg(cur,prev){cur=+cur||0;prev=+prev||0;if(!prev)return cur?{t:'新出現',c:'new',p:null}:{t:'—',c:'flat',p:null};const p=Math.round((cur-prev)/prev*100);return p>0?{t:'▲ '+p+'%',c:'up',p}:p<0?{t:'▼ '+(-p)+'%',c:'down',p}:{t:'持平',c:'flat',p:0}}
 const chgHtml=(cur,prev,pw)=>{const x=chg(cur,prev);return`<span class="chg ${x.c}" title="${esc(pw||'上期')} ${+prev||0} 件 → 本期 ${+cur||0} 件">${x.t}</span>`};
+// 平均處理天數：天數變多 ▲（紅，處理變慢）、變少 ▼（綠，處理變快）；上期沒有完成追蹤的案件就無法比較
+const dayChgHtml=(cur,prev,pw)=>prev==null?`<span class="chg flat" title="${esc(pw||'上期')}沒有完成追蹤的案件，無法比較">上期無資料</span>`:`<span class="chg ${chg(cur,prev).c}" title="${esc(pw||'上期')} 平均 ${prev} 天 → 本期 ${cur} 天">${chg(cur,prev).t}</span>`;
+const dayChgTxt=(cur,prev)=>prev==null?'上期無資料':chg(cur,prev).t;
 const chgTxt=(cur,prev)=>{const x=chg(cur,prev);return x.c==='new'?'新出現（上期 0 件）':x.p===null?'—':x.p>0?'上升 '+x.p+'%':x.p<0?'下降 '+(-x.p)+'%':'持平'};
 // 圓餅圖：每片之間留 2px 底色縫，滑鼠移上去看件數與占比
 function pieSvg(rows,pv,pw){pv=pv||{};const tot=rows.reduce((a,r)=>a+r[1],0);if(!tot)return'<p class="sub">本期沒有填寫原因的案件</p>';
@@ -1076,7 +1079,8 @@ function renderStats(){
  const rg=stRange(mode,cur.y,cur.a),c=stCompute(rg),pv=stShift(mode,cur.y,cur.a,-1),pc=stCompute(stRange(mode,pv.y,pv.a));
  const pw=mode==='M'?'上月':mode==='Q'?'上季':'去年',tw=mode==='M'?`${cur.a} 月`:mode==='Q'?`第 ${cur.a} 季`:`${cur.y} 年`,kw=stK==='客訴'?'客訴':'供應商客訴';
  const diff=c.total-pc.total,cpt=pc.total?`，${chgTxt(c.total,pc.total)}`:'',cmp=diff>0?`比${pw}多 ${diff} 件${cpt}`:diff<0?`比${pw}少 ${-diff} 件${cpt}`:`與${pw}相同`;
- const tk=stK==='客訴'?CASES.filter(x=>isLive(x)&&x.kind==='客訴'&&x.date>=rg.start&&x.date<=rg.end).map(x=>trkDays((x.form||{}).inputs)).filter(t=>t&&t.done):[],tkTxt=tk.length?`本期完成追蹤 ${tk.length} 件，平均 ${Math.round(tk.reduce((a,t)=>a+t.n,0)/tk.length*10)/10} 個工作天。`:'';
+ const tk=stK==='客訴'?CASES.filter(x=>isLive(x)&&x.kind==='客訴'&&x.date>=rg.start&&x.date<=rg.end).map(x=>trkDays((x.form||{}).inputs)).filter(t=>t&&t.done):[],prg=stRange(mode,pv.y,pv.a),ptk=stK==='客訴'?CASES.filter(x=>isLive(x)&&x.kind==='客訴'&&x.date>=prg.start&&x.date<=prg.end).map(x=>trkDays((x.form||{}).inputs)).filter(t=>t&&t.done):[],avgOf=a=>Math.round(a.reduce((s,t)=>s+t.n,0)/a.length*10)/10,tkA=tk.length?avgOf(tk):0,ptkA=ptk.length?avgOf(ptk):null,
+  tkTxt=tk.length?`本期完成追蹤 ${tk.length} 件，平均 ${tkA} 個工作天${ptkA==null?'':ptkA===tkA?`（與${pw}相同）`:`（${pw} ${ptkA} 天，${tkA>ptkA?'增加':'減少'} ${Math.abs(chg(tkA,ptkA).p)}%）`}。`:'';
  const sum=c.total===0&&!c.cross.length&&!c.del?`${rg.label}：尚無資料`:`${tw}新增 ${c.total} 件${kw}，已結案 ${c.done} 件、處理中 ${c.open} 件（新增件數${cmp}）；另有 ${c.cross.length} 件前期${kw}仍未結案。${tkTxt}`;
  const N=mode==='M'?12:mode==='Q'?4:5,serA=[...Array(N+1)].map((_,i)=>{const q=stShift(mode,cur.y,cur.a,i-N),r=stRange(mode,q.y,q.a),cc=stCompute(r);return{l:r.short,t:cc.total,o:cc.open,cz:cc.causes}}),ser=serA.slice(1),s0=serA[0];
  const trend=mode==='M'?'最近 12 個月':mode==='Q'?'最近 4 季':'最近 5 年';
@@ -1096,7 +1100,7 @@ function renderStats(){
   <div class="st-sec st-secr"><span>${stK==='客訴'?'哪個產品客訴最多':'哪個供應商最多'}（${esc(tw)}新增）</span><span>${topSel('p',c.who.length)}</span></div>${c.who.length?hb(c.who.slice(0,stTop.p),t=>c.cs.filter(x=>(stK==='客訴'?((x.item||'').trim()||'（未填）'):((x.sup||'').trim()||'（未填供應商）'))===t),'',pc.who):'<p class="sub">尚無資料</p>'}
   <div class="st-sec st-secr"><span>異常類別排行（${esc(tw)}新增，由多到少）</span><span><span class="seg seg-sm" role="group" aria-label="異物顯示方式"><button type="button" data-cm="merge" class="${stCatMode==='merge'?'on':''}">異物合併</button><button type="button" data-cm="detail" class="${stCatMode==='detail'?'on':''}">細分</button></span>${topSel('c',(stCatMode==='merge'?c.catsM:c.cats).length)}</span></div>
   ${c.cats.length?`<table class="st-table"><thead><tr><th>異常類別</th><th>件數</th><th>其中處理中</th><th>與${pw}比較</th></tr></thead><tbody>${(stCatMode==='merge'?c.catsM:c.cats).slice(0,stTop.c).map(x=>`<tr class="click drill"${drill(rg.label+'・'+x.name,c.cs.filter(y=>(stCatMode==='merge'?(y.cat||'未分類'):catKey(y))===x.name))}><td>${esc(x.name)}</td><td><b>${x.n}</b></td><td>${x.open?`<b style="color:#b42318">${x.open}</b>`:'0'}</td><td>${chgHtml(x.n,pCat[x.name],pw)}</td></tr>`).join('')}</tbody></table>`:'<p class="sub">尚無資料</p>'}
-  ${stK==='客訴'?(()=>{const cd=catDays(CASES.filter(x=>isLive(x)&&x.kind==='客訴'&&x.date>=rg.start&&x.date<=rg.end));return`<div class="st-sec">各異常類別平均處理天數（${esc(tw)}新增，追蹤工作天）</div>${cd.length?`<table class="st-table"><thead><tr><th>異常類別</th><th>完成追蹤件數</th><th>平均處理天數</th><th>最長</th></tr></thead><tbody>${cd.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.n}</td><td><b>${x.avg}</b> 天</td><td>${x.max} 天</td></tr>`).join('')}</tbody></table><div class="st-note">只算「追蹤開始」與「追蹤完成」都有填的案件；扣除週六日與國定假日，頭尾都算。</div>`:'<p class="sub">本期還沒有填好追蹤開始與完成日期的案件。</p>'}`})():''}
+  ${stK==='客訴'?(()=>{const cd=catDays(CASES.filter(x=>isLive(x)&&x.kind==='客訴'&&x.date>=rg.start&&x.date<=rg.end)),pcd=Object.fromEntries(catDays(CASES.filter(x=>isLive(x)&&x.kind==='客訴'&&x.date>=prg.start&&x.date<=prg.end)).map(x=>[x.name,x.avg]));return`<div class="st-sec">各異常類別平均處理天數（${esc(tw)}新增，追蹤工作天）</div>${cd.length?`<div class="st-scroll"><table class="st-table cdt"><thead><tr><th>異常類別</th><th>完成件數</th><th>平均天數</th><th>最長</th><th>與${pw}比較</th></tr></thead><tbody>${cd.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.n}</td><td><b>${x.avg}</b> 天</td><td>${x.max} 天</td><td>${dayChgHtml(x.avg,pcd[x.name],pw)}${pcd[x.name]!=null?`<span class="st-note" style="display:block;margin:0">${pw} ${pcd[x.name]} 天</span>`:''}</td></tr>`).join('')}</tbody></table></div><div class="st-note">只算「追蹤開始」與「追蹤完成」都有填的案件；扣除週六日與國定假日，頭尾都算。天數 ▲ 表示處理變慢、▼ 表示處理變快。</div>`:'<p class="sub">本期還沒有填好追蹤開始與完成日期的案件。</p>'}`})():''}
   ${stK==='客訴'?`<div class="st-sec st-secr"><span>權責單位件數（${esc(tw)}新增）</span><span>${topSel('r',c.resp.length)}</span></div>${c.resp.length?hb(c.resp.slice(0,stTop.r),t=>c.cs.filter(x=>respHas(x,t)),'權責單位：',pc.resp):'<p class="sub">尚無資料</p>'}<div class="st-note">一件有多個權責單位時，每個單位各算一次。</div>
   <div class="st-sec">人、機、料、法、環</div><div class="czrow"><div><div class="czh">原因分布（${esc(tw)}新增）</div>${pieSvg(CZ.concat('未填').map(k=>[k,c.causes[k]]),pc.causes,pw)}</div><div><div class="czh">趨勢（${trend}）</div>${lineSvg(CZ.map(k=>({name:k,vals:ser.map(x=>x.cz[k]),c:CZC[k],d:CZD[k]})),ser.map(x=>x.l),{base:CZ.map(k=>s0.cz[k]),pl:s0.l})}</div></div><div class="st-note">一件勾選多個原因時，每個原因各算一次。</div>`:''}
   <div class="st-sec">處理階段（${esc(tw)}新增）</div>
@@ -1772,8 +1776,8 @@ async function buildReport(){
   // 由多到少，0 件的不列；件數相同時照類別順序
   const ckOrd=k=>{const i=CATS.indexOf(k.split('-')[0]);return i<0?99:i},ckeys=Object.keys(byCat).filter(k=>byCat[k]>0).sort((a,b)=>byCat[b]-byCat[a]||ckOrd(a)-ckOrd(b)||a.localeCompare(b));
   body.push(ckeys.length?wtbl(['異常類別','件數','占比','較上期'],ckeys.map(k=>[k,String(byCat[k]||0),cur.length?Math.round((byCat[k]||0)*100/cur.length)+'%':'—',chg(byCat[k],pCat[k]).t]),[4400,1700,1700,1838]):wp('（本期無案件）',{sz:20}));
-  if(isC){const cd=catDays(cur);body.push(wp('各異常類別平均處理天數（追蹤工作天，扣除週六日與國定假日）',{b:1,sz:24,after:80}));
-    body.push(cd.length?wtbl(['異常類別','完成追蹤件數','平均處理天數','最長'],cd.map(x=>[x.name,String(x.n),x.avg+' 天',x.max+' 天']),[3600,2000,2200,1838]):wp('（本期還沒有填好追蹤開始與完成日期的案件）',{sz:20}))}
+  if(isC){const cd=catDays(cur),pcd=Object.fromEntries(catDays(prev).map(x=>[x.name,x.avg]));body.push(wp('各異常類別平均處理天數（追蹤工作天，扣除週六日與國定假日）',{b:1,sz:24,after:80}));
+    body.push(cd.length?wtbl(['異常類別','完成追蹤件數','平均處理天數','最長','較上期'],cd.map(x=>[x.name,String(x.n),x.avg+' 天',x.max+' 天',pcd[x.name]==null?'上期無資料':`${chg(x.avg,pcd[x.name]).t}（上期 ${pcd[x.name]} 天）`]),[2600,1500,1700,1300,2538]):wp('（本期還沒有填好追蹤開始與完成日期的案件）',{sz:20}))}
   body.push(wp('四、各處理階段件數',{b:1,sz:28,bd:1,after:120}));
   body.push(wtbl(['處理階段','件數'],stages.map(k=>[k,String(bySt[k]||0)]),[6400,3238]));
   // 排行：依統計頁目前選的「前幾名」與「異物合併／細分」
