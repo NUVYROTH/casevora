@@ -212,7 +212,18 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .age{font-size:12px;font-weight:700;color:#b42318;white-space:nowrap;align-self:center}
 .orow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;width:100%;text-align:left;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-top:8px;background:var(--card);font-weight:400}.orow b{font-size:15px}.orow .mt{font-size:12.5px;color:var(--mu)}.orow .age{margin-left:auto}
 .note{font-size:12px;color:var(--mu);margin:6px 0 0}
-.stctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 6px}.stctl .seg{margin:0}
+.stctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 6px}
+.stbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px 14px;border:1px solid var(--bd);border-radius:12px;background:var(--bg);margin:6px 0 12px}
+.seg.seg-sq{border-radius:8px;padding:0;gap:0;margin:0;overflow:hidden;border-color:#c9bda6;background:#fff}
+.seg.seg-sq button{border-radius:0;padding:9px 20px;border-right:1px solid #c9bda6;color:var(--tx);font-weight:500}
+.seg.seg-sq button:last-child{border-right:0}
+.seg.seg-sq button.on,.seg.seg-sq button.on:hover:not(:disabled){background:var(--ac)!important;color:var(--acx)!important}
+#sctl{display:flex;align-items:center;gap:10px;flex-wrap:nowrap;min-width:0;max-width:100%}
+#sctl .stsel{margin:0;flex-wrap:nowrap;min-width:0}
+@media(max-width:600px){#sctl{gap:6px;width:100%}#sctl .stsel{flex:1 1 0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px}#sctl .stsel select{min-width:0;width:100%;padding:8px 6px}.stnav{flex:none;width:38px}.stbar{padding:10px}}
+#sctl .stsel select{height:42px}@media(min-width:601px){#sctl .stsel select{min-width:116px}}
+.stnav{width:42px;height:42px;padding:0;border:1px solid #c9bda6;border-radius:8px;background:#fff;color:var(--tx);font-size:14px;line-height:1}
+.stnav:disabled{opacity:.35;cursor:not-allowed}.stctl .seg{margin:0}
 .stsel{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 6px}.stsel select{width:auto;min-width:96px;padding:8px 10px;border:1px solid #c9bda6;border-radius:6px;background:#fff;color:var(--tx);font-size:15px}
 .st-title{font-size:18px;margin:8px 0}
 .st-sum{border-radius:8px;padding:12px 14px;font-size:15.5px;font-weight:700;margin:6px 0 12px;line-height:1.55}.st-sum.ok{background:#e6f5ec;color:#0f5a2d}.st-sum.warn{background:#fff4e0;color:#7a3d06}
@@ -541,8 +552,8 @@ label b,.fsec b{color:#b42318}
 <div class="kpis" id="kpiS"></div>
 <div class="dgrid2"><div class="card">
 <h2 id="stitle">統計報表</h2>
-<div class="seg" role="group" aria-label="統計期間"><button type="button" data-m="Y">年度</button><button type="button" data-m="Q">每季</button><button type="button" data-m="M" class="on">每月</button></div>
-<div id="sctl"></div>
+<div id="skind"></div>
+<div class="stbar"><div class="seg seg-sq" role="group" aria-label="統計期間"><button type="button" data-m="Y">年度</button><button type="button" data-m="Q">每季</button><button type="button" data-m="M" class="on">每月</button></div><div id="sctl"></div></div>
 <div id="sbody"></div>
 <div class="row" style="margin-top:12px"><button class="pri" id="srep">⬇ 下載統計報告（Word）</button><span class="status" id="srepmsg" role="status"></span></div>
 <p class="sub" style="margin:6px 0 0">報告內容依目前選擇的分析類型、期間與客訴種類產生，包含趨勢圖、摘要與統計表，適合每月品質會議使用。</p>
@@ -1106,12 +1117,14 @@ function renderStats(){
   <div class="st-sec">處理階段（${esc(tw)}新增）</div>
   <table class="st-table"><thead><tr><th>處理階段</th><th>件數</th></tr></thead><tbody>${c.stages.map(([k,n])=>`<tr><td>${esc(k)}</td><td><b>${n}</b></td></tr>`).join('')}</tbody></table>
   <p class="sh st-sec">趨勢（${trend}）</p>${lineSvg([{name:'新增件數',vals:ser.map(x=>x.t),c:'#16213a'},{name:'其中未結案',vals:ser.map(x=>x.o),c:'#c0392b',d:'7 4'}],ser.map(x=>x.l),{pct:0,base:[s0.t,s0.o],pl:s0.l})}<div class="st-note">折線圖下方的 ▲▼ 是「新增件數」和前一期比較的升降幅度；▲ 上升、▼ 下降。件數少時百分比變化會比較大，請和件數一起看。</div>`;
- $('stitle').textContent='統計報表';$('sctl').innerHTML=`<div class="stctl">${kb}</div><div class="stsel">${sel}</div>`;$('sbody').innerHTML=h;
+ const nx=stShift(mode,cur.y,cur.a,1),px=stShift(mode,cur.y,cur.a,-1);
+ $('stitle').textContent='統計報表';$('skind').innerHTML=`<div class="stctl">${kb}</div>`;$('sctl').innerHTML=`<button type="button" class="stnav" data-nav="-1" aria-label="上一期" title="上一期"${Y.includes(px.y)?'':' disabled'}>◀</button><div class="stsel">${sel}</div><button type="button" class="stnav" data-nav="1" aria-label="下一期" title="下一期"${Y.includes(nx.y)?'':' disabled'}>▶</button>`;$('sbody').innerHTML=h;
 }
 $('sbody').addEventListener('change',e=>{const t=e.target.closest('select[data-top]');if(t){stTop[t.dataset.top]=+t.value;renderStats()}});
 $('sbody').addEventListener('click',e=>{const b=e.target.closest('button[data-cm]');if(b){stCatMode=b.dataset.cm;renderStats()}});
 $('sctl').addEventListener('change',e=>{const t=e.target,v=+t.value;if(t.id==='sY')stYear=v;else if(t.id==='sMon')stMon=v;else if(t.id==='sQY')stQY=v;else if(t.id==='sQ')stQ=v;else if(t.id==='sMY')stMY=v;else if(t.id==='sM')stM=v;renderStats()});
-$('sctl').addEventListener('click',e=>{const k=e.target.closest('button[data-k]');if(k){stK=k.dataset.k;renderStats();renderDash();return}const b=e.target.closest('button[data-ch]');if(b){stChart=b.dataset.ch;renderStats()}});
+$('sctl').addEventListener('click',e=>{const v=e.target.closest('button[data-nav]');if(!v)return;const c=stCur(),n=stShift(mode,c.y,c.a,+v.dataset.nav);if(mode==='M'){stMY=n.y;stM=n.a}else if(mode==='Q'){stQY=n.y;stQ=n.a}else stYear=n.y;renderStats()});
+$('skind').addEventListener('click',e=>{const k=e.target.closest('button[data-k]');if(k){stK=k.dataset.k;renderStats();renderDash();return}const b=e.target.closest('button[data-ch]');if(b){stChart=b.dataset.ch;renderStats()}});
 function clip15(t){t=String(t||'').trim();const g=typeof Intl!=='undefined'&&Intl.Segmenter?[...new Intl.Segmenter('zh',{granularity:'grapheme'}).segment(t)].map(x=>x.segment):Array.from(t);return g.length>15?g.slice(0,15).join('')+'…':t}
 function renderTrash(kind,elId){
   const el=$(elId),rows=CASES.filter(c=>c.deleted&&!c.purged&&c.kind===kind).sort((a,b)=>String(b.deletedAt||'').localeCompare(String(a.deletedAt||'')));
