@@ -230,6 +230,23 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .st-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:8px}
 .st-tile{border:1px solid var(--bd);border-radius:10px;padding:12px 8px;text-align:center;background:#fff}.st-tile .n{font-size:32px;font-weight:800;line-height:1.1}.st-tile .l{font-size:14px;font-weight:700;margin-top:4px}.st-tile .d{font-size:12px;color:var(--mu);margin-top:2px}
 .st-tile.t-done .n{color:#167a3e}.st-tile.t-open .n{color:#1d4f91}.st-tile.t-over{border-color:#e7b4ae;background:#fdecea}.st-tile.t-over .n{color:#b42318}
+.chg.good{color:#167a3e}.chg.bad{color:#b42318}
+.aseg{flex-wrap:wrap;margin:2px 0 10px}
+.aform{display:grid;grid-template-columns:150px minmax(130px,1.3fr) 96px 96px minmax(120px,1fr) auto;gap:8px 10px;align-items:end}
+.aform label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--mu)}
+.aform input{width:100%;min-width:0}
+.abtn{display:flex;gap:6px}.abtn button{height:42px;padding:0 18px}
+.achips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 4px}
+.achips button{border:1px solid #c9bda6;border-radius:999px;padding:5px 12px;background:#fff;font-size:13px}
+.atbl .acat{font-size:13px;color:var(--mu)}.atbl .aact{white-space:nowrap}.atbl .aact button{padding:4px 10px;font-size:13px;margin-right:4px}
+.atbl td:not(:first-child):not(.acat){white-space:nowrap}
+.acat2{display:none;font-size:12px;color:var(--mu);margin-top:2px}
+.atbl tr.atot td{font-weight:700;background:#f7f1e6}.atbl tr.aon td{background:#fff6df}
+.adet{margin:12px 0 4px}.adet summary{cursor:pointer;font-weight:700;padding:6px 0}
+.aimp{border-color:var(--gold)}.aimp ul{margin:6px 0 6px 18px}
+.actl{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}.actl .stsel{margin:0;flex-wrap:nowrap}.actl .stsel select{height:42px}
+@media(min-width:601px){.actl .stsel select{min-width:116px}}
+@media(max-width:600px){.atbl .acat{display:none}.acat2{display:block}.atbl th,.atbl td{padding:7px 5px;font-size:13px}.atbl .chg{font-size:11.5px}.aseg{display:grid;grid-template-columns:1fr 1fr}.aseg button{border-right:0!important;border-bottom:1px solid #c9bda6}.aform{grid-template-columns:1fr 1fr}.aform .anote,.aform .abtn{grid-column:1/-1}.abtn button{flex:1}.actl{width:100%;gap:6px}.actl .stsel{flex:1 1 0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px}.actl .stsel select{min-width:0;width:100%;padding:8px 6px}}
 .st-note{font-size:12px;color:var(--mu);margin:2px 0 10px}
 .st-extra{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}.st-extra .box{flex:1 1 220px;border:2px dashed #e7b4ae;border-radius:10px;padding:10px 14px;background:#fff}.st-extra .box.del{border-color:var(--bd)}.st-extra .n{font-size:26px;font-weight:800;color:#b42318}.st-extra .del .n{color:var(--tx)}.st-extra .l{font-weight:700}
 .st-sec{margin:18px 0 6px;font-size:15.5px;font-weight:700;border-left:4px solid var(--ac);padding-left:8px}p.st-sec{margin:18px 0 6px}
@@ -297,7 +314,7 @@ label b,.fsec b{color:#b42318}
 </div></header>
 <div class="wrap">
 <div class="shell">
-<nav class="side" aria-label="頁面選單"><div class="sbrand"><img id="sideLogo" alt="Casevoras 標誌" width="44" height="44"><div><div class="sbn">Casevoras</div><div class="sbs">FOOD QUALITY TOOLS</div></div></div><div class="slab">工作台 WORKSPACE</div><div class="tabs"><button class="on" data-t="A"><span class="ic">📋</span>客訴清單</button><button data-t="B"><span class="ic">🚚</span>供應商客訴清單</button><button data-t="S"><span class="ic">📊</span>統計分析</button><button data-t="O"><span class="ic">⚙️</span>常用選項</button></div><button type="button" id="sideTrash"><span class="ic">🗑️</span>最近刪除</button><button type="button" id="sideHelp"><span class="ic">？</span>使用說明</button><div class="sfoot"><b>CASEVORAS COMPLAINT</b><br>個人工作站・本機資料模式<br>v16</div></nav>
+<nav class="side" aria-label="頁面選單"><div class="sbrand"><img id="sideLogo" alt="Casevoras 標誌" width="44" height="44"><div><div class="sbn">Casevoras</div><div class="sbs">FOOD QUALITY TOOLS</div></div></div><div class="slab">工作台 WORKSPACE</div><div class="tabs"><button class="on" data-t="A"><span class="ic">📋</span>客訴清單</button><button data-t="B"><span class="ic">🚚</span>供應商客訴清單</button><button data-t="S"><span class="ic">📊</span>統計分析</button><button data-t="R"><span class="ic">✅</span>供應商驗收</button><button data-t="O"><span class="ic">⚙️</span>常用選項</button></div><button type="button" id="sideTrash"><span class="ic">🗑️</span>最近刪除</button><button type="button" id="sideHelp"><span class="ic">？</span>使用說明</button><div class="sfoot"><b>CASEVORAS COMPLAINT</b><br>個人工作站・本機資料模式<br>v16</div></nav>
 <div class="mainc">
 <div class="crumb"><span>Casevoras / <b id="crumbNow">客訴清單</b></span><span class="lbadge">● 本機資料模式</span></div>
 <div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" id="openGuide">查看使用說明</button></div>
@@ -544,6 +561,7 @@ label b,.fsec b{color:#b42318}
 </div>
 
 <div id="tabO" hidden></div>
+<div id="tabR" hidden></div>
 <div id="tabS" hidden>
 <div class="hcard"><div class="hc-top"><div class="ptitle"><h1>統計分析</h1><div class="eyebrow">QUALITY ANALYTICS</div><span>客訴依月／季／年統計，只呈現件數分布，不代表原因或責任判定。</span></div><span class="lbadge">● 本機資料模式</span></div>
 <div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
@@ -797,8 +815,178 @@ async function restore(text){
 // ---- 分頁 ----
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  const t=b.dataset.t;$('tabA').hidden=t!=='A';$('tabB').hidden=t!=='B';$('tabS').hidden=t!=='S';$('tabO').hidden=t!=='O';if(t==='O')renderOpts();if(t==='A'||t==='B')placeTools(t);if(t==='S'){resetSt();syncSeg();renderS()}
+  const t=b.dataset.t;$('tabA').hidden=t!=='A';$('tabB').hidden=t!=='B';$('tabS').hidden=t!=='S';$('tabO').hidden=t!=='O';$('tabR').hidden=t!=='R';if(t==='R')renderAcc();if(t==='O')renderOpts();if(t==='A'||t==='B')placeTools(t);if(t==='S'){resetSt();syncSeg();renderS()}
 });
+
+// ---- 供應商驗收：每天每家廠商「合格幾件、不合格幾件」，算合格率（資料只存在此裝置此瀏覽器）----
+const KEY_A='casevoras_accept',ACATS=['非退水主原料','蔬菜副原料(冷凍)','蔬菜副原料(非冷凍)','香料','調味料'];
+const aId=()=>'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const aNorm=r=>{r=r||{};return{...r,id:String(r.id||aId()),date:String(r.date||'').slice(0,10),cat:String(r.cat||''),ven:String(r.ven||'').trim(),ok:Math.max(0,Math.round(+r.ok||0)),ng:Math.max(0,Math.round(+r.ng||0)),note:String(r.note||''),src:r.src==='xlsx'?'xlsx':'manual'}};
+let ACC=(()=>{try{const a=JSON.parse(localStorage.getItem(KEY_A)||'[]');return Array.isArray(a)?a.map(aNorm).filter(r=>/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&r.ven):[]}catch(_){return[]}})();
+const saveAcc=()=>{try{localStorage.setItem(KEY_A,JSON.stringify(ACC));return true}catch(_){return false}};
+let aMode='M',aY=new Date().getFullYear(),aA=new Date().getMonth()+1,aCat=ACATS[0],aEdit=null,aDel=null,aMsg='',aVF='',aAll=false,aImp=null,aDate='';
+const aKey=s=>String(s||'').replace(/\s+/g,'').replace(/（/g,'(').replace(/）/g,')');
+const aRate=(ok,ng)=>ok+ng?ok/(ok+ng)*100:null;
+// 合格率四捨五入到小數 1 位；沒到 100% 的最多顯示 99.9%，避免看起來像全部合格
+const aR=r=>r==null?null:r>=100?100:Math.min(99.9,Math.round(r*10)/10);
+const aFmt=r=>r==null?'—':aR(r)>=100?'100%':aR(r).toFixed(1)+'%';
+// 合格率的升降用「百分點」：98.0% → 99.0% 是 ▲ 1.0 百分點；合格率上升是好事（綠），下降（紅）
+function aPP(cur,prev,pw){if(cur==null)return'<span class="chg flat">—</span>';if(prev==null)return`<span class="chg flat" title="${esc(pw)}沒有驗收資料">上期無資料</span>`;
+  const d=Math.round((aR(cur)-aR(prev))*10)/10;return d>0?`<span class="chg good" title="${esc(pw)} ${aFmt(prev)} → 本期 ${aFmt(cur)}">▲ ${d.toFixed(1)} 百分點</span>`:d<0?`<span class="chg bad" title="${esc(pw)} ${aFmt(prev)} → 本期 ${aFmt(cur)}">▼ ${(-d).toFixed(1)} 百分點</span>`:`<span class="chg flat" title="${esc(pw)} ${aFmt(prev)}">持平</span>`}
+const aPPt=(cur,prev)=>cur==null?'—':prev==null?'上期無資料':(d=>d>0?'▲ '+d.toFixed(1)+' 百分點':d<0?'▼ '+(-d).toFixed(1)+' 百分點':'持平')(Math.round((aR(cur)-aR(prev))*10)/10);
+// 件數升降：一般的 ▲▼%（不分好壞，用灰色）
+const aCnt=(cur,prev,pw)=>{const x=chg(cur,prev);return`<span class="chg flat" title="${esc(pw)} ${prev||0} 件 → 本期 ${cur} 件">${x.t}</span>`};
+function aStat(rg){const rows=ACC.filter(r=>r.date>=rg.start&&r.date<=rg.end),o={rows,ok:0,ng:0,cat:new Map(),ven:new Map()};
+  rows.forEach(r=>{o.ok+=r.ok;o.ng+=r.ng;const c=o.cat.get(r.cat)||{ok:0,ng:0};c.ok+=r.ok;c.ng+=r.ng;o.cat.set(r.cat,c);
+    const v=o.ven.get(r.ven)||{ok:0,ng:0,cats:new Set()};v.ok+=r.ok;v.ng+=r.ng;v.cats.add(r.cat);o.ven.set(r.ven,v)});
+  o.n=o.ok+o.ng;o.rate=aRate(o.ok,o.ng);return o}
+const aCatsAll=()=>ACATS.concat([...new Set(ACC.map(r=>r.cat))].filter(c=>c&&!ACATS.includes(c)));
+// 常用廠商：依這個分類累計件數由多到少（匯入表 1 後就有）
+function aVens(cat){const m=new Map();ACC.forEach(r=>{if(!cat||r.cat===cat)m.set(r.ven,(m.get(r.ven)||0)+r.ok+r.ng+1)});return[...m.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(x=>x[0])}
+function aLine(pts){const vs=pts.map(p=>p.rate).filter(v=>v!=null);if(!vs.length)return'<p class="sub">這段期間沒有驗收資料。</p>';
+  const W=600,H=246,L=48,R=18,T=22,B=52,n=pts.length,mn=Math.min(...vs),lo=[96,92,80,60,0].find(v=>v<=mn-0.5)??0,hi=100,st=(hi-lo)/4;
+  const X=i=>n===1?(L+W-R)/2:L+i*(W-L-R)/(n-1),Y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));let g='';
+  for(let k=0;k<=4;k++){const v=lo+st*k;g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--bd)"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="var(--mu)">${Math.round(v*10)/10}%</text>`}
+  const segs=[];let cur=[];pts.forEach((p,i)=>{if(p.rate==null){if(cur.length)segs.push(cur);cur=[]}else cur.push(X(i)+','+Y(p.rate))});if(cur.length)segs.push(cur);
+  g+=segs.map(s=>s.length>1?`<polyline points="${s.join(' ')}" fill="none" stroke="#1e8a6e" stroke-width="2.5" stroke-linejoin="round"/>`:'').join('');
+  const CC={good:'#167a3e',bad:'#b42318',flat:'#6b7280'};
+  pts.forEach((p,i)=>{g+=`<text x="${X(i)}" y="${H-B+18}" text-anchor="middle" font-size="11" fill="var(--mu)">${esc(p.l)}</text>`;if(p.rate==null)return;
+    g+=`<circle cx="${X(i)}" cy="${Y(p.rate)}" r="4" fill="#1e8a6e"><title>${esc(p.l)}：合格率 ${aFmt(p.rate)}（${p.n} 件，不合格 ${p.ng} 件）</title></circle><text x="${X(i)}" y="${Y(p.rate)-9}" text-anchor="middle" font-size="11" fill="var(--tx)">${aFmt(p.rate)}</text>`;
+    const pv=i?pts[i-1].rate:p.base;if(pv==null)return;const d=Math.round((aR(p.rate)-aR(pv))*10)/10,c=d>0?'good':d<0?'bad':'flat';
+    g+=`<text x="${X(i)}" y="${H-12}" text-anchor="middle" font-size="10.5" font-weight="700" fill="${CC[c]}">${d>0?'▲ '+d.toFixed(1):d<0?'▼ '+(-d).toFixed(1):'持平'}</text>`});
+  return`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;max-width:640px" role="img" aria-label="合格率趨勢折線圖">${g}</svg>`}
+function renderAcc(){
+  const el=$('tabR');if(!el)return;const cy=now.getFullYear(),Ys=[...new Set([...Array(10)].map((_,i)=>cy-i).concat(ACC.map(r=>+r.date.slice(0,4))))].sort((a,b)=>b-a);
+  if(!Ys.includes(aY))aY=cy;
+  const rg=stRange(aMode,aY,aA),pv=stShift(aMode,aY,aA,-1),prg=stRange(aMode,pv.y,pv.a),S=aStat(rg),P=aStat(prg);
+  const pw=aMode==='M'?'上月':aMode==='Q'?'上季':'去年',tw=aMode==='M'?`${aA} 月`:aMode==='Q'?`第 ${aA} 季`:`${aY} 年`;
+  const opt=(arr,sel,suf,lab=v=>v)=>arr.map(v=>`<option value="${v}"${v===sel?' selected':''}>${lab(v)}${suf}</option>`).join('');
+  const nx=stShift(aMode,aY,aA,1),px=pv,canN=Ys.includes(nx.y),canP=Ys.includes(px.y);
+  const sel=`<select id="aY" aria-label="年度">${opt(Ys,aY,' 年')}</select>`+(aMode==='M'?`<select id="aA" aria-label="月">${opt([1,2,3,4,5,6,7,8,9,10,11,12],aA,' 月')}</select>`:aMode==='Q'?`<select id="aA" aria-label="季">${opt([1,2,3,4],aA,' 季',v=>'第 '+v)}</select>`:'');
+  const today=todayLocal(),vens=aVens(aCat),ed=aEdit?ACC.find(r=>r.id===aEdit):null,f=ed||{date:aDate||today,ven:'',ok:1,ng:0,note:''};
+  // 1. 各分類
+  const cats=aCatsAll().filter(c=>ACATS.includes(c)||S.cat.has(c)||P.cat.has(c));
+  const catRows=cats.map(c=>{const s=S.cat.get(c)||{ok:0,ng:0},p=P.cat.get(c)||{ok:0,ng:0};return`<tr><td>${esc(c)}</td><td>${s.ok+s.ng}</td><td>${s.ng?`<b style="color:#b42318">${s.ng}</b>`:'0'}</td><td><b>${aFmt(aRate(s.ok,s.ng))}</b></td><td>${aPP(aRate(s.ok,s.ng),aRate(p.ok,p.ng),pw)}</td></tr>`}).join('');
+  // 2. 各廠商
+  const vf=aVF&&cats.includes(aVF)?aVF:'';const vs=new Map(),vp=new Map();
+  S.rows.filter(r=>!vf||r.cat===vf).forEach(r=>{const v=vs.get(r.ven)||{ok:0,ng:0,cats:new Set()};v.ok+=r.ok;v.ng+=r.ng;v.cats.add(r.cat);vs.set(r.ven,v)});
+  P.rows.filter(r=>!vf||r.cat===vf).forEach(r=>{const v=vp.get(r.ven)||{ok:0,ng:0};v.ok+=r.ok;v.ng+=r.ng;vp.set(r.ven,v)});
+  const venL=[...vs.entries()].map(([k,v])=>({k,...v,n:v.ok+v.ng,rate:aRate(v.ok,v.ng)})).sort((a,b)=>a.rate-b.rate||b.n-a.n||a.k.localeCompare(b.k));
+  const venShow=aAll?venL:venL.slice(0,15);
+  const venRows=venShow.map(v=>{const p=vp.get(v.k);return`<tr><td>${esc(v.k)}<div class="acat2">${esc([...v.cats].join('、'))}</div></td><td class="acat">${esc([...v.cats].join('、'))}</td><td>${v.n}</td><td>${v.ng?`<b style="color:#b42318">${v.ng}</b>`:'0'}</td><td><b${v.rate<100?' style="color:#b42318"':''}>${aFmt(v.rate)}</b></td><td>${aPP(v.rate,p?aRate(p.ok,p.ng):null,pw)}</td></tr>`}).join('');
+  // 3. 不合格（未達 100%）
+  const bad=[...S.ven.entries()].map(([k,v])=>({k,...v,n:v.ok+v.ng,rate:aRate(v.ok,v.ng)})).filter(v=>v.ng>0).sort((a,b)=>a.rate-b.rate||b.ng-a.ng);
+  const badRec=S.rows.filter(r=>r.ng>0).sort((a,b)=>b.date.localeCompare(a.date));
+  // 4. 趨勢
+  const N=aMode==='M'?12:aMode==='Q'?4:5,pts=[...Array(N+1)].map((_,i)=>{const q=stShift(aMode,aY,aA,i-N),r=stRange(aMode,q.y,q.a),s=aStat(r);return{l:r.short,rate:s.rate,n:s.n,ng:s.ng}});
+  const tp=pts.slice(1);tp[0].base=pts[0].rate;
+  const recent=[...ACC].filter(r=>r.date>=rg.start&&r.date<=rg.end).sort((a,b)=>b.date.localeCompare(a.date)||String(b.id).localeCompare(String(a.id)));
+  const recRow=r=>`<tr${aEdit===r.id?' class="aon"':''}><td>${esc(r.date)}</td><td class="acat">${esc(r.cat)}</td><td>${esc(r.ven)}<div class="acat2">${esc(r.cat)}</div></td><td>${r.ok}</td><td>${r.ng?`<b style="color:#b42318">${r.ng}</b>`:'0'}</td><td class="acat">${esc(r.note)}</td><td class="aact">${aDel===r.id?`<span class="stc">確定刪除？<button class="pri" data-ad="ok" data-id="${esc(r.id)}">確定</button><button data-ad="no">取消</button></span>`:`<button data-ae="${esc(r.id)}">編輯</button><button data-ad="ask" data-id="${esc(r.id)}">刪除</button>`}</td></tr>`;
+  const head='<thead><tr><th>到貨日期</th><th class="acat">分類</th><th>廠商</th><th>合格</th><th>不合格</th><th>備註</th><th></th></tr></thead>';
+  const sum=S.n?`${tw}驗收 ${S.n} 件，合格 ${S.ok} 件、不合格 ${S.ng} 件，合格率 ${aFmt(S.rate)}${P.n?`（${pw} ${aFmt(P.rate)}，${aPPt(S.rate,P.rate)}）`:''}${bad.length?`；未達 100% 的廠商 ${bad.length} 家。`:'；所有廠商都 100% 合格。'}`:`${rg.label}：還沒有驗收資料`;
+  el.innerHTML=`<div class="hcard"><div class="hc-top"><div class="ptitle"><h1>供應商驗收</h1><div class="eyebrow">SUPPLIER ACCEPTANCE</div><span>每天輸入各廠商到貨的合格、不合格件數，自動算出各分類、各廠商的合格率，並和上期比較。</span></div><span class="lbadge">● 本機資料模式</span></div>
+<div class="alert alert1" role="note"><span class="atag">重要</span><div class="a1">本機儲存 · 僅在此裝置此瀏覽器有效 · 請勿用無痕視窗 · 定期下載備份</div><button class="alink" data-og="1">查看使用說明</button></div>
+<div class="hc-bot"><div class="hcrumb">Casevoras / <b>供應商驗收</b></div><div class="pact"><span class="status" id="aRepMsg" role="status"></span><button type="button" id="aImpBtn">匯入 Excel</button><button type="button" class="pri" id="aRep">⬇ 下載驗收報告（Word）</button></div></div></div>
+<input type="file" id="aImpF" accept=".xlsx,.xls" multiple hidden>
+${aImp?`<div class="card aimp"><h2>匯入確認</h2>${aImp.html}<div class="row" style="margin-top:10px">${aImp.ok?'<button class="pri" data-ai="ok">確定匯入</button>':''}<button data-ai="no">${aImp.ok?'取消':'關閉'}</button></div></div>`:''}
+<div class="card"><h2>${ed?'編輯驗收紀錄':'快速新增'}</h2>
+<div class="seg seg-sq aseg" role="group" aria-label="分類">${aCatsAll().filter(c=>ACATS.includes(c)||(ed&&ed.cat===c)).map(c=>`<button type="button" data-ac="${esc(c)}" class="${(ed?ed.cat:aCat)===c?'on':''}">${esc(c)}</button>`).join('')}</div>
+<div class="aform"><label>到貨日期<input type="date" id="a_date" value="${esc(f.date)}"></label><label>廠商<input id="a_ven" list="a_vl" value="${esc(f.ven)}" placeholder="選或打字" autocomplete="off"></label><datalist id="a_vl">${vens.map(v=>`<option value="${esc(v)}">`).join('')}</datalist>
+<label>合格件數<input type="number" id="a_ok" min="0" inputmode="numeric" value="${f.ok}"></label><label>不合格件數<input type="number" id="a_ng" min="0" inputmode="numeric" value="${f.ng}"></label><label class="anote">備註<input id="a_note" value="${esc(f.note)}" placeholder="不合格原因等"></label>
+<div class="abtn"><button class="pri" id="a_add">${ed?'儲存修改':'新增'}</button>${ed?'<button id="a_cancel">取消</button>':''}</div></div>
+${vens.length?`<div class="achips"><span class="st-note" style="margin:0">常用廠商（${esc(ed?ed.cat:aCat)}）：</span>${vens.slice(0,12).map(v=>`<button type="button" data-av="${esc(v)}">${esc(v)}</button>`).join('')}</div>`:`<p class="sub" style="margin:6px 0 0">還沒有常用廠商：按上方「匯入 Excel」選驗收紀錄表（表 1），就會依各分類常用程度自動排好；也可以直接打字。</p>`}
+<div class="status" role="status" id="aMsg">${esc(aMsg)}</div>
+<div class="st-note">按 Enter 直接新增；新增後日期、分類保留，游標回到「廠商」，可以接著輸入下一家。</div></div>
+<div class="card"><h2>驗收合格率統計</h2>
+<div class="stbar"><div class="seg seg-sq" role="group" aria-label="統計期間"><button type="button" data-am="Y" class="${aMode==='Y'?'on':''}">年度</button><button type="button" data-am="Q" class="${aMode==='Q'?'on':''}">每季</button><button type="button" data-am="M" class="${aMode==='M'?'on':''}">每月</button></div><div id="actl" class="actl"><button type="button" class="stnav" data-an="-1" aria-label="上一期"${canP?'':' disabled'}>◀</button><div class="stsel">${sel}</div><button type="button" class="stnav" data-an="1" aria-label="下一期"${canN?'':' disabled'}>▶</button></div></div>
+<h3 class="st-title">${esc(rg.label)}</h3>
+<div class="st-sum ${S.ng?'warn':'ok'}">${esc(sum)}</div>
+<div class="st-tiles"><div class="st-tile"><div class="n">${aFmt(S.rate)}</div><div class="l">合格率</div><div class="d">${pw} ${aFmt(P.rate)}・${aPP(S.rate,P.rate,pw)}</div></div>
+<div class="st-tile"><div class="n">${S.n}</div><div class="l">驗收件數</div><div class="d">${pw} ${P.n} 件・${aCnt(S.n,P.n,pw)}</div></div>
+<div class="st-tile t-done"><div class="n">${S.ok}</div><div class="l">合格</div><div class="d">${pw} ${P.ok} 件</div></div>
+<div class="st-tile ${S.ng?'t-over':''}"><div class="n">${S.ng}</div><div class="l">不合格</div><div class="d">${pw} ${P.ng} 件・${aCnt(S.ng,P.ng,pw)}</div></div></div>
+<div class="st-note">合格率 ＝ 合格件數 ÷（合格 ＋ 不合格）。合格率的升降用「百分點」表示，例如 98.0% → 99.0% 是 ▲ 1.0 百分點；▲ 綠色＝變好、▼ 紅色＝變差。</div>
+<div class="st-sec">1. 全部分類合格率（${esc(tw)}）</div>
+<div class="st-scroll"><table class="st-table atbl"><thead><tr><th>分類</th><th>件數</th><th>不合格</th><th>合格率</th><th>與${pw}比較</th></tr></thead><tbody>${catRows}<tr class="atot"><td>全部分類合計</td><td>${S.n}</td><td>${S.ng}</td><td>${aFmt(S.rate)}</td><td>${aPP(S.rate,P.rate,pw)}</td></tr></tbody></table></div>
+<div class="st-sec st-secr"><span>2. 各廠商合格率（由低到高）</span><span><select id="aVF" class="topsel" aria-label="分類篩選"><option value="">全部分類</option>${cats.map(c=>`<option value="${esc(c)}"${vf===c?' selected':''}>${esc(c)}</option>`).join('')}</select><span class="st-note" style="margin:0 0 0 8px">共 ${venL.length} 家</span></span></div>
+${venL.length?`<div class="st-scroll"><table class="st-table atbl"><thead><tr><th>廠商</th><th class="acat">分類</th><th>件數</th><th>不合格</th><th>合格率</th><th>與${pw}比較</th></tr></thead><tbody>${venRows}</tbody></table></div>${venL.length>15?`<button type="button" data-aall="1" style="margin-top:6px">${aAll?'只看前 15 家':`顯示全部 ${venL.length} 家`}</button>`:''}`:'<p class="sub">這段期間沒有驗收資料。</p>'}
+<div class="st-sec">3. 不合格：合格率未達 100% 的廠商</div>
+${bad.length?`<div class="st-scroll"><table class="st-table atbl"><thead><tr><th>廠商</th><th class="acat">分類</th><th>件數</th><th>不合格</th><th>合格率</th></tr></thead><tbody>${bad.map(v=>`<tr><td>${esc(v.k)}<div class="acat2">${esc([...v.cats].join('、'))}</div></td><td class="acat">${esc([...v.cats].join('、'))}</td><td>${v.n}</td><td><b style="color:#b42318">${v.ng}</b></td><td><b style="color:#b42318">${aFmt(v.rate)}</b></td></tr>`).join('')}</tbody></table></div>
+<details class="adet"><summary>不合格明細（${badRec.length} 筆）</summary><div class="st-scroll"><table class="st-table atbl">${head}<tbody>${badRec.map(recRow).join('')}</tbody></table></div></details>`:`<p class="sub">${S.n?'這段期間所有廠商都 100% 合格。':'這段期間沒有驗收資料。'}</p>`}
+<div class="st-sec">4. 合格率趨勢（${aMode==='M'?'最近 12 個月':aMode==='Q'?'最近 4 季':'最近 5 年'}）</div>${aLine(tp)}<div class="st-note">圖下方的 ▲▼ 是和前一期比較的百分點變化。</div>
+<details class="adet"${recent.length&&recent.length<=30?' open':''}><summary>本期驗收紀錄（${recent.length} 筆，可編輯、刪除）</summary>${recent.length?`<div class="st-scroll"><table class="st-table atbl">${head}<tbody>${recent.map(recRow).join('')}</tbody></table></div>`:'<p class="sub">沒有紀錄。</p>'}</details>
+</div>`;
+}
+function aSay(t){aMsg=t;const m=$('aMsg');if(m)m.textContent=t}
+function aSubmit(){const d=$('a_date').value,v=$('a_ven').value.trim(),ok=$('a_ok').value===''?0:+$('a_ok').value,ng=$('a_ng').value===''?0:+$('a_ng').value,note=$('a_note').value.trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return aSay('請填到貨日期。');if(!v){aSay('請選或輸入廠商。');$('a_ven').focus();return}
+  if(!(Number.isInteger(ok)&&Number.isInteger(ng)&&ok>=0&&ng>=0))return aSay('件數請填 0 以上的整數。');if(ok+ng===0)return aSay('合格與不合格件數不能都是 0。');
+  if(aEdit){const r=ACC.find(x=>x.id===aEdit);if(r){Object.assign(r,{date:d,ven:v,ok,ng,note,cat:r.cat})}aEdit=null}
+  else ACC.push(aNorm({date:d,cat:aCat,ven:v,ok,ng,note,src:'manual'}));
+  aDate=d;if(!saveAcc()){aSay('存不進去，瀏覽器的儲存空間可能已滿。');return}
+  const msg=`已存：${d}　${v}　合格 ${ok}、不合格 ${ng}`;aMsg=msg;renderAcc();const vi=$('a_ven');if(vi)vi.focus()}
+// 匯入：表 1（逐批明細，依「判定結果」）或表 2（合格件數／不合格件數），分頁名稱對應分類
+function aParse(files){const add=new Map(),skip=[],per=[];let rows=0;
+  files.forEach(f=>f.sheets.forEach(({name,aoa})=>{const cat=ACATS.find(c=>aKey(c)===aKey(name));if(!cat){skip.push(f.name+'／'+name);return}
+    let hi=-1,H=[];for(let i=0;i<Math.min(6,aoa.length);i++){const h=aoa[i].map(x=>aKey(x));if(h.includes('廠商')){hi=i;H=h;break}}
+    if(hi<0){skip.push(f.name+'／'+name+'（找不到「廠商」欄）');return}
+    const di=H.findIndex(h=>h.includes('日期')),vi=H.indexOf('廠商'),ri=H.findIndex(h=>h==='判定結果'||h==='合格'||h==='判定'),oi=H.findIndex(h=>h.includes('合格件數')&&!h.includes('不合格')),ni=H.findIndex(h=>h.includes('不合格件數')),bi=H.indexOf('備註');
+    if(di<0||(ri<0&&oi<0)){skip.push(f.name+'／'+name+'（找不到日期或判定欄）');return}let k=0;
+    for(const r of aoa.slice(hi+1)){const d=xDate(r[di]),v=String(r[vi]==null?'':r[vi]).trim();if(!d||!v)continue;let ok=0,ng=0;
+      if(oi>=0){ok=Math.max(0,Math.round(+r[oi]||0));ng=ni>=0?Math.max(0,Math.round(+r[ni]||0)):0}else{const t=String(r[ri]||'');if(t.includes('不合格'))ng=1;else if(t.includes('合格'))ok=1;else continue}
+      if(!ok&&!ng)continue;const key=d+'|'+cat+'|'+v,o=add.get(key)||{date:d,cat,ven:v,ok:0,ng:0,note:'',src:'xlsx'};o.ok+=ok;o.ng+=ng;const nt=bi>=0?String(r[bi]||'').trim():'';if(nt&&!o.note.includes(nt))o.note=(o.note?o.note+'；':'')+nt;add.set(key,o);k++;rows++}
+    per.push(`${f.name}／${name}：${k} 筆`)}));
+  return{list:[...add.values()],skip,per,rows}}
+async function aImport(fs){aSay('讀取 Excel 中…');try{await loadXlsx()}catch(_){aSay('無法載入讀取 Excel 的程式（需要網路連線），請稍後再試');return}
+  const files=[];for(const f of fs){try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});files.push({name:f.name,sheets:wb.SheetNames.map(n=>({name:n,aoa:XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''})}))})}catch(_){aSay('讀不到「'+f.name+'」，請確認是 Excel 檔（.xlsx）');return}}
+  const p=aParse(files),keys=new Set(ACC.map(r=>r.date+'|'+r.cat+'|'+r.ven)),upd=p.list.filter(x=>keys.has(x.date+'|'+x.cat+'|'+x.ven)).length,ok=p.list.reduce((a,x)=>a+x.ok,0),ng=p.list.reduce((a,x)=>a+x.ng,0);
+  const byC=ACATS.map(c=>{const a=p.list.filter(x=>x.cat===c);return a.length?`<li>${esc(c)}：${a.reduce((s,x)=>s+x.ok+x.ng,0)} 件（不合格 ${a.reduce((s,x)=>s+x.ng,0)}）、${new Set(a.map(x=>x.ven)).size} 家廠商</li>`:''}).join('');
+  aImp={list:p.list,ok:p.list.length>0,html:p.list.length?`<p>讀到 <b>${ok+ng}</b> 件（合格 ${ok}、不合格 ${ng}），整理成 ${p.list.length} 筆「日期＋分類＋廠商」紀錄：</p><ul>${byC}</ul>${upd?`<p class="st-note">其中 ${upd} 筆和已有紀錄的日期、分類、廠商都相同，會用 Excel 的數字<b>取代</b>（不會重複計算）。</p>`:''}${p.skip.length?`<p class="st-note">略過的分頁：${p.skip.map(esc).join('、')}（只匯入 ${ACATS.map(esc).join('、')} 這 5 個分頁）。</p>`:''}`
+    :`<p>沒有讀到可以匯入的資料。分頁名稱要是 ${ACATS.map(esc).join('、')}，而且要有「到貨日期」「廠商」和「判定結果」（或「合格件數／不合格件數」）欄位。</p>${p.skip.length?`<p class="st-note">略過：${p.skip.map(esc).join('、')}</p>`:''}`};
+  aMsg='';renderAcc();scrollTo(0,0)}
+function aApply(){const list=aImp.list,keys=new Set(list.map(x=>x.date+'|'+x.cat+'|'+x.ven));const before=ACC.length;
+  ACC=ACC.filter(r=>!keys.has(r.date+'|'+r.cat+'|'+r.ven)).concat(list.map(aNorm));const n=list.length,rep=before+n-ACC.length;
+  if(!saveAcc()){aImp=null;aMsg='存不進去，瀏覽器的儲存空間可能已滿，沒有匯入任何資料。';ACC=(()=>{try{return JSON.parse(localStorage.getItem(KEY_A)||'[]').map(aNorm)}catch(_){return[]}})();renderAcc();return}
+  const ds=list.map(x=>x.date).sort(),last=ds[ds.length-1];if(last){aY=+last.slice(0,4);aMode='Y'}
+  aImp=null;aMsg=`已匯入 ${n} 筆${rep?`（其中 ${rep} 筆取代原有紀錄）`:''}；常用廠商已依各分類件數排好。`;renderAcc()}
+async function aReport(){const rg=stRange(aMode,aY,aA),pv=stShift(aMode,aY,aA,-1),prg=stRange(aMode,pv.y,pv.a),S=aStat(rg),P=aStat(prg),pw=aMode==='M'?'上月':aMode==='Q'?'上季':'去年';
+  const body=[wp('Casevoras 供應商驗收合格率報告',{b:1,sz:36}),wp(`${MN[aMode]}｜統計期間：${rg.label}`,{b:1,sz:24}),wp('匯出時間：'+new Date().toLocaleString('zh-TW'),{sz:20,after:200})];
+  body.push(wp('一、重點摘要',{b:1,sz:28,bd:1,after:120}));
+  body.push(wp([`驗收件數：${S.n} 件（合格 ${S.ok}、不合格 ${S.ng}）`,`合格率：${aFmt(S.rate)}`,`${pw}（${prg.label}）：${P.n} 件，合格率 ${aFmt(P.rate)}；比較：${aPPt(S.rate,P.rate)}`].join('\n'),{after:200}));
+  body.push(wp('二、全部分類合格率',{b:1,sz:28,bd:1,after:120}));
+  const cats=aCatsAll().filter(c=>ACATS.includes(c)||S.cat.has(c));
+  body.push(wtbl(['分類','件數','不合格','合格率','較上期'],cats.map(c=>{const s=S.cat.get(c)||{ok:0,ng:0},p=P.cat.get(c)||{ok:0,ng:0};return[c,String(s.ok+s.ng),String(s.ng),aFmt(aRate(s.ok,s.ng)),aPPt(aRate(s.ok,s.ng),aRate(p.ok,p.ng))]}).concat([['全部分類合計',String(S.n),String(S.ng),aFmt(S.rate),aPPt(S.rate,P.rate)]]),[3400,1400,1400,1500,1938]));
+  body.push(wp('三、各廠商合格率（由低到高）',{b:1,sz:28,bd:1,after:120}));
+  const vl=[...S.ven.entries()].map(([k,v])=>({k,...v,n:v.ok+v.ng,rate:aRate(v.ok,v.ng)})).sort((a,b)=>a.rate-b.rate||b.n-a.n);
+  body.push(vl.length?wtbl(['廠商','分類','件數','不合格','合格率','較上期'],vl.map(v=>{const p=P.ven.get(v.k);return[v.k,[...v.cats].join('、'),String(v.n),String(v.ng),aFmt(v.rate),aPPt(v.rate,p?aRate(p.ok,p.ng):null)]}),[1700,2600,1000,1100,1300,1938]):wp('（本期無資料）',{sz:20}));
+  body.push(wp('四、不合格：合格率未達 100% 的廠商',{b:1,sz:28,bd:1,after:120}));
+  const bad=vl.filter(v=>v.ng>0),br=S.rows.filter(r=>r.ng>0).sort((a,b)=>a.date.localeCompare(b.date));
+  body.push(bad.length?wtbl(['廠商','分類','件數','不合格','合格率'],bad.map(v=>[v.k,[...v.cats].join('、'),String(v.n),String(v.ng),aFmt(v.rate)]),[2000,3000,1400,1400,1838]):wp('本期所有廠商都 100% 合格。',{sz:20}));
+  if(br.length){body.push(wp('不合格明細',{b:1,sz:24,after:80}));body.push(wtbl(['到貨日期','分類','廠商','不合格','備註'],br.map(r=>[r.date,r.cat,r.ven,String(r.ng),r.note||'']),[1500,2300,1600,1000,3238]))}
+  body.push(wp('※ 合格率 ＝ 合格件數 ÷（合格 ＋ 不合格）。「較上期」是合格率相差的百分點：▲ 變好、▼ 變差。',{sz:18}));
+  const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+  const blob=zipStore([['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'],
+    ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'],
+    ['word/document.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${NS}><w:body>${body.join('')}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`]]);
+  return{blob,name:`Casevoras_供應商驗收_${MN[aMode]}_${aMode==='Y'?aY:aMode==='Q'?aY+'Q'+aA:aY+'-'+pad2(aA)}.docx`}}
+$('tabR').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.og){$('openGuide').click();return}
+  if(b.id==='aImpBtn'){$('aImpF').click();return}
+  if(b.id==='aRep'){const say=t=>{const m=$('aRepMsg');if(m)m.textContent=t};b.disabled=true;say('報告產生中…');try{const o=await aReport();await saveDocx(o.blob,o.name,say)}catch(err){say('報告產生失敗：'+(err.message||err))}b.disabled=false;return}
+  if(b.dataset.ai){if(b.dataset.ai==='ok')aApply();else{aImp=null;renderAcc()}return}
+  if(b.dataset.ac){if(aEdit){const r=ACC.find(x=>x.id===aEdit);if(r)r.cat=b.dataset.ac;saveAcc()}else aCat=b.dataset.ac;aMsg='';renderAcc();$('a_ven').focus();return}
+  if(b.dataset.av){$('a_ven').value=b.dataset.av;$('a_ok').focus();$('a_ok').select();return}
+  if(b.id==='a_add'){aSubmit();return}
+  if(b.id==='a_cancel'){aEdit=null;aMsg='';renderAcc();return}
+  if(b.dataset.ae){aEdit=b.dataset.ae;aDel=null;aMsg='';renderAcc();$('tabR').querySelector('.aform').scrollIntoView({block:'center'});$('a_ven').focus();return}
+  if(b.dataset.ad){if(b.dataset.ad==='ask')aDel=b.dataset.id;else if(b.dataset.ad==='no')aDel=null;else{ACC=ACC.filter(r=>r.id!==b.dataset.id);aDel=null;if(aEdit===b.dataset.id)aEdit=null;saveAcc();aMsg='已刪除 1 筆驗收紀錄。'}renderAcc();return}
+  if(b.dataset.am){if(b.dataset.am!==aMode){aMode=b.dataset.am;aA=aMode==='M'?now.getMonth()+1:aMode==='Q'?Math.floor(now.getMonth()/3)+1:0;aY=now.getFullYear()}renderAcc();return}
+  if(b.dataset.an){const n=stShift(aMode,aY,aA,+b.dataset.an);aY=n.y;aA=n.a;renderAcc();return}
+  if(b.dataset.aall){aAll=!aAll;renderAcc();return}
+});
+$('tabR').addEventListener('change',e=>{const t=e.target;if(t.id==='aY'){aY=+t.value;renderAcc()}else if(t.id==='aA'){aA=+t.value;renderAcc()}else if(t.id==='aVF'){aVF=t.value;aAll=false;renderAcc()}
+  else if(t.id==='aImpF'){const fs=[...t.files];t.value='';if(fs.length)aImport(fs)}});
+$('tabR').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest&&e.target.closest('.aform')&&e.target.tagName==='INPUT'){e.preventDefault();aSubmit()}});
 
 // ---- 供應商客訴 ----
 const VK=['no','date','sup','con','mat','spec','lot','qty','owner','buyer','qcp','desc','req','done','fol','catother','fosub'];
@@ -1263,7 +1451,7 @@ $('tabO').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id&&e.targ
 document.querySelectorAll('[data-og]').forEach(b=>b.onclick=()=>$('openGuide').click());
 document.querySelectorAll('.fguide').forEach(b=>b.onclick=()=>$('openGuide').click());
 $('sideLogo').src=document.querySelector('.topbar .logo').src;
-document.querySelectorAll('.tabs button[data-t]').forEach(b=>b.addEventListener('click',()=>{$('crumbNow').textContent={A:'客訴清單',B:'供應商客訴清單',S:'統計分析',O:'常用選項'}[b.dataset.t]}));
+document.querySelectorAll('.tabs button[data-t]').forEach(b=>b.addEventListener('click',()=>{$('crumbNow').textContent={A:'客訴清單',B:'供應商客訴清單',S:'統計分析',R:'供應商驗收',O:'常用選項'}[b.dataset.t]}));
 let lastList='A';document.querySelectorAll('.tabs button[data-t]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.t==='A'||b.dataset.t==='B')lastList=b.dataset.t}));
 const toList=()=>document.querySelector(`.tabs button[data-t="${lastList}"]`).click();
 if(typeof claude!=='undefined')$('sPrint').hidden=true;
@@ -1840,7 +2028,7 @@ $('srepTop').onclick=()=>$('srep').click();
 // ---- Word 備份：隱藏資料區（匯出）與驗證（匯入）----
 function backupXml(phMap){
   const cases=CASES.map(c=>c.purged?{id:c.id,kind:c.kind,no:c.no,purged:true}:{...c});
-  const bytes=new TextEncoder().encode(JSON.stringify({cases,photos:phMap||{},opts:OPTS,settings:SET}));let bin='';
+  const bytes=new TextEncoder().encode(JSON.stringify({cases,photos:phMap||{},opts:OPTS,settings:SET,acc:ACC}));let bin='';
   for(let i=0;i<bytes.length;i+=8192)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+8192));
   return`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><fcaBackup app="food-complaint-assistant" version="2" exportedAt="${new Date().toISOString()}">${btoa(bin)}</fcaBackup>`;
 }
@@ -1893,6 +2081,7 @@ async function applyImport(o){
     for(const x of arr.slice(0,4)){try{if(!/^word\/media\/ph\d+\.jpg$/.test(x.file))throw 0;items.push({name:String(x.name||'photo.jpg').slice(0,120),blob:new Blob([readZipBytes(o.__buf,x.file)],{type:'image/jpeg'})})}catch(_){pf++}}
     if(items.length){try{await PDB.put(id,items);pc+=items.length}catch(_){pf+=items.length}}}
   if(o.settings&&typeof o.settings==='object'){SET=setNorm(o.settings);saveSet()}
+  if(Array.isArray(o.acc)){ACC=o.acc.map(aNorm).filter(r=>/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&r.ven);saveAcc();aEdit=null;aImp=null}
   if(o.opts&&typeof o.opts==='object'){Object.keys(OPT_KINDS).forEach(k=>{OPTS[k]=optList([...OPTS[k],...optList(o.opts[k])])});saveOpts();syncCombos()}
   renderCases();
   pendingSt=null;pendingDel=null;pendingPurge=null;pendingBulk=null;trSel['客訴'].clear();trSel['供應商客訴'].clear();keepC.clear();keepV.clear();cmsg('');
