@@ -1943,6 +1943,32 @@ function wp(t,o={}){
   const runs=String(t==null?'':t).split('\n').map((ln,i)=>`<w:r>${rp}${i?'<w:br/>':''}<w:t xml:space="preserve">${xe(ln)}</w:t></w:r>`).join('');
   return`<w:p><w:pPr><w:spacing w:after="${o.after==null?80:o.after}"/>${o.pb?'<w:pageBreakBefore/>':''}${o.bd?'<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="2F6F4F"/></w:pBdr>':''}</w:pPr>${runs}</w:p>`;
 }
+// ---- 案件 Word 排版：基本資料用兩欄表格；分析各段落依格式排好（【】小標、編號、依據／尚缺證據縮排、｜ 分隔的列轉成表格）----
+const WF='<w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Microsoft JhengHei"/>';
+const wr=(t,o={})=>`<w:r><w:rPr>${WF}${o.b?'<w:b/>':''}${o.color?`<w:color w:val="${o.color}"/>`:''}<w:sz w:val="${o.sz||21}"/></w:rPr><w:t xml:space="preserve">${xe(t)}</w:t></w:r>`;
+const wpx=(runs,o={})=>`<w:p><w:pPr>${o.keep?'<w:keepNext/>':''}${o.pb?'<w:pageBreakBefore/>':''}${o.bd?`<w:pBdr><w:bottom w:val="single" w:sz="8" w:space="2" w:color="${o.bd}"/></w:pBdr>`:''}${o.shd?`<w:shd w:val="clear" w:color="auto" w:fill="${o.shd}"/>`:''}<w:spacing w:before="${o.before||0}" w:after="${o.after==null?60:o.after}" w:line="${o.line||300}" w:lineRule="auto"/>${o.ind?`<w:ind w:left="${o.ind[0]}" w:hanging="${o.ind[1]||0}"/>`:''}</w:pPr>${runs.join('')}</w:p>`;
+const WB=c=>['top','left','bottom','right','insideH','insideV'].map(k=>`<w:${k} w:val="single" w:sz="4" w:space="0" w:color="${c||'C9BDA6'}"/>`).join('');
+const wcell=(inner,w,fill)=>`<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${fill?`<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>`:''}<w:vAlign w:val="center"/></w:tcPr>${inner}</w:tc>`;
+const wcp=(t,o={})=>String(t==null?'':t).split('\n').map(ln=>wpx([wr(ln,o)],{after:0,line:276})).join('')||wpx([wr('')],{after:0});
+// 兩欄（標題｜內容）表格
+function wkv(rows){const W=[2300,7338];return`<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:tblBorders>${WB()}</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="50" w:type="dxa"/><w:left w:w="110" w:type="dxa"/><w:bottom w:w="50" w:type="dxa"/><w:right w:w="110" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${W.map(w=>`<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>${rows.map(([k,v])=>`<w:tr><w:trPr><w:cantSplit/></w:trPr>${wcell(wcp(k,{b:1,color:'16213A',sz:20}),W[0],'F3EEE3')}${wcell(wcp(v,{sz:20}),W[1])}</w:tr>`).join('')}</w:tbl>`+wpx([],{after:120})}
+// ｜ 分隔的多列 → 表格（第一列當表頭）
+function wgrid(lines){const rows=lines.map(l=>l.split('｜').map(x=>x.trim()));const n=Math.max(...rows.map(r=>r.length));const w=Math.floor(9638/n),W=Array(n).fill(w);W[n-1]+=9638-w*n;
+  return`<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:tblBorders>${WB()}</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="90" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${W.map(x=>`<w:gridCol w:w="${x}"/>`).join('')}</w:tblGrid>${rows.map((r,i)=>`<w:tr><w:trPr>${i?'':'<w:tblHeader/>'}<w:cantSplit/></w:trPr>${W.map((x,j)=>wcell(wcp(r[j]||'',i?{sz:19}:{b:1,sz:19,color:'16213A'}),x,i?'':'F3EEE3')).join('')}</w:tr>`).join('')}</w:tbl>`+wpx([],{after:80})}
+// 一段文字 → 排好的段落
+function wrich(text){const out=[],L=String(text||'').replace(/\r/g,'').split('\n');let grid=[];
+  const flush=()=>{if(grid.length){out.push(grid.length>1?wgrid(grid):wpx([wr(grid[0])]));grid=[]}};
+  for(const raw of L){const ln=raw.replace(/\s+$/,''),t=ln.trim();
+    if(t.includes('｜')&&t.split('｜').length>=3){grid.push(t);continue}flush();
+    if(!t){out.push(wpx([],{after:40,line:200}));continue}
+    let m;
+    if((m=/^【([^】]+)】(.*)$/.exec(t))){out.push(wpx([wr(m[1],{b:1,color:'1F3A5F'})].concat(m[2]?[wr('　'+m[2].trim(),{sz:19,color:'6B7280'})]:[]),{before:80,after:40,keep:1}));continue}
+    if((m=/^(\d+)[.、．]\s*(.*)$/.exec(t))){out.push(wpx([wr(m[1]+'.　',{b:1}),wr(m[2])],{ind:[420,420]}));continue}
+    if((m=/^[-•・]\s*(.*)$/.exec(t))){out.push(wpx([wr('•　'),wr(m[1])],{ind:[420,420]}));continue}
+    if((m=/^(依據|尚缺證據|原因|建議查證方式|查證方式|負責|確認方式)[：:]\s*(.*)$/.exec(t))&&/^\s/.test(raw)){out.push(wpx([wr(m[1]+'：',{b:1,color:'5D6779',sz:20}),wr(m[2],{sz:20})],{ind:[840,0]}));continue}
+    if((m=/^([^：:（(]{2,14})[：:]\s*(.*)$/.exec(t))&&!/[。，；]/.test(m[1])){out.push(wpx([wr(m[1]+'：',{b:1}),wr(m[2])]));continue}
+    out.push(wpx([wr(t)]))}
+  flush();return out.join('')}
 async function buildDocx(list,single,phMap){
   list=list||CASES;phMap=phMap||{};
   const phInfo={};for(const [id,arr] of Object.entries(phMap)){phInfo[id]=[];for(const x of arr.slice(0,4)){try{const bm=await createImageBitmap(x.blob);phInfo[id].push({bytes:new Uint8Array(await x.blob.arrayBuffer()),w:bm.width,h:bm.height,name:x.name||'photo.jpg'})}catch(_){}}}
@@ -1955,17 +1981,18 @@ async function buildDocx(list,single,phMap){
   groups.forEach(([gt,kind,ttl,keys,labels],gi)=>{
     const rows=list.filter(c=>isLive(c)&&c.kind===kind).sort((a,b)=>b.date.localeCompare(a.date));
     if(single&&!rows.length)return;
-    body.push(wp(`${gt}（${rows.length} 件）`,{b:1,sz:30,bd:1,after:120}));
+    if(!single)body.push(wp(`${gt}（${rows.length} 件）`,{b:1,sz:30,bd:1,after:120}));
     rows.forEach((r,idx)=>{
       any=true;const f=r.form||{},inp={...(f.inputs||{}),respT:respTxt(f.inputs),trkT:[(f.inputs||{}).trk1,(f.inputs||{}).trk2].filter(Boolean).join(' ～ ')+((t=>t?`（${t.t}）`:'')(trkDays(f.inputs)))};
-      body.push(wp(`${idx+1}. ${kind==='客訴'?'':(r.sup||'')+'｜'}${r.item||''}　［${r.cat||'未分類'}／${r.status||''}］`,{b:1,sz:26,pb:idx>0||(gi>0&&!single)}));
-      body.push(wp(`編號：${r.no||'—'}　日期：${r.date}　批號：${r.lot||'—'}`,{sz:20}));
-      const info=keys.map((k,i)=>inp[k]?`${labels[i]}：${inp[k]}`:'').filter(Boolean);
-      if(info.length)body.push(wp(info.join('\n'),{after:120}));
+      body.push(wpx([wr(`${single?'':idx+1+'. '}${kind==='客訴'?'':(r.sup||'')+'｜'}${r.item||''}`,{b:1,sz:30,color:'16213A'})],{pb:idx>0||(gi>0&&!single),before:120,after:40,keep:1}));
+      body.push(wpx([wr(`異常類別：${catLabel(r)||'未分類'}　｜　處理狀態：${r.status||'—'}`,{sz:21,color:'5D6779'})],{after:120,bd:'B8955A'}));
+      const info=[['編號',r.no||'—'],['日期',r.date||'—']].concat(keys.map((k,i)=>inp[k]&&!['no','date'].includes(k)?[labels[i],inp[k]]:null).filter(Boolean));
+      body.push(wpx([wr('一、基本資料',{b:1,sz:24,color:'16213A'})],{before:80,after:80,keep:1}));body.push(wkv(info));
       const phs=kind==='客訴'?addMedia(r.id||'__cur'):[];
-      if(phs.length){body.push(wp(`異常產品／異物照片（${phs.length} 張）`,{b:1,sz:22,after:40}));phs.forEach(x=>body.push(wpic(x.n,x.w,x.h)))}
-      if(f.shown&&f.sections){ttl.forEach((t,i)=>{const x=(f.sections['s'+(i+1)]||'').trim();if(x){body.push(wp(t,{b:1,sz:24,after:40}));body.push(wp(x,{after:120}))}})}
-      else body.push(wp('（尚未產生分析紀錄）',{sz:20}));
+      if(phs.length){body.push(wpx([wr(`異常產品／異物照片（${phs.length} 張）`,{b:1,sz:22,color:'16213A'})],{after:40,keep:1}));phs.forEach(x=>body.push(wpic(x.n,x.w,x.h)))}
+      if(f.shown&&f.sections){body.push(wpx([wr('分析紀錄',{b:1,sz:26,color:'16213A'})],{before:200,after:60,bd:'B8955A',keep:1}));
+        ttl.forEach((t,i)=>{if(i===0)return;const x=(f.sections['s'+(i+1)]||'').trim();if(x){body.push(wpx([wr(t,{b:1,sz:23,color:'FFFFFF'})],{before:160,after:80,shd:'16213A',keep:1}));body.push(wrich(x))}})}
+      else body.push(wpx([wr('（尚未產生分析紀錄）',{sz:20,color:'6B7280'})]));
     });
     if(!rows.length)body.push(wp('（無）',{sz:20}));
   });
@@ -2198,7 +2225,7 @@ if(!d.prod){say('請先填寫產品名稱');return}
 if($('fcat').value==='其它'&&!d.catother){say('請填寫其它異常原因');$('catother').focus();return}
   const sec={};[1,2,3,4,5,6,7].forEach(i=>sec['s'+i]=$('s'+i).value);
   const r={date:d.date,kind:'客訴',no:d.no,item:d.prod,lot:d.lot,sup:'',cat:$('fcat').value,status:$('fst').value,form:{inputs:d,sections:sec,shown:!$('out').hidden}};
-  saveDocx(await buildDocx([r],true,{'__cur':photos.map(p=>({name:p.name,blob:p.blob}))}),`客訴案件_${fnm(d.no||d.prod)}.docx`,say);
+  saveDocx(await buildDocx([r],true,{'__cur':photos.map(p=>({name:p.name,blob:p.blob}))}),`客訴案件_${[d.no,d.prod,catLabel({cat:$('fcat').value,form:{inputs:d}})].filter(Boolean).map(fnm).join('_')}.docx`,say);
 };
 $('vfword').onclick=async()=>{
   const d=vin(),say=t=>$('vfmsg').textContent=t;
@@ -2207,7 +2234,7 @@ if(!d.sup||!d.mat){say('請先填寫供應商名稱與原料／包材名稱');re
 if($('vcat').value==='其它'&&!d.catother){say('請填寫其它異常原因');$('vcatother').focus();return}
   const sec={};[1,2,3,4,5,6,7].forEach(i=>sec['s'+i]=$('v'+i).value);
   const r={date:d.date,kind:'供應商客訴',no:d.no,item:d.mat,lot:d.lot,sup:d.sup,cat:$('vcat').value,status:$('vstat').value,form:{inputs:d,sections:sec,shown:!$('vout').hidden}};
-  saveDocx(await buildDocx([r],true),`供應商客訴_${fnm(d.no||d.sup)}.docx`,say);
+  saveDocx(await buildDocx([r],true),`供應商客訴_${[d.no,d.sup,d.mat,catLabel({cat:$('vcat').value,form:{inputs:d}})].filter(Boolean).map(fnm).join('_')}.docx`,say);
 };
 
 ['lbody','vlbody'].forEach(id=>$(id).addEventListener('change',async e=>{
