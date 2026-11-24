@@ -444,7 +444,7 @@ label b,.fsec b{color:#b42318}
 <label>四、尚待確認的事項</label><div class="hint">寫明確認什麼、為何重要、用什麼方式查證（比對哪個樣品、調閱哪份紀錄）</div><textarea id="s4"></textarea>
 <label>五、改善措施及預防再發方式</label><div class="hint">請具體寫出：本次異常如何處理；要調整哪一項作業或檢查方式（做什麼、在哪個步驟、頻率或判定標準）；由誰執行。避免只寫「加強宣導」「加強管理」。矯正措施須待原因查證後採用。</div><textarea id="s5" style="min-height:180px"></textarea>
 <label>六、後續確認及追蹤紀錄</label><div class="hint">寫明負責人、預定完成／確認日期，以及用什麼紀錄、樣品或現場結果確認改善效果。</div><textarea id="s6"></textarea>
-<label>七、客訴回函草稿</label><div class="hint">回覆客戶／消費者用的草稿：說明已受理與處理進度，不承認未查證的原因、不歸責；寄出前請務必檢查。</div><textarea id="s7" style="min-height:220px"></textarea>
+<label>七、客訴回函草稿</label><div class="hint">回覆客戶用的草稿，分三段：查核結果（經確認／初步判斷，只寫有依據的）、改善措施、感謝結語。不歸責任何人；【】的地方請補上，寄出前請務必檢查。</div><textarea id="s7" style="min-height:220px"></textarea>
 <div class="row">
 <button id="cp">複製全文</button>
 <button id="pr">列印／另存 PDF</button>
@@ -763,7 +763,11 @@ const SYS=`你是食品工廠品管/品保的客訴分析輔助。以繁體中�
 4. 改善措施為「建議」，分：即時處置（本次異常如何處理：隔離、標示、追溯同批、保留樣品、回覆客戶）、矯正措施（針對待查證之原因，須註明於原因查證後採用）、預防再發（具體要調整哪一項作業或檢查方式）。每一項須具體寫出：做什麼、在哪個作業或檢查點、頻率或判定標準、建議由哪個職務負責（只寫職務，不寫人名）、以何種紀錄／樣品／現場結果確認效果。禁止只寫「加強宣導」「加強管理」「提醒人員注意」等空泛內容。
 5. 待確認事項要說明「確認什麼」與「為何重要」，並附建議查證方法（如調閱哪份紀錄、比對哪個樣品）。
 7. 人機料法環 cz：把「可能原因」歸到人（人員作業）、機（設備）、料（原料／包材）、法（方法／流程／標準）、環（環境）中最相關的面向，只能用這五個字；每項附 why（依據哪段資料、尚待什麼查證）。這只是調查方向的分類，不是確定原因，也不是指責某人或某部門；資料不足時輸出空陣列，不要硬湊。最多 3 項，依關聯性排序。
-6. 客訴回函 reply：寫給客戶或消費者的回覆草稿，語氣誠懇有禮；說明已受理與目前調查進度，可致歉造成的困擾，但不可承認或推測未經查證的原因、不可歸責任何人；不得寫出任何個人姓名、電話、地址，稱謂一律以【客戶／消費者稱謂】留空；未提供的資訊（聯絡窗口、回覆期限、寄回方式、公司名稱）以【】留空，不要編造。
+6. 客訴回函 reply：寫給客戶的正式回覆（繁體中文書信用語），開頭「【客戶稱謂】您好：」，正文固定三段，每段開頭空兩個全形空格「　　」，段與段之間空一行：
+ 第一段（查核結果）：以「經接獲客訴後，針對【產品名稱】產品出現【異常情形】之情形進行查核。」開頭（填入實際產品名稱與異常情形）。接著寫查核結果：只有在「相關單位（相關製程／檢查紀錄／調查結果）」「單位改善措施」「改善確效」有明確依據時才可寫「經確認，……」；依據不完整時寫「初步判斷……，後續將持續確認」；完全沒有調查結果時寫「目前仍在查核中，待確認後將另行回覆。」不可自行推測原因。
+ 第二段（改善措施）：以「針對本次客訴，」開頭，把使用者提供的改善措施改寫成正式語句（例如：將提醒相關作業人員加強某項作業之品質確認、加強成品外觀檢查，如發現異常即時通報並進行確認，以確保產品品質符合相關規範）；沒有提供改善措施時寫「針對本次客訴，【改善措施】。」不可指名或歸責任何人、部門。
+ 第三段（感謝）：固定使用「感謝貴公司提供寶貴意見，本公司將持續重視產品品質及製程管理，針對本次異常進行檢討並落實相關品質管控措施，以維護產品品質及客戶權益，提供良好之產品與服務。」
+ 不得寫出個人姓名、電話、地址；公司名稱、日期以【】留空，不要編造。
 只輸出 JSON，不要任何其他文字或 markdown：
 {"facts":["...（出處）"],"photo":["..."],"causes":[{"cause":"...","basis":"...","missing":"..."}],"pending":[{"item":"...","why":"...","how":"..."}],"immediate":["..."],"corrective":["..."],"preventive":["..."],"followup":["..."],"cz":[{"k":"人|機|料|法|環 其中一字","why":"..."}],"reply":"..."}
 photo 若無照片請輸出空陣列。causes 建議 3–6 項，依與現有資料之關聯性排序；資料不足時可少於 3 項或為空陣列。`;
@@ -1084,8 +1088,9 @@ function vrestore(s){
   else $('vout').hidden=true;
 }
 function vbasic(d){return `內部編號：${v(d.no)}\n發現日期：${v(d.date)}\n供應商：${v(d.sup)}\n供應商聯絡人：${v(d.con)}\n原料／包材名稱：${v(d.mat)}\n原料批號／有效日期：${v(d.lot)}\n原物料規格：${v(d.spec)}\n進貨日期／數量／受影響數量：${v(d.qty)}\n負責人：${v(d.owner)}\n採購人員：${v(d.buyer)}\n品管人員：${v(d.qcp)}`}
-function cReply(d){
-  return `主旨：關於您反映【${d.prod||'產品名稱'}】（批號／有效日期：${d.lot||'【批號】'}）一事之回覆\n\n【客戶／消費者稱謂】您好：\n\n感謝您於${d.date||'【日期】'}向本公司反映上述產品的情形，造成您的困擾，我們深感抱歉。\n\n本公司已受理此案（案件編號：${d.no||'【編號】'}），目前正在進行調查，包括：\n- 檢視您提供的產品、包裝與照片\n- 調閱該批次的生產與檢查紀錄\n- 檢查同批庫存產品\n\n為協助釐清原因，若您仍保留原產品與包裝，懇請協助保留或寄回【寄回方式／地址】，相關運費由本公司負擔。\n\n調查結果與後續處理方式，我們將於【 】個工作天內回覆您。如有任何問題，歡迎與我們聯繫：【聯絡窗口／電話】。\n\n再次感謝您的寶貴意見。\n\n【公司名稱】品質管理部　敬上\n【日期】`;
+// 客訴回函範本：三段（查核結果／改善措施／感謝），未填的地方用【】留空
+function cReply(d){const c0=d.cat||($('fcat')?$('fcat').value:''),cl=c0?catLabel({cat:c0,form:{inputs:d}}):'',ab=cl?`【異常情形，例如：${cl}】`:'【異常情形】',res=(d.proc||'').trim(),imp=(d.done||'').trim();
+  return `【客戶稱謂】您好：\n\n　　經接獲客訴後，針對${d.prod||'【產品名稱】'}產品出現${ab}之情形進行查核。${res?`【查核結果：請依調查紀錄改寫成「經確認，……」或「初步判斷，……」。調查紀錄：${res.replace(/\n+/g,'；')}】`:'【查核結果：經確認……／初步判斷……；尚無結果時寫「目前仍在查核中，待確認後將另行回覆。」】'}\n\n　　針對本次客訴，${imp?`${imp.replace(/\n+/g,'；')}${/[。！]$/.test(imp)?'':'。'}`:'【改善措施：例如將提醒相關作業人員加強原料前處理及生產過程之品質確認，並加強成品外觀檢查；如發現異常應即時通報並進行確認，以確保產品品質符合相關規範。】'}\n\n　　感謝貴公司提供寶貴意見，本公司將持續重視產品品質及製程管理，針對本次異常進行檢討並落實相關品質管控措施，以維護產品品質及客戶權益，提供良好之產品與服務。\n\n【公司名稱／部門】\n【日期】`;
 }
 function vNotice(d){
   return `主旨：【${d.mat||'原料名稱'}】批號【${d.lot||'批號'}】異常通知及請求調查回覆\n\n${d.sup||'【供應商名稱】'} ${d.con||'【聯絡人】'} 您好：\n\n本廠於${d.date||'【日期】'}發現貴公司供應之上述原料有以下情形：\n${d.desc||'【異常事實描述】'}\n\n目前原因尚未確認，亦不預設責任歸屬。為釐清原因，敬請協助：\n1. 提供該批號之生產、品管及出貨檢驗紀錄（含 COA、留樣檢驗結果）。\n2. 調查可能原因，並回覆暫行措施。\n3. ${d.req||'於【期限】前提供原因調查及矯正預防措施報告'}。\n\n本廠已採取之處置：${d.done||'【處置內容】'}\n如需照片、樣品或本廠驗收紀錄，請與我們聯繫。\n\n此致\n【公司／部門／聯絡方式】`;
@@ -1946,7 +1951,7 @@ function wp(t,o={}){
 // ---- 案件 Word 排版：基本資料用兩欄表格；分析各段落依格式排好（【】小標、編號、依據／尚缺證據縮排、｜ 分隔的列轉成表格）----
 const WF='<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="標楷體" w:cs="標楷體"/>';
 const wr=(t,o={})=>`<w:r><w:rPr>${WF}${o.b?'<w:b/>':''}${o.color?`<w:color w:val="${o.color}"/>`:''}<w:sz w:val="${o.sz||21}"/></w:rPr><w:t xml:space="preserve">${xe(t)}</w:t></w:r>`;
-const wpx=(runs,o={})=>`<w:p><w:pPr>${o.keep?'<w:keepNext/>':''}${o.pb?'<w:pageBreakBefore/>':''}${o.bd?`<w:pBdr><w:bottom w:val="single" w:sz="8" w:space="2" w:color="${o.bd}"/></w:pBdr>`:''}${o.shd?`<w:shd w:val="clear" w:color="auto" w:fill="${o.shd}"/>`:''}<w:spacing w:before="${o.before||0}" w:after="${o.after==null?60:o.after}" w:line="${o.line||300}" w:lineRule="auto"/>${o.ind?`<w:ind w:left="${o.ind[0]}" w:hanging="${o.ind[1]||0}"/>`:''}</w:pPr>${runs.join('')}</w:p>`;
+const wpx=(runs,o={})=>`<w:p><w:pPr>${o.keep?'<w:keepNext/>':''}${o.pb?'<w:pageBreakBefore/>':''}${o.bd?`<w:pBdr><w:bottom w:val="single" w:sz="8" w:space="2" w:color="${o.bd}"/></w:pBdr>`:''}${o.shd?`<w:shd w:val="clear" w:color="auto" w:fill="${o.shd}"/>`:''}<w:spacing w:before="${o.before||0}" w:after="${o.after==null?60:o.after}" w:line="${o.line||300}" w:lineRule="auto"/>${o.ind?`<w:ind w:left="${o.ind[0]}" w:hanging="${o.ind[1]||0}"/>`:o.first?'<w:ind w:firstLineChars="200" w:firstLine="420"/>':''}</w:pPr>${runs.join('')}</w:p>`;
 const WB=c=>['top','left','bottom','right','insideH','insideV'].map(k=>`<w:${k} w:val="single" w:sz="4" w:space="0" w:color="${c||'C9BDA6'}"/>`).join('');
 const wcell=(inner,w,fill)=>`<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${fill?`<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>`:''}<w:vAlign w:val="center"/></w:tcPr>${inner}</w:tc>`;
 const wcp=(t,o={})=>String(t==null?'':t).split('\n').map(ln=>wpx([wr(ln,o)],{after:0,line:276})).join('')||wpx([wr('')],{after:0});
@@ -1956,7 +1961,9 @@ function wkv(rows){const W=[2300,7338];return`<w:tbl><w:tblPr><w:tblW w:w="9638"
 function wgrid(lines){const rows=lines.map(l=>l.split('｜').map(x=>x.trim()));const n=Math.max(...rows.map(r=>r.length));const w=Math.floor(9638/n),W=Array(n).fill(w);W[n-1]+=9638-w*n;
   return`<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:tblBorders>${WB()}</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="90" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${W.map(x=>`<w:gridCol w:w="${x}"/>`).join('')}</w:tblGrid>${rows.map((r,i)=>`<w:tr><w:trPr>${i?'':'<w:tblHeader/>'}<w:cantSplit/></w:trPr>${W.map((x,j)=>wcell(wcp(r[j]||'',i?{sz:19}:{b:1,sz:19,color:'16213A'}),x,i?'':'F3EEE3')).join('')}</w:tr>`).join('')}</w:tbl>`+wpx([],{after:80})}
 // 一段文字 → 排好的段落
-function wrich(text){const out=[],L=String(text||'').replace(/\r/g,'').split('\n');let grid=[];
+function wrich(text,letter){const out=[],L=String(text||'').replace(/\r/g,'').split('\n');let grid=[];
+  // 回函：照書信排，開頭有全形空格的段落首行縮排兩字
+  if(letter)return L.map(raw=>{const t=raw.trim();if(!t)return wpx([],{after:40,line:200});return wpx([wr(t)],{after:60,line:360,first:/^[\u3000 ]{2}/.test(raw)})}).join('');
   const flush=()=>{if(grid.length){out.push(grid.length>1?wgrid(grid):wpx([wr(grid[0])]));grid=[]}};
   for(const raw of L){const ln=raw.replace(/\s+$/,''),t=ln.trim();
     if(t.includes('｜')&&t.split('｜').length>=3){grid.push(t);continue}flush();
@@ -1991,7 +1998,7 @@ async function buildDocx(list,single,phMap){
       const phs=kind==='客訴'?addMedia(r.id||'__cur'):[];
       if(phs.length){body.push(wpx([wr(`異常產品／異物照片（${phs.length} 張）`,{b:1,sz:22,color:'16213A'})],{after:40,keep:1}));phs.forEach(x=>body.push(wpic(x.n,x.w,x.h)))}
       if(f.shown&&f.sections){body.push(wpx([wr('分析紀錄',{b:1,sz:26,color:'16213A'})],{before:200,after:60,bd:'B8955A',keep:1}));
-        ttl.forEach((t,i)=>{if(i===0)return;const x=(f.sections['s'+(i+1)]||'').trim();if(x){body.push(wpx([wr(t,{b:1,sz:23,color:'FFFFFF'})],{before:160,after:80,shd:'16213A',keep:1}));body.push(wrich(x))}})}
+        ttl.forEach((t,i)=>{if(i===0)return;const x=(f.sections['s'+(i+1)]||'').trim();if(x){body.push(wpx([wr(t,{b:1,sz:23,color:'FFFFFF'})],{before:160,after:80,shd:'16213A',keep:1}));body.push(wrich(x,i===ttl.length-1))}})}
       else body.push(wpx([wr('（尚未產生分析紀錄）',{sz:20,color:'6B7280'})]));
     });
     if(!rows.length)body.push(wpx([wr('（無）',{sz:20})]));
