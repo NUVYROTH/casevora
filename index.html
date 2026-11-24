@@ -1944,7 +1944,7 @@ function wp(t,o={}){
   return`<w:p><w:pPr><w:spacing w:after="${o.after==null?80:o.after}"/>${o.pb?'<w:pageBreakBefore/>':''}${o.bd?'<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="2F6F4F"/></w:pBdr>':''}</w:pPr>${runs}</w:p>`;
 }
 // ---- 案件 Word 排版：基本資料用兩欄表格；分析各段落依格式排好（【】小標、編號、依據／尚缺證據縮排、｜ 分隔的列轉成表格）----
-const WF='<w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Microsoft JhengHei"/>';
+const WF='<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="標楷體" w:cs="標楷體"/>';
 const wr=(t,o={})=>`<w:r><w:rPr>${WF}${o.b?'<w:b/>':''}${o.color?`<w:color w:val="${o.color}"/>`:''}<w:sz w:val="${o.sz||21}"/></w:rPr><w:t xml:space="preserve">${xe(t)}</w:t></w:r>`;
 const wpx=(runs,o={})=>`<w:p><w:pPr>${o.keep?'<w:keepNext/>':''}${o.pb?'<w:pageBreakBefore/>':''}${o.bd?`<w:pBdr><w:bottom w:val="single" w:sz="8" w:space="2" w:color="${o.bd}"/></w:pBdr>`:''}${o.shd?`<w:shd w:val="clear" w:color="auto" w:fill="${o.shd}"/>`:''}<w:spacing w:before="${o.before||0}" w:after="${o.after==null?60:o.after}" w:line="${o.line||300}" w:lineRule="auto"/>${o.ind?`<w:ind w:left="${o.ind[0]}" w:hanging="${o.ind[1]||0}"/>`:''}</w:pPr>${runs.join('')}</w:p>`;
 const WB=c=>['top','left','bottom','right','insideH','insideV'].map(k=>`<w:${k} w:val="single" w:sz="4" w:space="0" w:color="${c||'C9BDA6'}"/>`).join('');
@@ -1974,14 +1974,14 @@ async function buildDocx(list,single,phMap){
   const phInfo={};for(const [id,arr] of Object.entries(phMap)){phInfo[id]=[];for(const x of arr.slice(0,4)){try{const bm=await createImageBitmap(x.blob);phInfo[id].push({bytes:new Uint8Array(await x.blob.arrayBuffer()),w:bm.width,h:bm.height,name:x.name||'photo.jpg'})}catch(_){}}}
   const media=[],phIdx={};let pn=0;
   const addMedia=id=>{if(phIdx[id])return phIdx[id];phIdx[id]=(phInfo[id]||[]).map(x=>{pn++;media.push(['word/media/ph'+pn+'.jpg',x.bytes]);return{n:pn,...x}});return phIdx[id]};
-  const body=[wp(single?'食品客訴案件紀錄':'食品客訴案件備份',{b:1,sz:36}),wp('匯出時間：'+new Date().toLocaleString('zh-TW')+(single?'':'　案件數：'+list.filter(c=>isLive(c)).length),{sz:20})];
+  const body=[wpx([wr(single?'食品客訴案件紀錄':'食品客訴案件備份',{b:1,sz:36})],{after:40}),wpx([wr('匯出時間：'+new Date().toLocaleString('zh-TW')+(single?'':'　案件數：'+list.filter(c=>isLive(c)).length),{sz:20,color:'5D6779'})],{after:160})];
   const groups=[['客訴案件','客訴',TITLES,['no','date','src','rec','qcp','respT','prod','lot','fosub','rpt','trkT','cdate','cause','note','desc','proc','done','eff','conf','catother'],['客訴編號','客訴日期','客訴來源','業務人員','品管人員（負責人）','權責單位（負責改善）','產品名稱','批號／有效日期','異物種類','報告書（對外回覆送出）','追蹤（內部總流程）','結案日期','原因','備註','客訴內容','相關單位（相關製程／檢查紀錄／調查結果）','單位改善措施','改善確效','負責人確認／改善確認人','其它異常說明']],
     ['供應商客訴案件','供應商客訴',VT,VK,['內部編號','發現日期','供應商名稱','供應商聯絡人','原料／包材名稱','原物料規格','原料批號／有效日期','進貨日期／數量','負責人','採購人員','品管人員','異常情況描述','尚待確認事項及需供應商提供之資料','處置、改善及預防再發','後續確認及追蹤紀錄','其它異常說明','異物種類']]];
   let any=false;
   groups.forEach(([gt,kind,ttl,keys,labels],gi)=>{
     const rows=list.filter(c=>isLive(c)&&c.kind===kind).sort((a,b)=>b.date.localeCompare(a.date));
     if(single&&!rows.length)return;
-    if(!single)body.push(wp(`${gt}（${rows.length} 件）`,{b:1,sz:30,bd:1,after:120}));
+    if(!single)body.push(wpx([wr(`${gt}（${rows.length} 件）`,{b:1,sz:30})],{bd:'2F6F4F',after:120}));
     rows.forEach((r,idx)=>{
       any=true;const f=r.form||{},inp={...(f.inputs||{}),respT:respTxt(f.inputs),trkT:[(f.inputs||{}).trk1,(f.inputs||{}).trk2].filter(Boolean).join(' ～ ')+((t=>t?`（${t.t}）`:'')(trkDays(f.inputs)))};
       body.push(wpx([wr(`${single?'':idx+1+'. '}${kind==='客訴'?'':(r.sup||'')+'｜'}${r.item||''}`,{b:1,sz:30,color:'16213A'})],{pb:idx>0||(gi>0&&!single),before:120,after:40,keep:1}));
@@ -1994,10 +1994,10 @@ async function buildDocx(list,single,phMap){
         ttl.forEach((t,i)=>{if(i===0)return;const x=(f.sections['s'+(i+1)]||'').trim();if(x){body.push(wpx([wr(t,{b:1,sz:23,color:'FFFFFF'})],{before:160,after:80,shd:'16213A',keep:1}));body.push(wrich(x))}})}
       else body.push(wpx([wr('（尚未產生分析紀錄）',{sz:20,color:'6B7280'})]));
     });
-    if(!rows.length)body.push(wp('（無）',{sz:20}));
+    if(!rows.length)body.push(wpx([wr('（無）',{sz:20})]));
   });
-  body.push(wp('※ 可能原因未經查證不代表真因，亦不涉及責任歸屬；含 AI 輔助整理內容者，請經品管/品保人員審核。'+(media.length?'':'照片未包含於本檔。'),{sz:18}));
-  if(!single){const nd=CASES.filter(c=>c.deleted&&!c.purged).length;body.push(wp(`※ 本檔另含最近刪除 ${nd} 件案件資料與已占用的編號，僅供「從備份還原」使用。`,{sz:18}))}
+  body.push(wpx([wr('※ 可能原因未經查證不代表真因，亦不涉及責任歸屬；含 AI 輔助整理內容者，請經品管/品保人員審核。'+(media.length?'':'照片未包含於本檔。'),{sz:18,color:'5D6779'})],{before:200}));
+  if(!single){const nd=CASES.filter(c=>c.deleted&&!c.purged).length;body.push(wpx([wr(`※ 本檔另含最近刪除 ${nd} 件案件資料與已占用的編號，僅供「從備份還原」使用。`,{sz:18,color:'5D6779'})]))}
   if(!single)Object.keys(phInfo).forEach(id=>addMedia(id));
   const phMapOut={};Object.entries(phIdx).forEach(([id,a])=>{if(a.length&&id!=='__cur')phMapOut[id]=a.map(x=>({name:x.name,file:'word/media/ph'+x.n+'.jpg'}))});
   const W='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
