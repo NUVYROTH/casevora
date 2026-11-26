@@ -235,6 +235,23 @@ button.danger:not(:disabled){background:#b42318;border-color:#b42318;color:#fff;
 .st-tile{border:1px solid var(--bd);border-radius:10px;padding:12px 8px;text-align:center;background:#fff}.st-tile .n{font-size:32px;font-weight:800;line-height:1.1}.st-tile .l{font-size:14px;font-weight:700;margin-top:4px}.st-tile .d{font-size:12px;color:var(--mu);margin-top:2px}
 .st-tile.t-done .n{color:#167a3e}.st-tile.t-open .n{color:#1d4f91}.st-tile.t-over{border-color:#e7b4ae;background:#fdecea}.st-tile.t-over .n{color:#b42318}
 .chg.good{color:#167a3e}.chg.bad{color:#b42318}
+.dcard{border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:12px 0;background:var(--card,#fff)}
+.dc-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700;font-size:15px;color:var(--tx);border-left:4px solid var(--ac);padding-left:10px;margin-bottom:10px}
+.dc-x{display:flex;align-items:center;gap:8px;font-weight:500;font-size:13px}
+.dc-b{display:grid;grid-template-columns:180px minmax(0,1fr);gap:18px;align-items:start}.dc-b>.dn-svg{position:sticky;top:90px}
+.dn-svg{width:180px;height:180px}
+.dc-l{min-width:0}
+.dl-r{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding:8px 4px;border-bottom:1px solid var(--bd);font-size:14px}
+.dl-r:last-child{border-bottom:0}
+.dl-r i{flex:none;width:12px;height:12px;border-radius:3px;display:inline-block;align-self:center}
+.dl-r b{font-size:15px;color:var(--tx)}
+.dl-t{color:var(--mu);font-size:13px}
+.dl-s{color:var(--tx);font-size:13.5px}
+.dl-s .late{color:#b42318;font-weight:700}
+.dl-r.dim{opacity:.55}
+.dl-r.drill{cursor:pointer}.dl-r.drill:hover{background:rgba(184,149,90,.1);border-radius:6px}
+@media(max-width:600px){.dc-b{grid-template-columns:1fr;justify-items:center}.dc-l{width:100%}.dn-svg{width:160px;height:160px}}
+
 .aseg{flex-wrap:wrap;margin:2px 0 10px}
 .aform{display:grid;grid-template-columns:150px minmax(130px,1.3fr) 96px 96px minmax(120px,1fr) auto;gap:8px 10px;align-items:end}
 .aform label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--mu)}
@@ -966,14 +983,16 @@ ${todayRec.length?`<div class="st-scroll"><table class="st-table atbl"><thead><t
 <div class="st-tile t-done"><div class="n">${S.ok}</div><div class="l">合格</div><div class="d">${pw} ${P.ok} 件</div></div>
 <div class="st-tile ${S.ng?'t-over':''}"><div class="n">${S.ng}</div><div class="l">不合格</div><div class="d">${pw} ${P.ng} 件・${aCnt(S.ng,P.ng,pw)}</div></div></div>
 <div class="st-note">合格率 ＝ 合格件數 ÷（合格 ＋ 不合格）。合格率的升降用「百分點」表示，例如 98.0% → 99.0% 是 ▲ 1.0 百分點；▲ 綠色＝變好、▼ 紅色＝變差。</div>
-<div class="st-sec">1. 全部分類合格率（${esc(tw)}）</div>
-<div class="st-scroll"><table class="st-table atbl"><thead><tr><th>分類</th><th>件數</th><th>不合格</th><th>合格率</th><th>與${pw}比較</th></tr></thead><tbody>${catRows}<tr class="atot"><td>全部分類合計</td><td>${S.n}</td><td>${S.ng}</td><td>${aFmt(S.rate)}</td><td>${aPP(S.rate,P.rate,pw)}</td></tr></tbody></table></div>
-<div class="st-sec st-secr"><span>2. 各廠商合格率（由低到高）</span><span><select id="aVF" class="topsel" aria-label="分類篩選"><option value="">全部分類</option>${cats.map(c=>`<option value="${esc(c)}"${vf===c?' selected':''}>${esc(c)}</option>`).join('')}</select><span class="st-note" style="margin:0 0 0 8px">共 ${venL.length} 家</span></span></div>
-${venL.length?`<div class="st-scroll"><table class="st-table atbl"><thead><tr><th>廠商</th><th class="acat">分類</th><th>件數</th><th>不合格</th><th>合格率</th><th>與${pw}比較</th></tr></thead><tbody>${venRows}</tbody></table></div>${venL.length>15?`<button type="button" data-aall="1" style="margin-top:6px">${aAll?'只看前 15 家':`顯示全部 ${venL.length} 家`}</button>`:''}`:'<p class="sub">這段期間沒有驗收資料。</p>'}
-<div class="st-sec">3. 不合格：合格率未達 100% 的廠商</div>
-${bad.length?`<div class="st-scroll"><table class="st-table atbl"><thead><tr><th>廠商</th><th class="acat">分類</th><th>件數</th><th>不合格</th><th>合格率</th></tr></thead><tbody>${bad.map(v=>`<tr><td>${esc(v.k)}<div class="acat2">${esc([...v.cats].join('、'))}</div></td><td class="acat">${esc([...v.cats].join('、'))}</td><td>${v.n}</td><td><b style="color:#b42318">${v.ng}</b></td><td><b style="color:#b42318">${aFmt(v.rate)}</b></td></tr>`).join('')}</tbody></table></div>
-<details class="adet"><summary>不合格明細（${badRec.length} 筆）</summary><div class="st-scroll"><table class="st-table atbl">${head}<tbody>${badRec.map(recRow).join('')}</tbody></table></div></details>`:`<p class="sub">${S.n?'這段期間所有廠商都 100% 合格。':'這段期間沒有驗收資料。'}</p>`}
-<div class="st-sec">4. 合格率趨勢（${aMode==='M'?'最近 12 個月':aMode==='Q'?'最近 4 季':'最近 5 年'}）</div>${aLine(tp)}<div class="st-note">圖下方的 ▲▼ 是和前一期比較的百分點變化。</div>
+${(()=>{const it=cats.map(c=>{const x=S.cat.get(c)||{ok:0,ng:0},y=P.cat.get(c)||{ok:0,ng:0},n=x.ok+x.ng,rt=aRate(x.ok,x.ng);return{k:c,n,dim:!n,drill:n?drill(`${rg.label}・${c}`,[]):'',sub:`共 ${n} 件（${S.n?Math.round(n/S.n*100):0}%）· 不合格 ${x.ng?`<span class="late">${x.ng}</span>`:0} · 合格率 <b>${aFmt(rt)}</b> · ${aPP(rt,aRate(y.ok,y.ng),pw)}`}}).map(x=>({...x,drill:''}));
+  return donutCard({title:`1. 全部分類合格率（${esc(tw)}）`,right:`<span>全部合計：合格率 <b>${aFmt(S.rate)}</b>　${aPP(S.rate,P.rate,pw)}</span>`,items:it,center:S.n,unit:'件',empty:'這段期間沒有驗收資料。',note:'圓環是各分類的驗收件數；每一列右邊是合格率和上期比較（百分點）。'})})()}
+${(()=>{const show=aAll?venL:venL.slice(0,15),sl=dnSlices([...venL].sort((a,b)=>b.n-a.n).map(v=>({k:v.k,n:v.n})));
+  const it=show.map(v=>{const p=vp.get(v.k);return{k:v.k,n:v.n,tag:[...v.cats].join('、'),sub:`共 ${v.n} 件 · 不合格 ${v.ng?`<span class="late">${v.ng}</span>`:0} · 合格率 <b${v.rate<100?' style="color:#b42318"':''}>${aFmt(v.rate)}</b> · ${aPP(v.rate,p?aRate(p.ok,p.ng):null,pw)}`}});
+  const more=venL.length>15?`<div class="dl-r dim" style="opacity:1"><button type="button" data-aall="1">${aAll?'只看前 15 家':`顯示全部 ${venL.length} 家`}</button></div>`:'';
+  return donutCard({title:'2. 各廠商合格率（由低到高）',right:`<select id="aVF" class="topsel" aria-label="分類篩選"><option value="">全部分類</option>${cats.map(c=>`<option value="${esc(c)}"${vf===c?' selected':''}>${esc(c)}</option>`).join('')}</select><span class="st-note" style="margin:0">共 ${venL.length} 家</span>`,items:it,slices:sl,center:venL.reduce((a,v)=>a+v.n,0),unit:'件',more,empty:'這段期間沒有驗收資料。',note:'圓環是各廠商的驗收件數（超過 8 家的合併為「其它」）；清單依合格率由低到高排列。'})})()}
+${(()=>{const it=bad.map(v=>({k:v.k,n:v.ng,tag:[...v.cats].join('、'),sub:`不合格 <span class="late">${v.ng}</span> / 共 ${v.n} 件 · 合格率 <b style="color:#b42318">${aFmt(v.rate)}</b>`}));
+  return donutCard({title:'3. 不合格：合格率未達 100% 的廠商',items:it,center:S.ng,unit:'件不合格',empty:S.n?'這段期間所有廠商都 100% 合格。':'這段期間沒有驗收資料。',note:bad.length?'圓環是各廠商的不合格件數。':''})+(badRec.length?`<details class="adet"><summary>不合格明細（${badRec.length} 筆）</summary><div class="st-scroll"><table class="st-table atbl">${head}<tbody>${badRec.map(recRow).join('')}</tbody></table></div></details>`:'')})()}
+<div class="dcard"><div class="dc-h"><span>4. 合格率趨勢（${aMode==='M'?'最近 12 個月':aMode==='Q'?'最近 4 季':'最近 5 年'}）</span></div><div class="atrend">${aLine(tp)}</div><div class="st-note" style="margin:6px 0 0">圖下方的 ▲▼ 是和前一期比較的百分點變化。</div></div>
+
 <details class="adet"${recent.length&&recent.length<=30?' open':''}><summary>本期驗收紀錄（${recent.length} 筆，可編輯、刪除）</summary>${recent.length?`<div class="st-scroll"><table class="st-table atbl">${head}<tbody>${recent.map(recRow).join('')}</tbody></table></div>`:'<p class="sub">沒有紀錄。</p>'}</details>
 </div>`;
 }
@@ -1048,24 +1067,30 @@ function aApply(){const have=new Set(ACC.map(r=>r.date+'|'+r.cat+'|'+r.ven)),lis
   const ds=list.map(x=>x.date).sort(),last=ds[ds.length-1];if(last){aY=+last.slice(0,4);aMode='Y'}
   aImp=null;aMsg=`已匯入 ${n} 筆${rep?`（其中 ${rep} 筆取代原有紀錄）`:''}${skipN?`，略過 ${skipN} 筆已有的紀錄`:''}；常用廠商已依各分類件數排好。`;renderAcc()}
 async function aReport(){const rg=stRange(aMode,aY,aA),pv=stShift(aMode,aY,aA,-1),prg=stRange(aMode,pv.y,pv.a),S=aStat(rg),P=aStat(prg),pw=aMode==='M'?'上月':aMode==='Q'?'上季':'去年';
+  const imgs=[],dnImg=async(title,items,center,unit)=>{if(!items.length)return;const o=await donutPng(title,dnSlices(items),center,unit);imgs.push(o);body.push(wimg(imgs.length,o.w,o.h))};
   const body=[wp(`Casevoras ${BOOK.title}合格率報告`,{b:1,sz:36}),wp(`${MN[aMode]}｜統計期間：${rg.label}`,{b:1,sz:24}),wp('匯出時間：'+new Date().toLocaleString('zh-TW'),{sz:20,after:200})];
   body.push(wp('一、重點摘要',{b:1,sz:28,bd:1,after:120}));
   body.push(wp([`驗收件數：${S.n} 件（合格 ${S.ok}、不合格 ${S.ng}）`,`合格率：${aFmt(S.rate)}`,`${pw}（${prg.label}）：${P.n} 件，合格率 ${aFmt(P.rate)}；比較：${aPPt(S.rate,P.rate)}`].join('\n'),{after:200}));
   body.push(wp('二、全部分類合格率',{b:1,sz:28,bd:1,after:120}));
   const cats=aCatsAll().filter(c=>ACATS.includes(c)||S.cat.has(c));
+  await dnImg('各分類驗收件數',cats.map(c=>{const x=S.cat.get(c)||{ok:0,ng:0};return{k:c,n:x.ok+x.ng}}),S.n,'件');
   body.push(wtbl(['分類','件數','不合格','合格率','較上期'],cats.map(c=>{const s=S.cat.get(c)||{ok:0,ng:0},p=P.cat.get(c)||{ok:0,ng:0};return[c,String(s.ok+s.ng),String(s.ng),aFmt(aRate(s.ok,s.ng)),aPPt(aRate(s.ok,s.ng),aRate(p.ok,p.ng))]}).concat([['全部分類合計',String(S.n),String(S.ng),aFmt(S.rate),aPPt(S.rate,P.rate)]]),[3400,1400,1400,1500,1938]));
   body.push(wp('三、各廠商合格率（由低到高）',{b:1,sz:28,bd:1,after:120}));
   const vl=[...S.ven.entries()].map(([k,v])=>({k,...v,n:v.ok+v.ng,rate:aRate(v.ok,v.ng)})).sort((a,b)=>a.rate-b.rate||b.n-a.n);
+  await dnImg('各廠商驗收件數',[...vl].sort((a,b)=>b.n-a.n).map(v=>({k:v.k,n:v.n})),S.n,'件');
   body.push(vl.length?wtbl(['廠商','分類','件數','不合格','合格率','較上期'],vl.map(v=>{const p=P.ven.get(v.k);return[v.k,[...v.cats].join('、'),String(v.n),String(v.ng),aFmt(v.rate),aPPt(v.rate,p?aRate(p.ok,p.ng):null)]}),[1700,2600,1000,1100,1300,1938]):wp('（本期無資料）',{sz:20}));
   body.push(wp('四、不合格：合格率未達 100% 的廠商',{b:1,sz:28,bd:1,after:120}));
   const bad=vl.filter(v=>v.ng>0),br=S.rows.filter(r=>r.ng>0).sort((a,b)=>a.date.localeCompare(b.date));
+  await dnImg('各廠商不合格件數',bad.map(v=>({k:v.k,n:v.ng})),S.ng,'件不合格');
   body.push(bad.length?wtbl(['廠商','分類','件數','不合格','合格率'],bad.map(v=>[v.k,[...v.cats].join('、'),String(v.n),String(v.ng),aFmt(v.rate)]),[2000,3000,1400,1400,1838]):wp('本期所有廠商都 100% 合格。',{sz:20}));
   if(br.length){body.push(wp('不合格明細',{b:1,sz:24,after:80}));body.push(wtbl(['到貨日期','分類','廠商','不合格','備註'],br.map(r=>[r.date,r.cat,r.ven,String(r.ng),r.note||'']),[1500,2300,1600,1000,3238]))}
-  body.push(wp('※ 合格率 ＝ 合格件數 ÷（合格 ＋ 不合格）。「較上期」是合格率相差的百分點：▲ 變好、▼ 變差。',{sz:18}));
-  const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
-  const blob=zipStore([['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'],
+  const tsv=$(BOOK.el)&&$(BOOK.el).querySelector('.atrend svg');if(tsv){body.push(wp('五、合格率趨勢',{b:1,sz:28,bd:1,after:120}));const o=await svgPng(tsv,'');imgs.push(o);body.push(wimg(imgs.length,o.w,o.h))}
+  body.push(wp('※ 合格率 ＝ 合格件數 ÷（合格 ＋ 不合格）。「較上期」是合格率相差的百分點：▲ 變好、▼ 變差。圖片中的圓環為件數分布。',{sz:18}));
+  const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+  const blob=zipStore([['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'],
     ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'],
-    ['word/document.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${NS}><w:body>${body.join('')}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`]]);
+    ['word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+imgs.map((m,k)=>`<Relationship Id="rImg${k+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/chart${k+1}.png"/>`).join('')+'</Relationships>'],
+    ['word/document.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${NS}><w:body>${body.join('')}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`]].concat(imgs.map((m,k)=>['word/media/chart'+(k+1)+'.png',m.bytes])));
   return{blob,name:`Casevoras_${BOOK.tag}_${MN[aMode]}_${aMode==='Y'?aY:aMode==='Q'?aY+'Q'+aA:aY+'-'+pad2(aA)}.docx`}}
 accOn('click',async e=>{const b=e.target.closest('button');if(!b)return;
   if(b.id==='aExpBtn'){aExport();return}
@@ -1367,6 +1392,37 @@ const dayChgHtml=(cur,prev,pw)=>prev==null?`<span class="chg flat" title="${esc(
 const dayChgTxt=(cur,prev)=>prev==null?'上期無資料':chg(cur,prev).t;
 const chgTxt=(cur,prev)=>{const x=chg(cur,prev);return x.c==='new'?'新出現（上期 0 件）':x.p===null?'—':x.p>0?'上升 '+x.p+'%':x.p<0?'下降 '+(-x.p)+'%':'持平'};
 // 圓餅圖：每片之間留 2px 底色縫，滑鼠移上去看件數與占比
+// ---- 圓環卡片（客訴統計、副原料／原物料耗材驗收共用）：左邊圓環＋中間總數，右邊每一項的件數與狀況 ----
+const DPAL=['#2f6fbf','#e8743b','#1e9e74','#e3a008','#e57fa5','#8e44ad','#16a3b8','#7a8b3c'],DOTH='#a3a3a3';
+// items:[{k,n,c}] 已排序；超過 8 項的合併成「其它」
+function dnSlices(items){const pos=items.filter(x=>x.n>0);if(pos.length<=8)return pos.map((x,i)=>({...x,c:x.c||DPAL[i%DPAL.length]}));
+  const top=pos.slice(0,7).map((x,i)=>({...x,c:x.c||DPAL[i]}));return top.concat([{k:'其它',n:pos.slice(7).reduce((a,x)=>a+x.n,0),c:DOTH}])}
+function donutSvg(sl,center,unit){const tot=sl.reduce((a,x)=>a+x.n,0),C=90,R=74,W=26;let a0=-Math.PI/2,g='';
+  if(!tot)g=`<circle cx="${C}" cy="${C}" r="${R-W/2}" fill="none" stroke="#e8e1d3" stroke-width="${W}"/>`;
+  else if(sl.length===1)g=`<circle cx="${C}" cy="${C}" r="${R-W/2}" fill="none" stroke="${sl[0].c}" stroke-width="${W}"><title>${esc(sl[0].k)}：${sl[0].n}（100%）</title></circle>`;
+  else sl.forEach(x=>{const a1=a0+x.n/tot*2*Math.PI,P=(r,t)=>[C+r*Math.cos(t),C+r*Math.sin(t)],[o0x,o0y]=P(R,a0),[o1x,o1y]=P(R,a1),[i1x,i1y]=P(R-W,a1),[i0x,i0y]=P(R-W,a0),L=a1-a0>Math.PI?1:0;
+    g+=`<path d="M${o0x},${o0y} A${R},${R} 0 ${L} 1 ${o1x},${o1y} L${i1x},${i1y} A${R-W},${R-W} 0 ${L} 0 ${i0x},${i0y} Z" fill="${x.c}" stroke="var(--card,#fff)" stroke-width="2"><title>${esc(x.k)}：${x.n}（${Math.round(x.n/tot*100)}%）</title></path>`;a0=a1});
+  return`<svg viewBox="0 0 180 180" class="dn-svg" role="img" aria-label="圓環圖">${g}<text x="90" y="92" text-anchor="middle" font-size="34" font-weight="800" fill="var(--tx)">${esc(center)}</text><text x="90" y="116" text-anchor="middle" font-size="13" fill="var(--mu)">${esc(unit||'')}</text></svg>`}
+// o:{title,right,items:[{k,n,c,tag,sub,drill,dim}],slices,center,unit,note,empty}
+function donutCard(o){const sl=o.slices||dnSlices(o.items),cm=new Map(sl.map(x=>[x.k,x.c]));
+  const rows=o.items.map(x=>`<div class="dl-r${x.drill?' drill':''}${x.dim?' dim':''}"${x.drill||''}><i style="background:${x.c||cm.get(x.k)||DOTH}"></i><b>${esc(x.k)}</b>${x.tag?`<span class="dl-t">${esc(x.tag)}</span>`:''}<span class="dl-s">${x.sub||''}</span></div>`).join('');
+  return`<div class="dcard"><div class="dc-h"><span>${o.title}</span>${o.right?`<span class="dc-x">${o.right}</span>`:''}</div>${o.items.length?`<div class="dc-b">${donutSvg(sl,o.center,o.unit)}<div class="dc-l">${rows}${o.more||''}</div></div>`:`<p class="sub">${o.empty||'尚無資料'}</p>`}${o.note?`<div class="st-note" style="margin:6px 0 0">${o.note}</div>`:''}</div>`}
+// Word 報告用：圓環圖片（左圓環、右圖例），每張一樣寬
+async function donutPng(title,sl,center,unit){const tot=sl.reduce((a,x)=>a+x.n,0),S=2,W=600,rows=Math.max(1,sl.length),H=Math.max(250,70+rows*26),cv=document.createElement('canvas');cv.width=W*S;cv.height=H*S;const g=cv.getContext('2d');g.scale(S,S);
+  const F='DFKai-SB,標楷體,Microsoft JhengHei,PingFang TC,Noto Sans TC,sans-serif';g.fillStyle='#fff';g.fillRect(0,0,W,H);g.fillStyle='#16213a';g.font=`bold 16px ${F}`;g.fillText(title,14,26);
+  const cx=130,cy=Math.max(140,H/2+12),R=92,Wd=32;let a0=-Math.PI/2;
+  if(!tot){g.beginPath();g.arc(cx,cy,R-Wd/2,0,Math.PI*2);g.strokeStyle='#e8e1d3';g.lineWidth=Wd;g.stroke()}
+  else sl.forEach(x=>{const a1=a0+x.n/tot*2*Math.PI;g.beginPath();g.arc(cx,cy,R,a0,a1);g.arc(cx,cy,R-Wd,a1,a0,true);g.closePath();g.fillStyle=x.c;g.fill();if(sl.length>1){g.lineWidth=2;g.strokeStyle='#fff';g.stroke()}a0=a1});
+  g.fillStyle='#16213a';g.textAlign='center';g.font=`bold 30px ${F}`;g.fillText(String(center),cx,cy+6);g.font=`13px ${F}`;g.fillStyle='#5d6779';g.fillText(unit||'',cx,cy+28);g.textAlign='left';
+  const ly=Math.max(60,cy-rows*13+8);sl.forEach((x,i)=>{const y=ly+i*26;g.fillStyle=x.c;g.fillRect(262,y-11,13,13);g.fillStyle='#16213a';g.font=`14px ${F}`;let t=x.k;while(g.measureText(t).width>190&&t.length>2)t=t.slice(0,-1);if(t!==x.k)t+='…';g.fillText(t,282,y);g.textAlign='right';g.fillText(`${x.n}`,520,y);g.fillStyle='#5d6779';g.fillText(`${tot?Math.round(x.n/tot*100):0}%`,580,y);g.textAlign='left'});
+  const blob=await new Promise(r=>cv.toBlob(r,'image/png'));return{blob,w:W,h:H,bytes:new Uint8Array(await blob.arrayBuffer())}}
+// SVG（例如合格率趨勢）轉成 PNG 給 Word 用
+async function svgPng(svgEl,title){const cs=getComputedStyle(document.documentElement),cvv=v=>cs.getPropertyValue(v).trim()||'#888';
+  const vb=(svgEl.getAttribute('viewBox')||'0 0 600 250').split(/\s+/).map(Number),W=vb[2],H=vb[3]+(title?34:0);
+  const inner=svgEl.innerHTML.replace(/var\(--bd\)/g,cvv('--bd')).replace(/var\(--mu\)/g,cvv('--mu')).replace(/var\(--tx\)/g,'#16213a').replace(/var\(--card,#fff\)/g,'#ffffff');
+  const sv=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Microsoft JhengHei,PingFang TC,Noto Sans TC,sans-serif"><rect width="100%" height="100%" fill="#fff"/>${title?`<text x="10" y="22" font-size="15" font-weight="700" fill="#16213a">${esc(title)}</text>`:''}<g transform="translate(0,${title?34:0})">${inner}</g></svg>`;
+  const img=new Image();img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sv);await img.decode();const k=2,c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);
+  const blob=await new Promise(r=>c.toBlob(r,'image/png'));return{blob,w:W,h:H,bytes:new Uint8Array(await blob.arrayBuffer())}}
 function pieSvg(rows,pv,pw){pv=pv||{};const tot=rows.reduce((a,r)=>a+r[1],0);if(!tot)return'<p class="sub">本期沒有填寫原因的案件</p>';
   const R=90,C=100;let a0=-Math.PI/2,g='';
   rows.filter(r=>r[1]>0).forEach(([k,n])=>{const a1=a0+n/tot*2*Math.PI,f=t=>[C+R*Math.cos(t),C+R*Math.sin(t)],[x0,y0]=f(a0),[x1,y1]=f(a1),pct=Math.round(n/tot*100);
@@ -1391,6 +1447,14 @@ function renderStats(){
  const trend=mode==='M'?'最近 12 個月':mode==='Q'?'最近 4 季':'最近 5 年';
  const hb=(rows,pick,ttl,prevRows)=>hbarHtml(rows,'',pick,rg.label+'・'+(ttl||''),Object.fromEntries(prevRows||[]),pw);
  const pCat=Object.fromEntries((stCatMode==='merge'?pc.catsM:pc.cats).map(x=>[x.name,x.n]));
+ // 圓環卡片用：每一項的未結案、報告書逾期與上期比較
+ const cMeta=l=>({open:l.filter(x=>x.status!=='已結案').length,late:l.filter(x=>{const st=rptState(x.date,((x.form||{}).inputs||{}).rpt);return st&&st.late}).length});
+ const rankCard=(title,right,entries,pick,prevObj,top,dt,unit,note,isC)=>{const tot=entries.reduce((a,e)=>a+e[1],0),shown=entries.slice(0,top),rest=entries.slice(top),lim=shown.length>8?7:shown.length;
+   const sl=shown.slice(0,lim).map(([k,n],i)=>({k,n,c:DPAL[i]})),rs=entries.slice(lim).reduce((a,e)=>a+e[1],0);if(rs)sl.push({k:'其它',n:rs,c:DOTH});
+   const items=shown.map(([k,n])=>{const l=pick(k),m=isC?cMeta(l):{open:l.filter(x=>x.status!=='已結案').length,late:0};
+     return{k,n,drill:drill(rg.label+'・'+dt+k,l),sub:`共 ${n}（${tot?Math.round(n/tot*100):0}%）· 未結 ${m.open}${m.late?` · <span class="late">報告書逾期 ${m.late}</span>`:''} · ${chgHtml(n,(prevObj||{})[k],pw)}`}});
+   const more=rest.length?`<div class="dl-r dim"><i style="background:${DOTH}"></i><b>其它 ${rest.length} 項</b><span class="dl-s">共 ${rest.reduce((a,e)=>a+e[1],0)}（可把右上「前幾名」調大來看）</span></div>`:'';
+   return donutCard({title,right,items,slices:sl,center:tot,unit,more,note,empty:'尚無資料'})};
  const h=`<h3 class="st-title">${esc(rg.label)}</h3>
   <div class="st-sum ${c.cross.length?'warn':'ok'}">${esc(sum)}</div>
   <div class="st-tiles"><div class="st-tile drill"${drill(rg.label+'・新增',c.cs)}><div class="n">${c.total}</div><div class="l">新增</div><div class="d">${stK==='客訴'?'客訴':'發現'}日期在本期</div></div>
@@ -1402,12 +1466,13 @@ function renderStats(){
    <div class="box del"><div class="n">${c.del}</div><div class="l">刪除件數（不立案）</div><div class="st-note" style="margin:0">本期日期、已移到「最近刪除」未列入新增的案件。新增 ${c.total} ＋ 刪除 ${c.del} ＝ ${c.total+c.del}</div></div></div>
   <div class="st-sec">前期未結案明細（需追蹤）</div>
   ${c.cross.length?`<div class="st-scroll"><table class="st-table"><thead><tr><th>編號</th><th>${stK==='客訴'?'客訴':'發現'}日期</th><th>${stK==='客訴'?'產品名稱':'供應商｜原料'}</th><th>處理狀態</th><th>已經過</th></tr></thead><tbody>${c.cross.map(r=>`<tr class="click" data-open="${esc(r.id)}"><td>${esc(r.no||'—')}</td><td>${esc(r.date)}</td><td>${esc(stK==='客訴'?r.item:(r.sup||'')+'｜'+(r.item||''))}</td><td>${esc(r.status||'')}</td><td>${daysSince(r.date)} 天</td></tr>`).join('')}</tbody></table></div>`:'<p class="sub">沒有前期未結案的案件。</p>'}
-  <div class="st-sec st-secr"><span>${stK==='客訴'?'哪個產品客訴最多':'哪個供應商最多'}（${esc(tw)}新增）</span><span>${topSel('p',c.who.length)}</span></div>${c.who.length?hb(c.who.slice(0,stTop.p),t=>c.cs.filter(x=>(stK==='客訴'?((x.item||'').trim()||'（未填）'):((x.sup||'').trim()||'（未填供應商）'))===t),'',pc.who):'<p class="sub">尚無資料</p>'}
-  <div class="st-sec st-secr"><span>異常類別排行（${esc(tw)}新增，由多到少）</span><span><span class="seg seg-sm" role="group" aria-label="異物顯示方式"><button type="button" data-cm="merge" class="${stCatMode==='merge'?'on':''}">異物合併</button><button type="button" data-cm="detail" class="${stCatMode==='detail'?'on':''}">細分</button></span>${topSel('c',(stCatMode==='merge'?c.catsM:c.cats).length)}</span></div>
-  ${c.cats.length?`<table class="st-table"><thead><tr><th>異常類別</th><th>件數</th><th>其中處理中</th><th>與${pw}比較</th></tr></thead><tbody>${(stCatMode==='merge'?c.catsM:c.cats).slice(0,stTop.c).map(x=>`<tr class="click drill"${drill(rg.label+'・'+x.name,c.cs.filter(y=>(stCatMode==='merge'?(y.cat||'未分類'):catKey(y))===x.name))}><td>${esc(x.name)}</td><td><b>${x.n}</b></td><td>${x.open?`<b style="color:#b42318">${x.open}</b>`:'0'}</td><td>${chgHtml(x.n,pCat[x.name],pw)}</td></tr>`).join('')}</tbody></table>`:'<p class="sub">尚無資料</p>'}
+  ${rankCard(`${stK==='客訴'?'哪個產品客訴最多':'哪個供應商最多'}（${esc(tw)}新增）`,topSel('p',c.who.length),c.who,t=>c.cs.filter(x=>(stK==='客訴'?((x.item||'').trim()||'（未填）'):((x.sup||'').trim()||'（未填供應商）'))===t),Object.fromEntries(pc.who),stTop.p,'','件',`排序依件數由多到少；${stK==='客訴'?'報告書逾期＝超過期限才送出或還沒送出。':''}點一列可看是哪幾件。`,stK==='客訴')}
+  ${rankCard(`異常類別排行（${esc(tw)}新增，由多到少）`,`<span class="seg seg-sm" role="group" aria-label="異物顯示方式"><button type="button" data-cm="merge" class="${stCatMode==='merge'?'on':''}">異物合併</button><button type="button" data-cm="detail" class="${stCatMode==='detail'?'on':''}">細分</button></span>${topSel('c',(stCatMode==='merge'?c.catsM:c.cats).length)}`,(stCatMode==='merge'?c.catsM:c.cats).map(x=>[x.name,x.n]),t=>c.cs.filter(y=>(stCatMode==='merge'?(y.cat||'未分類'):catKey(y))===t),pCat,stTop.c,'','件','',stK==='客訴')}
   ${stK==='客訴'?(()=>{const cd=catDays(CASES.filter(x=>isLive(x)&&x.kind==='客訴'&&x.date>=rg.start&&x.date<=rg.end)),pcd=Object.fromEntries(catDays(CASES.filter(x=>isLive(x)&&x.kind==='客訴'&&x.date>=prg.start&&x.date<=prg.end)).map(x=>[x.name,x.avg]));return`<div class="st-sec">各異常類別平均處理天數（${esc(tw)}新增，追蹤工作天）</div>${cd.length?`<div class="st-scroll"><table class="st-table cdt"><thead><tr><th>異常類別</th><th>完成件數</th><th>平均天數</th><th>最長</th><th>與${pw}比較</th></tr></thead><tbody>${cd.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.n}</td><td><b>${x.avg}</b> 天</td><td>${x.max} 天</td><td>${dayChgHtml(x.avg,pcd[x.name],pw)}${pcd[x.name]!=null?`<span class="st-note" style="display:block;margin:0">${pw} ${pcd[x.name]} 天</span>`:''}</td></tr>`).join('')}</tbody></table></div><div class="st-note">只算「追蹤開始」與「追蹤完成」都有填的案件；扣除週六日與國定假日，頭尾都算。天數 ▲ 表示處理變慢、▼ 表示處理變快。</div>`:'<p class="sub">本期還沒有填好追蹤開始與完成日期的案件。</p>'}`})():''}
-  ${stK==='客訴'?`<div class="st-sec st-secr"><span>權責單位件數（${esc(tw)}新增）</span><span>${topSel('r',c.resp.length)}</span></div>${c.resp.length?hb(c.resp.slice(0,stTop.r),t=>c.cs.filter(x=>respHas(x,t)),'權責單位：',pc.resp):'<p class="sub">尚無資料</p>'}<div class="st-note">一件有多個權責單位時，每個單位各算一次。</div>
-  <div class="st-sec">人、機、料、法、環</div><div class="czrow"><div><div class="czh">原因分布（${esc(tw)}新增）</div>${pieSvg(CZ.concat('未填').map(k=>[k,c.causes[k]]),pc.causes,pw)}</div><div><div class="czh">趨勢（${trend}）</div>${lineSvg(CZ.map(k=>({name:k,vals:ser.map(x=>x.cz[k]),c:CZC[k],d:CZD[k]})),ser.map(x=>x.l),{base:CZ.map(k=>s0.cz[k]),pl:s0.l})}</div></div><div class="st-note">一件勾選多個原因時，每個原因各算一次。</div>`:''}
+  ${stK==='客訴'?`${rankCard(`權責單位件數（${esc(tw)}新增）`,topSel('r',c.resp.length),c.resp,t=>c.cs.filter(x=>respHas(x,t)),Object.fromEntries(pc.resp),stTop.r,'權責單位：','次','一件有多個權責單位時，每個單位各算一次（中間是合計次數）。',true)}
+  ${(()=>{const ks=CZ.concat('未填'),tot=ks.reduce((a,k)=>a+c.causes[k],0),items=ks.map(k=>({k,n:c.causes[k],c:CZC[k],dim:!c.causes[k],sub:`共 ${c.causes[k]}（${tot?Math.round(c.causes[k]/tot*100):0}%）· ${chgHtml(c.causes[k],pc.causes[k],pw)}`}));
+    return donutCard({title:`人、機、料、法、環：原因分布（${esc(tw)}新增）`,items,slices:items.filter(x=>x.n>0).map(x=>({k:x.k,n:x.n,c:x.c})),center:tot,unit:'次',note:'一件勾選多個原因時，每個原因各算一次（中間是合計次數）。',empty:'本期沒有填寫原因的案件'})})()}
+  <div class="dcard"><div class="dc-h"><span>人、機、料、法、環：趨勢（${trend}）</span></div><div class="czrow1">${lineSvg(CZ.map(k=>({name:k,vals:ser.map(x=>x.cz[k]),c:CZC[k],d:CZD[k]})),ser.map(x=>x.l),{base:CZ.map(k=>s0.cz[k]),pl:s0.l})}</div></div>`:''}
   <div class="st-sec">處理階段（${esc(tw)}新增）</div>
   <table class="st-table"><thead><tr><th>處理階段</th><th>件數</th></tr></thead><tbody>${c.stages.map(([k,n])=>`<tr><td>${esc(k)}</td><td><b>${n}</b></td></tr>`).join('')}</tbody></table>
   <p class="sh st-sec">趨勢（${trend}）</p>${lineSvg([{name:'新增件數',vals:ser.map(x=>x.t),c:'#16213a'},{name:'其中未結案',vals:ser.map(x=>x.o),c:'#c0392b',d:'7 4'}],ser.map(x=>x.l),{pct:0,base:[s0.t,s0.o],pl:s0.l})}<div class="st-note">折線圖下方的 ▲▼ 是「新增件數」和前一期比較的升降幅度；▲ 上升、▼ 下降。件數少時百分比變化會比較大，請和件數一起看。</div>`;
@@ -2081,7 +2146,7 @@ async function chartPng(fig,title){
   const blob=await new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(new Error('圖片產生失敗')),'image/png'));
   return{blob,w:W+24,h:H};
 }
-const chartTitle=fig=>{const p=fig.previousElementSibling;return p&&p.classList.contains('sh')?p.textContent.trim():p&&p.classList.contains('czh')?'人、機、料、法、環'+p.textContent.trim():''};
+const chartTitle=fig=>{const dc=fig.closest('.dcard');if(dc)return dc.querySelector('.dc-h').textContent.trim();const p=fig.previousElementSibling;return p&&p.classList.contains('sh')?p.textContent.trim():p&&p.classList.contains('czh')?'人、機、料、法、環'+p.textContent.trim():''};
 function statPeriod(){
   const cy=now.getFullYear(),p2=n=>String(n).padStart(2,'0'),ym=c=>String(c.date||'').slice(0,7);
   if(mode==='Y')return{label:stYear+' 年',tag:String(stYear),inP:c=>String(c.date||'').slice(0,4)===String(stYear),pLabel:(stYear-1)+' 年',inPrev:c=>String(c.date||'').slice(0,4)===String(stYear-1),unit:'年'};
@@ -2103,12 +2168,13 @@ function wimg(i,w,h){
 async function buildReport(){
   const P=statPeriod(),isC=stK==='客訴',all=CASES.filter(c=>isLive(c)&&c.kind===stK),cur=all.filter(P.inP).sort((a,b)=>String(a.date).localeCompare(String(b.date))),prev=all.filter(P.inPrev);
   // 件數趨勢放前面，人機料法環趨勢放後面
-  const figs=[...$('sbody').querySelectorAll('figure.chart')].sort((a,b)=>!!a.closest('.czrow')-!!b.closest('.czrow')),imgs=[];
+  const figs=[...$('sbody').querySelectorAll('figure.chart')].sort((a,b)=>!!a.closest('.dcard')-!!b.closest('.dcard')),imgs=[];
   for(const f of figs){const t=chartTitle(f),o=await chartPng(f,t);imgs.push({...o,bytes:new Uint8Array(await o.blob.arrayBuffer())})}
+  // 圓環圖片：每張一樣寬，放在對應表格前
+  const dnImg=async(title,entries,unit)=>{if(!entries.length)return;const sl=dnSlices(entries.map(([k,n])=>({k,n}))),o=await donutPng(title,sl,entries.reduce((a,e)=>a+e[1],0),unit||'件');imgs.push(o);body.push(wimg(imgs.length,o.w,o.h))};
   const nFig=imgs.length,czc={};CZ.concat('未填').forEach(k=>czc[k]=0);cur.forEach(c=>{const v=String(((c.form||{}).inputs||{}).cause||'').split('、').filter(k=>CZ.includes(k));if(!v.length)czc['未填']++;v.forEach(k=>czc[k]++)});
   const czp={};CZ.concat('未填').forEach(k=>czp[k]=0);prev.forEach(c=>{const v=String(((c.form||{}).inputs||{}).cause||'').split('、').filter(k=>CZ.includes(k));if(!v.length)czp['未填']++;v.forEach(k=>czp[k]++)});
   const czRows=CZ.concat('未填').map(k=>[k,czc[k]]),czTot=czRows.reduce((a,r)=>a+r[1],0);let pieIdx=0;
-  if(isC&&czTot){const o=await piePng(czRows,'原因分布（人、機、料、法、環）',czp);imgs.push({...o,bytes:new Uint8Array(await o.blob.arrayBuffer())});pieIdx=imgs.length}
   const diff=cur.length-prev.length,cnt=(arr,f)=>{const m={};arr.forEach(c=>{const k=f(c);m[k]=(m[k]||0)+1});return m};
   const byCat=cnt(cur,catKey),pCat=cnt(prev,catKey),stages=isC?STS:VSTS,bySt=cnt(cur,c=>c.status||'未設定'),byResp=respCount(cur);
   const open=cur.filter(c=>c.status!=='已結案').length;
@@ -2121,6 +2187,7 @@ async function buildReport(){
   body.push(wp('三、各異常類別件數',{b:1,sz:28,bd:1,after:120}));
   // 由多到少，0 件的不列；件數相同時照類別順序
   const ckOrd=k=>{const i=CATS.indexOf(k.split('-')[0]);return i<0?99:i},ckeys=Object.keys(byCat).filter(k=>byCat[k]>0).sort((a,b)=>byCat[b]-byCat[a]||ckOrd(a)-ckOrd(b)||a.localeCompare(b));
+  await dnImg('各異常類別件數',ckeys.map(k=>[k,byCat[k]||0]));
   body.push(ckeys.length?wtbl(['異常類別','件數','占比','較上期'],ckeys.map(k=>[k,String(byCat[k]||0),cur.length?Math.round((byCat[k]||0)*100/cur.length)+'%':'—',chg(byCat[k],pCat[k]).t]),[4400,1700,1700,1838]):wp('（本期無案件）',{sz:20}));
   if(isC){const cd=catDays(cur),pcd=Object.fromEntries(catDays(prev).map(x=>[x.name,x.avg]));body.push(wp('各異常類別平均處理天數（追蹤工作天，扣除週六日與國定假日）',{b:1,sz:24,after:80}));
     body.push(cd.length?wtbl(['異常類別','完成追蹤件數','平均處理天數','最長','較上期'],cd.map(x=>[x.name,String(x.n),x.avg+' 天',x.max+' 天',pcd[x.name]==null?'上期無資料':`${chg(x.avg,pcd[x.name]).t}（上期 ${pcd[x.name]} 天）`]),[2600,1500,1700,1300,2538]):wp('（本期還沒有填好追蹤開始與完成日期的案件）',{sz:20}))}
@@ -2131,15 +2198,18 @@ async function buildReport(){
   body.push(wp(cn[ci++]+'、排行（依統計頁目前的設定）',{b:1,sz:28,bd:1,after:120}));
   const whoF=c=>isC?((c.item||'').trim()||'（未填）'):((c.sup||'').trim()||'（未填供應商）'),whoR=Object.entries(cnt(cur,whoF)).sort((a,b)=>b[1]-a[1]),whoP=cnt(prev,whoF);
   body.push(wp(`${isC?'哪個產品客訴最多':'哪個供應商最多'}（前 ${stTop.p} 名，共 ${whoR.length} 項）`,{b:1,sz:24,after:80}));
+  await dnImg(isC?'哪個產品客訴最多':'哪個供應商最多',whoR);
   body.push(whoR.length?wtbl(['名次',isC?'產品名稱':'供應商','件數','占比','較上期'],rank(whoR,'p',whoP),RW):wp('（本期無案件）',{sz:20}));
   const catF=c=>stCatMode==='merge'?(c.cat||'未分類'):catKey(c),catR=Object.entries(cnt(cur,catF)).sort((a,b)=>b[1]-a[1]),catP=cnt(prev,catF);
   body.push(wp(`異常類別排行（${stCatMode==='merge'?'異物合併':'細分'}，前 ${stTop.c} 名，共 ${catR.length} 項）`,{b:1,sz:24,after:80}));
+  await dnImg('異常類別排行',catR);
   body.push(catR.length?wtbl(['名次','異常類別','件數','占比','較上期'],rank(catR,'c',catP),RW):wp('（本期無案件）',{sz:20}));
   if(isC){body.push(wp(`權責單位件數（前 ${stTop.r} 名，共 ${byResp.length} 項；一件有多個單位時各算一次）`,{b:1,sz:24,after:80}));
+    await dnImg('權責單位件數',byResp,'次');
     body.push(byResp.length?wtbl(['名次','權責單位（負責改善的部門）','件數','占比','較上期'],rank(byResp,'r',Object.fromEntries(respCount(prev))),RW):wp('（本期無案件）',{sz:20}));
     body.push(wp(cn[ci++]+'、人、機、料、法、環',{b:1,sz:28,bd:1,after:120}));
     body.push(wtbl(['原因','件數','占比','較上期'],czRows.map(([k,v])=>[k,String(v),czTot?Math.round(v*100/czTot)+'%':'—',chg(v,czp[k]).t]),[4400,1700,1700,1838]));
-    if(pieIdx)body.push(wimg(pieIdx,imgs[pieIdx-1].w,imgs[pieIdx-1].h));
+    if(czTot){const o=await donutPng('原因分布（人、機、料、法、環）',czRows.filter(r=>r[1]>0).map(([k,n])=>({k,n,c:CZC[k]})),czTot,'次');imgs.push(o);body.push(wimg(imgs.length,o.w,o.h))}
     body.push(wp('一件勾選多個原因時，每個原因各算一次；占比以原因次數合計計算。人、機、料、法、環的趨勢折線圖見「二、趨勢圖」。',{sz:18,after:160}))}
   body.push(wp(cn[ci++]+'、本期案件清單',{b:1,sz:28,bd:1,after:120}));
   if(cur.length)body.push(isC?wtbl(['編號','日期','產品名稱','異常類別','處理階段','權責單位'],cur.map(c=>[c.no||'—',c.date,c.item||'',catLabel(c),c.status||'',respTxt((c.form||{}).inputs)||'尚未指定']),[1700,1250,2000,1600,1400,1688])
