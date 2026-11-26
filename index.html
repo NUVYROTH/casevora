@@ -616,7 +616,7 @@ label b,.fsec b{color:#b42318}
 <li>按「儲存」。之後可從清單點「編輯」或小照片，繼續更新案件內容。</li>
 <li>「匯出此案件 Word」：檔名是「客訴案件_編號_產品名稱_異常類別」，內容用標楷體排版（基本資料表格、各段標題、編號縮排、追蹤表格、回函書信格式），可直接列印或寄出前修改。</li>
 <li>已有 Excel 客訴紀錄表時，可按「從 Excel 匯入」：選年份後預覽，再確定匯入。客訴內容會放到「產品名稱」，批號與異常描述之後再補；重複的案件會自動略過。</li>
-<li>「處理時程與原因」：報告書（對外回覆）期限預設從客訴日期隔天（實際收到日）起算 3 日（可在「常用選項 → 報告書期限」改天數、改成工作天，或改回從客訴日期當天起算），逾期會在清單標紅提醒；追蹤是內部總流程的期間，結案日期是總流程完成的最後一日；原因可複選人、機、料、法、環。</li>
+<li>「處理時程與原因」：報告書（對外回覆）期限預設從客訴日期隔天（實際收到日）起算 3 日（可在「常用選項 → 報告書期限」改天數、改成工作天，或改回從客訴日期當天起算），逾期會在清單標紅提醒；追蹤是內部總流程的期間，結案日期是總流程完成的最後一日（填了結案日期，處理狀態會自動改成「已結案」，追蹤完成也會帶入同一天，可修改）；原因可複選人、機、料、法、環。</li>
 <li>處理狀態依序是：原因查證 → 改善執行 → 效果確認 → 已結案（供應商客訴多一個「通知供應商改善」）。可在清單上直接切換。</li>
 <li>清單上方可以用狀態膠囊、搜尋、類別、年月篩選；勾選案件後可刪除，或只匯出這幾件的 Word 報告。</li>
 <li>「匯出報表（Excel）」可選年份、月份，匯出這一頁符合期間的案件；左側「統計分析」可看年度、每季、每月統計，並按「下載統計報告（Word）」下載。</li>
@@ -1758,6 +1758,8 @@ $('causeBox').addEventListener('change',()=>{$('cause').value=[...$('causeBox').
 ['date','rpt'].forEach(id=>$(id).addEventListener('input',rptDue));['trk1','trk2'].forEach(id=>$(id).addEventListener('input',trkShow));
 // 打結案日期時，追蹤完成自動帶入同一天（追蹤完成空白、或還是上次自動帶入的值才會跟著改；手動改過就不再覆蓋）
 {let lastC='';$('cdate').addEventListener('focus',()=>{lastC=$('cdate').value});
+ // 有結案日期就自動改成「已結案」；把結案日期清掉時，若狀態是剛才自動改的，就換回原本的狀態
+ let prevSt='';$('cdate').addEventListener('input',()=>{const st=$('fst');if($('cdate').value){if(st.value!=='已結案'){prevSt=st.value;st.value='已結案';st.dispatchEvent(new Event('change',{bubbles:true}))}}else if(prevSt&&st.value==='已結案'){st.value=prevSt;prevSt='';st.dispatchEvent(new Event('change',{bubbles:true}))}});
  $('cdate').addEventListener('input',()=>{const c=$('cdate').value,t=$('trk2');if(c&&(!t.value||t.value===lastC)){t.value=c;trkShow();$('trkN').textContent+=($('trkN').textContent?'　':'')+'（已依結案日期帶入，可修改）'}lastC=c})}
 function syncOther(){$('catotherW').hidden=$('fcat').value!=='其它';$('fosubW').hidden=$('fcat').value!=='異物';$('fohint').hidden=$('fcat').value!=='異物'}
 $('fcat').addEventListener('change',syncOther);$('resp').addEventListener('change',syncResp);
@@ -1857,6 +1859,7 @@ if($('fcat').value==='其它'&&!d.catother){$('fmsg').textContent='請填寫其�
 if(!editId&&CASES.some(c=>c.kind==='客訴'&&c.no===d.no)){d.no=calcNo(d.date,'客訴','CC');$('no').value=d.no}
   const sec={};[1,2,3,4,5,6,7].forEach(i=>sec['s'+i]=$('s'+i).value);
   const pf=(editId&&(CASES.find(c=>c.id===editId)||{}).form)||{};
+  if(d.cdate&&$('fst').value!=='已結案')$('fst').value='已結案'; // 有結案日期一律算已結案
   const r={date:d.date,kind:'客訴',no:d.no,item:d.prod,lot:d.lot,sup:'',cat:$('fcat').value,status:$('fst').value,form:{inputs:d,...(pf.sections?{sections:pf.sections,shown:pf.shown}:{})}};
   try{let id=editId;if(id)await DBc.doc(id).update(r);else id=await DBc.add(r);
     try{await PDB.put(id,photos.map(p=>({name:p.name,blob:p.blob})));if(photos.length&&navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});renderCases()}
