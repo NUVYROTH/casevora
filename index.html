@@ -1756,6 +1756,9 @@ function rptDue(){const st=rptState($('date').value,$('rpt').value),e=$('rptDue'
 $('causeBox').innerHTML=['人','機','料','法','環'].map(k=>`<label><input type="checkbox" value="${k}">${k}</label>`).join('');
 $('causeBox').addEventListener('change',()=>{$('cause').value=[...$('causeBox').querySelectorAll('input:checked')].map(x=>x.value).join('、')});
 ['date','rpt'].forEach(id=>$(id).addEventListener('input',rptDue));['trk1','trk2'].forEach(id=>$(id).addEventListener('input',trkShow));
+// 打結案日期時，追蹤完成自動帶入同一天（追蹤完成空白、或還是上次自動帶入的值才會跟著改；手動改過就不再覆蓋）
+{let lastC='';$('cdate').addEventListener('focus',()=>{lastC=$('cdate').value});
+ $('cdate').addEventListener('input',()=>{const c=$('cdate').value,t=$('trk2');if(c&&(!t.value||t.value===lastC)){t.value=c;trkShow();$('trkN').textContent+=($('trkN').textContent?'　':'')+'（已依結案日期帶入，可修改）'}lastC=c})}
 function syncOther(){$('catotherW').hidden=$('fcat').value!=='其它';$('fosubW').hidden=$('fcat').value!=='異物';$('fohint').hidden=$('fcat').value!=='異物'}
 $('fcat').addEventListener('change',syncOther);$('resp').addEventListener('change',syncResp);
 const FK=['no','date','src','rec','qcp','resp','respx','prod','lot','desc','proc','done','eff','conf','catother','fosub','rpt','trk1','trk2','cdate','cause','note'];
